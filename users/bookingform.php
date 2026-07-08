@@ -49,13 +49,19 @@ if ($packageId > 0) {
         $packageName = $row['name'];
 }
 
-// Fetch current user's booked dates (non-cancelled)
+// Fetch booked dates for this specific venue (non-cancelled)
 $bookedDates = [];
-$r = $conn->query("SELECT DISTINCT event_date FROM bookings WHERE status != 'Cancelled'");
-if ($r) {
-    while ($row = $r->fetch_assoc()) {
-        $bookedDates[] = $row['event_date'];
+if ($venueId > 0) {
+    $stmt = $conn->prepare("SELECT DISTINCT event_date FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
+    $stmt->bind_param("i", $venueId);
+    $stmt->execute();
+    $r = $stmt->get_result();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $bookedDates[] = $row['event_date'];
+        }
     }
+    $stmt->close();
 }
 
 $paymentMethods = [];
@@ -467,10 +473,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const bookedDates = <?= json_encode($bookedDates) ?>;
             const input = document.getElementById("eventDatePicker");
 
-            input.addEventListener("change", function () {
-                if (bookedDates.includes(this.value)) {
-                    alert("This date is already booked!");
-                    this.value = "";
+            flatpickr(input, {
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                disable: bookedDates.map(d => d),
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
+                    if (bookedDates.includes(dateStr)) {
+                        dayElem.title = 'Already booked';
+                    }
                 }
             });
         });
