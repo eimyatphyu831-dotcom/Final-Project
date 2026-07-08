@@ -22,13 +22,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php');
-            // Notify all admins
-            $adminResult = $conn->query("SELECT id FROM admins");
-            if ($adminResult) {
-                while ($admin = $adminResult->fetch_assoc()) {
-                    createNotification($conn, $admin['id'], 'Booking Confirmed', "{$bk['customer_name']}'s booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../admin/bookings.php');
-                }
-            }
         }
         $message = "Booking confirmed!";
     } elseif ($_GET['action'] === 'cancel') {
@@ -37,13 +30,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../users/my_bookings.php');
-            // Notify all admins
-            $adminResult = $conn->query("SELECT id FROM admins");
-            if ($adminResult) {
-                while ($admin = $adminResult->fetch_assoc()) {
-                    createNotification($conn, $admin['id'], 'Booking Cancelled', "{$bk['customer_name']}'s booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../admin/bookings.php');
-                }
-            }
         }
         $message = "Booking cancelled.";
     } elseif ($_GET['action'] === 'delete') {
@@ -234,8 +220,10 @@ if (empty($bookings)) {
                                     </td>
 
                                     <td class="p-3 flex gap-2">
-                                        <a href="?action=approve&id=<?= $b['id'] ?>"
-                                            class="px-3 py-1 bg-green-400 text-white rounded-lg text-xs hover:bg-green-600">Confirm</a>
+                                        <?php if ($b['status'] === 'Pending'): ?>
+                                            <a href="?action=approve&id=<?= $b['id'] ?>"
+                                                class="px-3 py-1 bg-green-400 text-white rounded-lg text-xs hover:bg-green-600">Confirm</a>
+                                        <?php endif; ?>
                                         <!-- <a href="?action=cancel&id=<?= $b['id'] ?>"
                                    onclick="return confirm('Cancel this booking?')"
                                    class="px-3 py-1 bg-yellow-400 text-white rounded-lg text-xs hover:bg-yellow-600">Cancel</a> -->

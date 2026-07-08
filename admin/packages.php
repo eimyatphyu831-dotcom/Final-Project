@@ -48,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
 
-        // Update venue_packages prices
         if (isset($_POST['venue_price'])) {
             $conn->query("DELETE FROM venue_packages WHERE package_id=$editId");
             $stmt = $conn->prepare("INSERT INTO venue_packages (venue_id, package_id, price) VALUES (?, ?, ?)");
@@ -62,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
 
-        // Update event_package_services
         if (isset($_POST['event_services'])) {
             $conn->query("DELETE FROM event_package_services WHERE package_id=$editId");
             $stmt = $conn->prepare("INSERT INTO event_package_services (event_id, package_id, service_id) VALUES (?, ?, ?)");
@@ -112,12 +110,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch all packages with associated data
 $packages = $conn->query("SELECT * FROM packages ORDER BY FIELD(name, 'Silver', 'Gold', 'Diamond')")->fetch_all(MYSQLI_ASSOC);
 
-// Fetch all events, venues, services for form dropdowns
 $eventsList = $conn->query("SELECT id, event_name FROM events ORDER BY event_name")->fetch_all(MYSQLI_ASSOC);
 $venuesList = $conn->query("SELECT id, name FROM venues ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 $servicesList = $conn->query("SELECT id, service_name FROM services ORDER BY service_name")->fetch_all(MYSQLI_ASSOC);
 
-// Fetch existing venue_packages data
 $vpData = [];
 $vpRes = $conn->query("SELECT venue_id, package_id, price FROM venue_packages");
 if ($vpRes) {
@@ -126,7 +122,6 @@ if ($vpRes) {
     }
 }
 
-// Fetch existing event_package_services data
 $epsData = [];
 $epsRes = $conn->query("SELECT event_id, package_id, service_id FROM event_package_services");
 if ($epsRes) {
@@ -134,6 +129,13 @@ if ($epsRes) {
         $epsData[$row['package_id']][$row['event_id']][] = $row['service_id'];
     }
 }
+
+// Package color configs
+$pkgColors = [
+    'Silver'  => ['bg' => 'bg-gradient-to-br from-gray-100 to-gray-200', 'border' => 'border-gray-300', 'accent' => 'text-gray-700', 'badge' => 'bg-gray-500', 'icon_bg' => 'bg-gray-400'],
+    'Gold'    => ['bg' => 'bg-gradient-to-br from-amber-50 to-orange-100', 'border' => 'border-amber-300', 'accent' => 'text-amber-700', 'badge' => 'bg-amber-500', 'icon_bg' => 'bg-amber-400'],
+    'Diamond' => ['bg' => 'bg-gradient-to-br from-blue-50 to-indigo-100', 'border' => 'border-blue-300', 'accent' => 'text-blue-700', 'badge' => 'bg-blue-500', 'icon_bg' => 'bg-blue-400'],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -142,46 +144,29 @@ if ($epsRes) {
     <title>Admin Packages</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
+        body { font-family: 'Poppins', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Playfair Display', serif; }
+        .bg-sidebar { background-color: #ffffff; }
+        .bg-sidebar-active { background-color: #C3B1E1; color: #ffffff; }
+        .text-purple-brand { color: #9966cc; }
+        .bg-purple-brand { background-color: #C3B1E1; }
+
+        .pkg-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Playfair Display', serif;
+        .pkg-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
         }
-        .bg-sidebar {
-            background-color: #ffffff;
+
+        .edit-card {
+            animation: slideDown 0.3s ease-out;
         }
-        .bg-sidebar-active {
-            background-color: #C3B1E1;
-            color: #ffffff;
-        }
-        .text-purple-brand {
-            color: #9966cc;
-        }
-        .bg-purple-brand {
-            background-color: #C3B1E1;
-        }
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-        }
-        .modal-content {
-            background: #fff;
-            border-radius: 1rem;
-            padding: 2rem;
-            width: 100%;
-            max-width: 640px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -191,136 +176,197 @@ if ($epsRes) {
         <div class="flex-1 flex flex-col ml-64">
             <?php include 'admin_header.php'; ?>
             <main class="flex-1 p-8 overflow-y-auto">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Packages</h2>
-                    <div class="flex gap-3">
-                        <a href="packages.php?action=add"
-                            class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">+ Add Package</a>
+
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Packages</h2>
+                        <p class="text-sm text-gray-500 mt-1">Manage your service packages and pricing</p>
                     </div>
+                    <a href="packages.php?action=add"
+                        class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
+                        <i class="fa-solid fa-plus text-xs"></i> Add Package
+                    </a>
                 </div>
 
-                <!-- Table -->
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">#</th> -->
-                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Package Name</th>
-                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
-                                <th class="text-center px-6 py-4 font-semibold text-gray-600">Venues</th>
-                                <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            <?php foreach ($packages as $p): ?>
-                                <?php $venueCount = isset($vpData[$p['id']]) ? count($vpData[$p['id']]) : 0; ?>
-                                <tr class="hover:bg-gray-50 transition">
-                                    <!-- <td class="px-6 py-4 text-gray-500"><?= $p['id'] ?></td> -->
-                                    <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($p['name']) ?></td>
-                                    <td class="px-6 py-4 text-gray-500 max-w-xs truncate"><?= htmlspecialchars($p['description'] ?? '—') ?></td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium <?= $venueCount > 0 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500' ?>">
-                                            <i class="fa-solid fa-location-dot"></i> <?= $venueCount ?>
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="packages.php?action=edit&id=<?= $p['id'] ?>"
-                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
-                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                            </a>
-                                            <a href="packages.php?action=delete&id=<?= $p['id'] ?>"
-                                                onclick="return confirm('Delete this package? This will also remove all venue prices and service assignments.')"
-                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
-                                                <i class="fa-solid fa-trash-can mr-1"></i> Delete
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                            <?php if (empty($packages)): ?>
-                                <tr>
-                                    <td colspan="5" class="px-6 py-10 text-center text-gray-400">No packages found. Click "+ Add Package" to create one.</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <?php foreach ($packages as $p):
+                        $name = $p['name'];
+                        $c = $pkgColors[$name] ?? $pkgColors['Silver'];
+                        $venueCount = isset($vpData[$p['id']]) ? count($vpData[$p['id']]) : 0;
+                        $serviceCount = 0;
+                        if (isset($epsData[$p['id']])) {
+                            foreach ($epsData[$p['id']] as $svcs) {
+                                $serviceCount += count($svcs);
+                            }
+                        }
+                        $minPrice = 0;
+                        if (isset($vpData[$p['id']])) {
+                            $prices = array_values($vpData[$p['id']]);
+                            $minPrice = min($prices);
+                        }
+                    ?>
+                        <div class="pkg-card <?= $c['bg'] ?> border <?= $c['border'] ?> rounded-2xl p-6 relative overflow-hidden">
+                            <!-- Top accent bar -->
+                            <div class="absolute top-0 left-0 right-0 h-1.5 <?= $c['badge'] ?> rounded-t-2xl"></div>
 
-                <!-- Add/Edit Modal -->
-                <div id="packageModal" class="modal-overlay <?= ($action === 'add' || $action === 'edit') ? '' : 'hidden' ?>">
-                    <div class="modal-content">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800"><?= $action === 'add' ? 'Add Package' : 'Edit Package' ?></h2>
-                                <p class="text-sm text-gray-500 mt-0.5"><?= $action === 'add' ? 'Create a new package tier' : 'Update package details' ?></p>
+                            <!-- Icon + Name -->
+                            <div class="flex items-center gap-3 mb-4 mt-1">
+                                <div class="<?= $c['icon_bg'] ?> w-12 h-12 rounded-xl flex items-center justify-center shadow-sm">
+                                    <?php if ($name === 'Silver'): ?>
+                                        <i class="fa-solid fa-star text-white text-lg"></i>
+                                    <?php elseif ($name === 'Gold'): ?>
+                                        <i class="fa-solid fa-crown text-white text-lg"></i>
+                                    <?php else: ?>
+                                        <i class="fa-solid fa-gem text-white text-lg"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold <?= $c['accent'] ?>"><?= htmlspecialchars($name) ?></h3>
+                                    <span class="text-xs text-gray-500">Package</span>
+                                </div>
                             </div>
-                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+
+                            <!-- Description -->
+                            <p class="text-sm text-gray-600 mb-5 leading-relaxed min-h-[40px]">
+                                <?= htmlspecialchars($p['description'] ?: 'No description set.') ?>
+                            </p>
+
+                            <!-- Stats -->
+                            <div class="flex gap-3 mb-5">
+                                <div class="flex-1 bg-white/70 rounded-xl p-3 text-center border border-white/80">
+                                    <div class="text-lg font-bold text-gray-800"><?= $venueCount ?></div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Venues</div>
+                                </div>
+                                <div class="flex-1 bg-white/70 rounded-xl p-3 text-center border border-white/80">
+                                    <div class="text-lg font-bold text-gray-800"><?= $serviceCount ?></div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Services</div>
+                                </div>
+                                <div class="flex-1 bg-white/70 rounded-xl p-3 text-center border border-white/80">
+                                    <div class="text-lg font-bold <?= $c['accent'] ?>">
+                                        <?= $minPrice > 0 ? number_format($minPrice) : '—' ?>
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-wide">Min Price</div>
+                                </div>
+                            </div>
+
+                            <!-- Actions (show on hover) -->
+                            <div class="flex gap-2">
+                                <a href="packages.php?action=edit&id=<?= $p['id'] ?>"
+                                    class="flex-1 text-center px-3 py-2 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                </a>
+                                <a href="packages.php?action=delete&id=<?= $p['id'] ?>"
+                                    onclick="return confirm('Delete this package? This will also remove all venue prices and service assignments.')"
+                                    class="flex-1 text-center px-3 py-2 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
+                                    <i class="fa-solid fa-trash-can mr-1"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <?php if (empty($packages)): ?>
+                        <div class="col-span-full">
+                            <div class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fa-solid fa-box-open text-purple-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-700 mb-2">No Packages Yet</h3>
+                                <p class="text-sm text-gray-400 mb-5">Create your first package to get started.</p>
+                                <a href="packages.php?action=add"
+                                    class="inline-flex items-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium text-sm">
+                                    <i class="fa-solid fa-plus text-xs"></i> Add Package
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Edit Card Form (appears when editing) -->
+                <?php if ($action === 'edit' && $editPackage): ?>
+                    <?php
+                        $editName = $editPackage['name'];
+                        $ec = $pkgColors[$editName] ?? $pkgColors['Silver'];
+                    ?>
+                    <div class="edit-card bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="<?= $ec['icon_bg'] ?> w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                                    <?php if ($editName === 'Silver'): ?>
+                                        <i class="fa-solid fa-star text-white text-sm"></i>
+                                    <?php elseif ($editName === 'Gold'): ?>
+                                        <i class="fa-solid fa-crown text-white text-sm"></i>
+                                    <?php else: ?>
+                                        <i class="fa-solid fa-gem text-white text-sm"></i>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800">Edit Package</h3>
+                                    <p class="text-xs text-gray-500">Update <?= htmlspecialchars($editName) ?> package details</p>
+                                </div>
+                            </div>
+                            <a href="packages.php" class="text-gray-400 hover:text-gray-600 text-xl leading-none">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
                         </div>
 
                         <form method="POST" class="space-y-4">
-                            <?php if ($action === 'edit' && $editPackage): ?>
-                                <input type="hidden" name="id" value="<?= $editPackage['id'] ?>">
-                            <?php endif; ?>
+                            <input type="hidden" name="id" value="<?= $editPackage['id'] ?>">
 
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Package Name</label>
-                                <select name="name" required
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
-                                    <option value="">— Select Package —</option>
-                                    <option value="Silver" <?= $action === 'edit' && $editPackage && $editPackage['name'] === 'Silver' ? 'selected' : '' ?>>Silver</option>
-                                    <option value="Gold" <?= $action === 'edit' && $editPackage && $editPackage['name'] === 'Gold' ? 'selected' : '' ?>>Gold</option>
-                                    <option value="Diamond" <?= $action === 'edit' && $editPackage && $editPackage['name'] === 'Diamond' ? 'selected' : '' ?>>Diamond</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                <textarea name="description" rows="3"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"><?= $action === 'edit' && $editPackage ? htmlspecialchars($editPackage['description'] ?? '') : '' ?></textarea>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Package Name</label>
+                                    <select name="name" required
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                        <option value="Silver" <?= $editPackage['name'] === 'Silver' ? 'selected' : '' ?>>Silver</option>
+                                        <option value="Gold" <?= $editPackage['name'] === 'Gold' ? 'selected' : '' ?>>Gold</option>
+                                        <option value="Diamond" <?= $editPackage['name'] === 'Diamond' ? 'selected' : '' ?>>Diamond</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                    <textarea name="description" rows="1"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"><?= htmlspecialchars($editPackage['description'] ?? '') ?></textarea>
+                                </div>
                             </div>
 
                             <!-- Venue Pricing -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Venue Prices (MMK)</label>
-                                <p class="text-xs text-gray-400 mb-3">Set the price for this package at each venue.</p>
-                                <div class="space-y-2 max-h-48 overflow-y-auto p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Venue Prices (MMK)
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-3 border border-gray-100 rounded-xl bg-gray-50/50">
                                     <?php if (!empty($venuesList)): ?>
                                         <?php foreach ($venuesList as $v): ?>
-                                            <?php
-                                                $pkgId = $action === 'edit' && $editPackage ? $editPackage['id'] : 0;
-                                                $existingPrice = isset($vpData[$pkgId][$v['id']]) ? $vpData[$pkgId][$v['id']] : '';
-                                            ?>
-                                            <div class="flex items-center gap-3">
-                                                <label class="text-sm text-gray-600 w-1/2 truncate"><?= htmlspecialchars($v['name']) ?></label>
+                                            <?php $existingPrice = isset($vpData[$editPackage['id']][$v['id']]) ? $vpData[$editPackage['id']][$v['id']] : ''; ?>
+                                            <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                                <label class="text-xs text-gray-600 truncate flex-1"><?= htmlspecialchars($v['name']) ?></label>
                                                 <input type="number" name="venue_price[<?= $v['id'] ?>]" min="0" step="0.01"
-                                                    value="<?= $existingPrice ?>"
-                                                    placeholder="0.00"
-                                                    class="w-1/2 px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
+                                                    value="<?= $existingPrice ?>" placeholder="0"
+                                                    class="w-24 px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-xs text-right">
                                             </div>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <p class="text-sm text-gray-400">No venues available. Create venues first.</p>
+                                        <p class="text-sm text-gray-400 col-span-full">No venues available.</p>
                                     <?php endif; ?>
                                 </div>
                             </div>
 
-                            <!-- Service Assignment per Event -->
+                            <!-- Services per Event -->
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Services per Event</label>
-                                <p class="text-xs text-gray-400 mb-3">Select which services are included in this package for each event.</p>
-                                <div class="space-y-4 max-h-64 overflow-y-auto p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fa-solid fa-concierge-bell mr-1 text-purple-500"></i> Services per Event
+                                </label>
+                                <div class="space-y-3 p-3 border border-gray-100 rounded-xl bg-gray-50/50 max-h-48 overflow-y-auto">
                                     <?php if (!empty($eventsList) && !empty($servicesList)): ?>
                                         <?php foreach ($eventsList as $ev): ?>
-                                            <?php
-                                                $pkgId = $action === 'edit' && $editPackage ? $editPackage['id'] : 0;
-                                                $selectedServices = $epsData[$pkgId][$ev['id']] ?? [];
-                                            ?>
-                                            <fieldset>
-                                                <legend class="text-sm font-semibold text-gray-700 mb-1"><?= htmlspecialchars($ev['event_name']) ?></legend>
+                                            <?php $selectedServices = $epsData[$editPackage['id']][$ev['id']] ?? []; ?>
+                                            <div class="bg-white rounded-lg p-3 border border-gray-100">
+                                                <div class="text-xs font-semibold text-gray-700 mb-2"><?= htmlspecialchars($ev['event_name']) ?></div>
                                                 <div class="flex flex-wrap gap-2">
                                                     <?php foreach ($servicesList as $svc): ?>
-                                                        <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                                                        <label class="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
                                                             <input type="checkbox" name="event_services[<?= $ev['id'] ?>][]"
                                                                 value="<?= $svc['id'] ?>"
                                                                 <?= in_array($svc['id'], $selectedServices) ? 'checked' : '' ?>
@@ -329,36 +375,130 @@ if ($epsRes) {
                                                         </label>
                                                     <?php endforeach; ?>
                                                 </div>
-                                            </fieldset>
+                                            </div>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <p class="text-sm text-gray-400">Create events and services first before assigning.</p>
+                                        <p class="text-sm text-gray-400">Create events and services first.</p>
                                     <?php endif; ?>
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4 pt-2">
+                            <div class="flex items-center gap-3 pt-2">
                                 <button type="submit"
-                                    class="bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-                                    <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-2"></i>
-                                    <?= $action === 'add' ? 'Create Package' : 'Update Package' ?>
+                                    class="bg-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-save text-xs"></i> Update Package
                                 </button>
-                                <button type="button" onclick="closeModal()"
-                                    class="text-gray-500 hover:text-gray-700 font-medium text-sm">Cancel</button>
+                                <a href="packages.php"
+                                    class="px-6 py-2.5 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition">
+                                    Cancel
+                                </a>
                             </div>
                         </form>
                     </div>
-                </div>
+                <?php endif; ?>
+
+                <!-- Add Card Form (appears when adding) -->
+                <?php if ($action === 'add'): ?>
+                    <div class="edit-card bg-white rounded-2xl border border-purple-200 shadow-sm p-6 mb-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-purple-500 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-plus text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800">Add New Package</h3>
+                                    <p class="text-xs text-gray-500">Create a new package tier</p>
+                                </div>
+                            </div>
+                            <a href="packages.php" class="text-gray-400 hover:text-gray-600 text-xl leading-none">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        </div>
+
+                        <form method="POST" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Package Name</label>
+                                    <select name="name" required
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                        <option value="">— Select Package —</option>
+                                        <option value="Silver">Silver</option>
+                                        <option value="Gold">Gold</option>
+                                        <option value="Diamond">Diamond</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                    <textarea name="description" rows="1" placeholder="Enter package description"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Venue Pricing -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Venue Prices (MMK)
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-3 border border-gray-100 rounded-xl bg-gray-50/50">
+                                    <?php if (!empty($venuesList)): ?>
+                                        <?php foreach ($venuesList as $v): ?>
+                                            <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                                <label class="text-xs text-gray-600 truncate flex-1"><?= htmlspecialchars($v['name']) ?></label>
+                                                <input type="number" name="venue_price[<?= $v['id'] ?>]" min="0" step="0.01"
+                                                    placeholder="0"
+                                                    class="w-24 px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-xs text-right">
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <p class="text-sm text-gray-400 col-span-full">No venues available.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <!-- Services per Event -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fa-solid fa-concierge-bell mr-1 text-purple-500"></i> Services per Event
+                                </label>
+                                <div class="space-y-3 p-3 border border-gray-100 rounded-xl bg-gray-50/50 max-h-48 overflow-y-auto">
+                                    <?php if (!empty($eventsList) && !empty($servicesList)): ?>
+                                        <?php foreach ($eventsList as $ev): ?>
+                                            <div class="bg-white rounded-lg p-3 border border-gray-100">
+                                                <div class="text-xs font-semibold text-gray-700 mb-2"><?= htmlspecialchars($ev['event_name']) ?></div>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <?php foreach ($servicesList as $svc): ?>
+                                                        <label class="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                                                            <input type="checkbox" name="event_services[<?= $ev['id'] ?>][]"
+                                                                value="<?= $svc['id'] ?>"
+                                                                class="rounded border-gray-300 text-purple-600 focus:ring-purple-400">
+                                                            <?= htmlspecialchars($svc['service_name']) ?>
+                                                        </label>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <p class="text-sm text-gray-400">Create events and services first.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="submit"
+                                    class="bg-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-purple-700 transition text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-plus text-xs"></i> Create Package
+                                </button>
+                                <a href="packages.php"
+                                    class="px-6 py-2.5 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                <?php endif; ?>
 
                 <script>
                     function closeModal() { window.location.href = 'packages.php'; }
-
-                    <?php if ($action === 'add' || $action === 'edit'): ?>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const m = document.getElementById('packageModal');
-                        if (m) m.classList.remove('hidden');
-                    });
-                    <?php endif; ?>
                 </script>
             </main>
         </div>

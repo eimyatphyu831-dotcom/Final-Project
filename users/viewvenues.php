@@ -249,6 +249,7 @@ foreach ($venues as $v) {
         if (isLoggedIn) {
             window.location.href = url;
         } else {
+            const bookingUrl = encodeURIComponent(url);
             Swal.fire({
                 title: 'Login Required',
                 text: 'Please register or login to book this package.',
@@ -260,7 +261,7 @@ foreach ($venues as $v) {
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '../auth/login.php';
+                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
                 }
             });
         }

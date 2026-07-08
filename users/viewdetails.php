@@ -456,6 +456,10 @@ foreach ($venues as $v) {
     const isLoggedIn = <?= $isLoggedIn ? 'true' : 'false' ?>;
     function handleBooking(url) {
         if (!isLoggedIn) {
+            const params = new URLSearchParams(url.split('?')[1] || '');
+            const hasPackage = params.get('venue_id') && params.get('package_id');
+            const redirectUrl = hasPackage ? url : window.location.href;
+            const bookingUrl = encodeURIComponent(redirectUrl);
             Swal.fire({
                 title: 'Login Required',
                 text: 'Please register or login to book this event.',
@@ -467,7 +471,7 @@ foreach ($venues as $v) {
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '../auth/login.php';
+                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
                 }
             });
             return;
