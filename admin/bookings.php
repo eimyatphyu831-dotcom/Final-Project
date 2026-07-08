@@ -149,7 +149,8 @@ if (empty($bookings)) {
                         <form method="GET">
                             <select name="status" onchange="this.form.submit()" class="px-4 py-2 rounded-xl border">
                                 <option value="all">All</option>
-                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending</option>
+                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending
+                                </option>
                                 <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed
                                 </option>
                                 <!-- <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option> -->

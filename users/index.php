@@ -158,11 +158,11 @@ if (isset($_SESSION['success'])) {
                     </div>
                     <div class="px-2">
 
-                        <?php if (!empty($event['venue_name'])): ?>
+                        <!-- <?php if (!empty($event['venue_name'])): ?>
                             <p class="text-xs text-purple-500 font-medium mb-2 flex items-center gap-1">
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
-                        <?php endif; ?>
+                        <?php endif; ?> -->
                         <p class="text-sm text-slate-500 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
                     </div>
                 </div>
@@ -297,10 +297,10 @@ if (isset($_SESSION['success'])) {
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                             <div>
                                 <h3 class="text-xl font-bold text-brand-600"><?= htmlspecialchars($v['name']) ?></h3>
-                                <?php if (!empty($v['event_name'])): ?>
+                                <!-- <?php if (!empty($v['event_name'])): ?>
                                     <span
                                         class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-700"><?= htmlspecialchars($v['event_name']) ?></span>
-                                <?php endif; ?>
+                                <?php endif; ?> -->
                                 <div class="flex items-center gap-1 text-xs text-slate-400 mt-1 font-medium">
                                     <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
                                     <span><?= htmlspecialchars($v['address']) ?></span>

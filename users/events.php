@@ -53,11 +53,11 @@ $badges = [
                     </div>
                     <div class="px-2">
 
-                        <?php if (!empty($event['venue_name'])): ?>
+                        <!-- <?php if (!empty($event['venue_name'])): ?>
                             <p class="text-xs text-purple-500 font-medium mb-2 flex items-center gap-1">
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
-                        <?php endif; ?>
+                        <?php endif; ?> -->
                         <p class="text-sm text-slate-500 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
                     </div>
                 </div>

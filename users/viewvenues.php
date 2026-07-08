@@ -137,7 +137,8 @@ foreach ($venues as $v) {
     <div class="grid lg:grid-cols-3 gap-8">
 
         <!-- Silver -->
-        <div class="bg-white rounded-3xl shadow-md border border-gray-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+        <div
+            class="bg-white rounded-3xl shadow-md border border-gray-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
 
             <!-- <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-gray-300 to-gray-400"></div> -->
 
@@ -159,7 +160,8 @@ foreach ($venues as $v) {
                 <ul id="list-silver" class="space-y-2 text-sm text-gray-600"></ul>
             </div>
 
-            <button type="button" id="btn-silver" onclick="handleBooking('bookingform.php')" class="mt-6 w-full py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-semibold text-sm hover:bg-gray-700 hover:text-white transition">
+            <button type="button" id="btn-silver" onclick="handleBooking('bookingform.php')"
+                class="mt-6 w-full py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-semibold text-sm hover:bg-gray-700 hover:text-white transition">
                 Select Package
             </button>
 
@@ -169,7 +171,8 @@ foreach ($venues as $v) {
 
         <!-- Gold -->
         <!-- <div class="bg-white rounded-3xl shadow-md border border-orange-400 p-6 relative flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300"> -->
-        <div class="bg-white rounded-3xl shadow-md border border-orange-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+        <div
+            class="bg-white rounded-3xl shadow-md border border-orange-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
             <!-- <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-300 to-orange-400"></div> -->
 
             <div class="absolute top-4 right-4 bg-orange-400 text-white text-[10px] font-bold px-3 py-1 rounded-full">
@@ -194,7 +197,8 @@ foreach ($venues as $v) {
                 <ul id="list-gold" class="space-y-2 text-sm text-orange-500"></ul>
             </div>
 
-            <button type="button" id="btn-gold" onclick="handleBooking('bookingform.php')" class="mt-6 w-full py-3 rounded-xl bg-orange-400 text-white font-semibold text-sm hover:bg-orange-500 hover:shadow-md transition">
+            <button type="button" id="btn-gold" onclick="handleBooking('bookingform.php')"
+                class="mt-6 w-full py-3 rounded-xl bg-orange-400 text-white font-semibold text-sm hover:bg-orange-500 hover:shadow-md transition">
                 Select Package
             </button>
 
@@ -203,7 +207,8 @@ foreach ($venues as $v) {
 
 
         <!-- Diamond -->
-        <div class="bg-white rounded-3xl shadow-md border border-blue-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+        <div
+            class="bg-white rounded-3xl shadow-md border border-blue-400 p-6 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
 
             <!-- <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-300 to-blue-400"></div> -->
 
@@ -225,7 +230,8 @@ foreach ($venues as $v) {
                 <ul id="list-diamond" class="space-y-2 text-sm text-blue-400"></ul>
             </div>
 
-            <button type="button" id="btn-diamond" onclick="handleBooking('bookingform.php')" class="mt-6 w-full py-3 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-500 hover:text-white transition">
+            <button type="button" id="btn-diamond" onclick="handleBooking('bookingform.php')"
+                class="mt-6 w-full py-3 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 font-semibold text-sm hover:bg-blue-500 hover:text-white transition">
                 Select Package
             </button>
 

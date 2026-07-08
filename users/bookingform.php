@@ -477,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 minDate: "today",
                 dateFormat: "Y-m-d",
                 disable: bookedDates.map(d => d),
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                onDayCreate: function (dObj, dStr, fp, dayElem) {
                     const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
                     if (bookedDates.includes(dateStr)) {
                         dayElem.title = 'Already booked';

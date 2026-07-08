@@ -49,10 +49,10 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
                             <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                                 <div>
                                     <h3 class="text-xl font-bold text-brand-600"><?= htmlspecialchars($v['name']) ?></h3>
-                                    <?php if (!empty($v['event_name'])): ?>
+                                    <!-- <?php if (!empty($v['event_name'])): ?>
                                         <span
                                             class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-700"><?= htmlspecialchars($v['event_name']) ?></span>
-                                    <?php endif; ?>
+                                    <?php endif; ?> -->
                                     <div class="flex items-center gap-1 text-xs text-slate-400 mt-1 font-medium">
                                         <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
                                         <span><?= htmlspecialchars($v['address']) ?></span>

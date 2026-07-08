@@ -248,20 +248,29 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500"><?= $v['address'] ?></td>
-                                <td class="px-6 py-4 text-gray-500"><?= $v['capacity'] ?> Guests</td>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="inline-flex items-center gap-1">
+                                     <span><?= $v['capacity'] ?></span>
+                                    <span>Guests</span>
+                                    </div>
+                                </td>
                                 <!-- <td class="px-6 py-4 text-gray-500"><?= number_format($v['price'], 2) ?> MMK</td> -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center justify-center gap-2">
-                                        
-                                        <a href="venues.php?action=edit&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
-                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
-                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                <div class="flex items-center justify-center gap-2">
+
+                                 <a href="venues.php?action=edit&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                            <span>Edit</span>
                                         </a>
+                                
                                         <a href="venues.php?action=delete&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
                                             onclick="return confirm('Delete this venue?')"
-                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
-                                            <i class="fa-solid fa-trash-can mr-1"></i> Delete
+                                            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                            <span>Delete</span>
                                         </a>
+                                
                                     </div>
                                 </td>
                             </tr>
@@ -365,8 +374,8 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                 <option value="">— Select Event —</option>
                                 <?php foreach ($eventsList as $ev): ?>
                                     <option value="<?= $ev['id'] ?>"
-                                        <?= ($action === 'edit' && $editVenue && $editVenue['event_id'] == $ev['id']) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($ev['event_name']) ?>
+                                    <?= ($action === 'edit' && $editVenue && $editVenue['event_id'] == $ev['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($ev['event_name']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

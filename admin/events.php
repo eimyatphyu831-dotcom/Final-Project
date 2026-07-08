@@ -14,12 +14,13 @@ $editGallery = [];
 $searchEvent = $_GET['search'] ?? '';
 
 $queryParams = [];
-if ($searchEvent !== '') $queryParams['search'] = $searchEvent;
+if ($searchEvent !== '')
+    $queryParams['search'] = $searchEvent;
 $redirectQuery = $queryParams ? '?' . http_build_query($queryParams) : '';
 
 // DELETE
 if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
+    $id = (int) $_GET['delete'];
     if ($id > 0) {
         $stmt = $conn->prepare("DELETE FROM events WHERE id=?");
         $stmt->bind_param("i", $id);
@@ -32,7 +33,7 @@ if (isset($_GET['delete'])) {
 
 // DELETE GALLERY IMAGE
 if (isset($_GET['delete_gallery'])) {
-    $galleryId = (int)$_GET['delete_gallery'];
+    $galleryId = (int) $_GET['delete_gallery'];
     if ($galleryId > 0) {
         $stmt = $conn->prepare("SELECT image_path FROM event_gallery WHERE id=?");
         $stmt->bind_param("i", $galleryId);
@@ -59,7 +60,7 @@ if (isset($_GET['delete_gallery'])) {
 
 // EDIT - fetch event data
 if ($action === 'edit' && isset($_GET['id'])) {
-    $id = (int)$_GET['id'];
+    $id = (int) $_GET['id'];
     $stmt = $conn->prepare("SELECT * FROM events WHERE id=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -85,19 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
     $type = $_POST['type'];
     $description = $_POST['description'];
-    $venueId = isset($_POST['venue_id']) ? (int)$_POST['venue_id'] : 0;
-    $eventId = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+    $venueId = isset($_POST['venue_id']) ? (int) $_POST['venue_id'] : 0;
+    $eventId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     // Dynamic venue creation
     $dynamicVenueName = $_POST['dynamic_venue_name'] ?? '';
     if ($venueId === 0 && $dynamicVenueName !== '') {
         $vAddr = $_POST['dynamic_venue_address'] ?? '';
-        $vCap = (int)($_POST['dynamic_venue_capacity'] ?? 0);
-        $vPrice = (float)($_POST['dynamic_venue_price'] ?? 0);
+        $vCap = (int) ($_POST['dynamic_venue_capacity'] ?? 0);
+        $vPrice = (float) ($_POST['dynamic_venue_price'] ?? 0);
         $vImg = null;
         if (isset($_FILES['dynamic_venue_image']) && $_FILES['dynamic_venue_image']['error'] === UPLOAD_ERR_OK) {
             $uploadDir = '../assets/images/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+            if (!is_dir($uploadDir))
+                mkdir($uploadDir, 0777, true);
             $ext = pathinfo($_FILES['dynamic_venue_image']['name'], PATHINFO_EXTENSION);
             $filename = 'venue_dyn_' . time() . '.' . $ext;
             move_uploaded_file($_FILES['dynamic_venue_image']['tmp_name'], $uploadDir . $filename);
@@ -202,292 +204,311 @@ if ($pResult) {
 // Fetch all venues for the form dropdown
 $allVenues = [];
 $vResult = $conn->query("SELECT id, name FROM venues ORDER BY name ASC");
-if ($vResult) $allVenues = $vResult->fetch_all(MYSQLI_ASSOC);
+if ($vResult)
+    $allVenues = $vResult->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Events Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-      <style>
-         body {
-             font-family: 'Poppins', sans-serif;
-         }
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
 
-         h1, h2, h3, h4, h5, h6 {
-             font-family: 'Playfair Display', serif;
-         }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Playfair Display', serif;
+        }
 
-         .bg-sidebar {
-              background-color: #ffffff;
-          }
+        .bg-sidebar {
+            background-color: #ffffff;
+        }
 
-          .bg-sidebar-active {
-              background-color: #C3B1E1;
-              color: #ffffff;
-          }
+        .bg-sidebar-active {
+            background-color: #C3B1E1;
+            color: #ffffff;
+        }
 
-         .text-purple-brand {
-             color: #9966cc;
-         }
+        .text-purple-brand {
+            color: #9966cc;
+        }
 
-         .bg-purple-brand {
-             background-color: #C3B1E1;
-         }
+        .bg-purple-brand {
+            background-color: #C3B1E1;
+        }
 
-         .modal-overlay {
-             position: fixed;
-             inset: 0;
-             background: rgba(0,0,0,0.5);
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             z-index: 50;
-         }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
 
-         .modal-content {
-             background: #fff;
-             border-radius: 1rem;
-             padding: 2rem;
-             width: 100%;
-             max-width: 480px;
-             max-height: 90vh;
-             overflow-y: auto;
-             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-         }
-      </style>
+        .modal-content {
+            background: #fff;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen overflow-hidden">
 
-<div class="flex h-screen">
+    <div class="flex h-screen">
 
-    <?php include 'sidebar.php'; ?>
+        <?php include 'sidebar.php'; ?>
 
-    <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col ml-64">
 
-        <?php include 'admin_header.php'; ?>
+            <?php include 'admin_header.php'; ?>
 
-        <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-8 overflow-y-auto">
 
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Events</h2>
-                <div class="flex gap-3">
-                    <a href="events.php?action=add"
-                       class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">
-                        + Add Event
-                    </a>
-                </div>
-            </div>
-
-            <form method="GET" class="mb-6">
-                <input type="text" name="search" value="<?= htmlspecialchars($searchEvent) ?>"
-                    placeholder="Search events..." class="px-4 py-2.5 border rounded-xl w-64" onchange="this.form.submit()">
-            </form>
-
-        <!-- Table -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="text-left px-6 py-4 font-semibold text-gray-600">Image</th>
-                        <th class="text-left px-6 py-4 font-semibold text-gray-600">Name</th>
-                        <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
-                        <th class="text-center px-6 py-4 font-semibold text-gray-600">Gallery</th>
-                        <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <?php foreach ($events as $event): ?>
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4">
-                                <img src="<?= $event['image'] ?>" class="w-14 h-14 rounded-lg object-cover">
-                            </td>
-                            <td class="px-6 py-4 font-medium text-gray-800"><?= $event['event_name'] ?></td>
-                            <td class="px-6 py-4 text-gray-500 max-w-xs truncate"><?= htmlspecialchars($event['description']) ?></td>
-                            <td class="px-6 py-4 text-center">
-                                <?php $gc = $galleryCounts[$event['id']] ?? 0; ?>
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium <?= $gc > 0 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500' ?>">
-                                    <i class="fa-solid fa-image"></i> <?= $gc ?>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-2">
-                                    <a href="events.php?action=edit&id=<?= $event['id'] ?>"
-                                       class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
-                                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                    </a>
-                                    <a href="events.php?delete=<?= $event['id'] ?><?= $searchEvent ? '&search=' . urlencode($searchEvent) : '' ?>"
-                                       onclick="return confirm('Delete this event?')"
-                                       class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
-                                        <i class="fa-solid fa-trash-can mr-1"></i> Delete
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Modal overlay -->
-        <div id="eventModal" class="modal-overlay <?= ($action === 'add' || $action === 'edit') ? '' : 'hidden' ?>">
-            <div class="modal-content">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800"><?= $action === 'add' ? 'Add Event' : 'Edit Event' ?></h2>
-                        <p class="text-sm text-gray-500 mt-0.5"><?= $action === 'add' ? 'Create a new event listing' : 'Update event details' ?></p>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Events</h2>
+                    <div class="flex gap-3">
+                        <a href="events.php?action=add"
+                            class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">
+                            + Add Event
+                        </a>
                     </div>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
                 </div>
 
-                <form method="POST" enctype="multipart/form-data" class="space-y-4">
-                    <?php if ($action === 'edit' && $editEvent): ?>
-                        <input type="hidden" name="id" value="<?= $editEvent['id'] ?>">
-                        <input type="hidden" name="existing_image" value="<?= $editEvent['image'] ?>">
-                    <?php endif; ?>
-                    <input type="hidden" name="type" value="general">
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Event Name</label>
-                        <input type="text" name="title" required
-                               value="<?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['event_name']) : '' ?>"
-                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
-                    </div>
-
-
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Venue</label>
-                        <select name="venue_id" id="venueSelect" onchange="toggleDynamicVenue()"
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
-                            <option value="">— Select Venue —</option>
-                            <?php if (!empty($allVenues)): ?>
-                                <?php foreach ($allVenues as $v): ?>
-                                    <option value="<?= $v['id'] ?>" <?= $action === 'edit' && $editEvent && $editEvent['venue_id'] == $v['id'] ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($v['name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                            <option value="new">+ Add New Venue</option>
-                        </select>
-                    </div>
-
-                    <div id="dynamicVenueFields" class="hidden p-4 border border-dashed border-purple-300 rounded-xl bg-purple-50/50 space-y-3">
-                        <p class="text-xs font-semibold text-purple-600">New Venue Details</p>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Venue Name</label>
-                            <input type="text" name="dynamic_venue_name" id="dynamicVenueName"
-                                class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Address</label>
-                                <input type="text" name="dynamic_venue_address"
-                                    class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Capacity</label>
-                                <input type="number" name="dynamic_venue_capacity" min="1"
-                                    class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Price (MMK)</label>
-                                <input type="number" name="dynamic_venue_price" min="0" step="0.01"
-                                    class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Image</label>
-                                <input type="file" name="dynamic_venue_image" accept="image/*"
-                                    class="w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-purple-100 file:text-purple-700 file:font-semibold file:text-xs hover:file:bg-purple-200">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                        <textarea name="description" rows="4" required
-                                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"><?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['description']) : '' ?></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Event Image</label>
-                        <?php if ($action === 'edit' && $editEvent && $editEvent['image']): ?>
-                            <img src="<?= $editEvent['image'] ?>" class="w-24 h-24 rounded-lg object-cover mb-2">
-                        <?php endif; ?>
-                        <input type="file" name="image" accept="image/*"
-                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Gallery Images</label>
-                        <?php if ($action === 'edit' && !empty($editGallery)): ?>
-                            <div class="flex flex-wrap gap-2 mb-3">
-                                <?php foreach ($editGallery as $photo): ?>
-                                    <div class="relative group">
-                                        <img src="<?= $photo['image_path'] ?>" class="w-20 h-20 rounded-lg object-cover border">
-                                        <a href="events.php?delete_gallery=<?= $photo['id'] ?>"
-                                           onclick="return confirm('Delete this gallery image?')"
-                                           class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
-                                            &times;
-                                        </a>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <input type="file" name="gallery_images[]" multiple accept="image/*"
-                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
-                        <p class="text-xs text-gray-400 mt-1">Upload multiple gallery images</p>
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-2">
-                        <button type="submit"
-                                class="bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-                            <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-2"></i>
-                            <?= $action === 'add' ? 'Create Event' : 'Update Event' ?>
-                        </button>
-                        <button type="button" onclick="closeModal()"
-                                class="text-gray-500 hover:text-gray-700 font-medium text-sm">Cancel</button>
-                    </div>
+                <form method="GET" class="mb-6">
+                    <input type="text" name="search" value="<?= htmlspecialchars($searchEvent) ?>"
+                        placeholder="Search events..." class="px-4 py-2.5 border rounded-xl w-64"
+                        onchange="this.form.submit()">
                 </form>
-            </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Image</th>
+                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Name</th>
+                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
+                                <th class="text-center px-6 py-4 font-semibold text-gray-600">Gallery</th>
+                                <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <?php foreach ($events as $event): ?>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4">
+                                        <img src="<?= $event['image'] ?>" class="w-14 h-14 rounded-lg object-cover">
+                                    </td>
+                                    <td class="px-6 py-4 font-medium text-gray-800"><?= $event['event_name'] ?></td>
+                                    <td class="px-6 py-4 text-gray-500 max-w-xs truncate">
+                                        <?= htmlspecialchars($event['description']) ?></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <?php $gc = $galleryCounts[$event['id']] ?? 0; ?>
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium <?= $gc > 0 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500' ?>">
+                                            <i class="fa-solid fa-image"></i> <?= $gc ?>
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <a href="events.php?action=edit&id=<?= $event['id'] ?>"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
+                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
+                                            </a>
+                                            <a href="events.php?delete=<?= $event['id'] ?><?= $searchEvent ? '&search=' . urlencode($searchEvent) : '' ?>"
+                                                onclick="return confirm('Delete this event?')"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
+                                                <i class="fa-solid fa-trash-can mr-1"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Modal overlay -->
+                <div id="eventModal"
+                    class="modal-overlay <?= ($action === 'add' || $action === 'edit') ? '' : 'hidden' ?>">
+                    <div class="modal-content">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">
+                                    <?= $action === 'add' ? 'Add Event' : 'Edit Event' ?></h2>
+                                <p class="text-sm text-gray-500 mt-0.5">
+                                    <?= $action === 'add' ? 'Create a new event listing' : 'Update event details' ?></p>
+                            </div>
+                            <button onclick="closeModal()"
+                                class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                            <?php if ($action === 'edit' && $editEvent): ?>
+                                <input type="hidden" name="id" value="<?= $editEvent['id'] ?>">
+                                <input type="hidden" name="existing_image" value="<?= $editEvent['image'] ?>">
+                            <?php endif; ?>
+                            <input type="hidden" name="type" value="general">
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Event Name</label>
+                                <input type="text" name="title" required
+                                    value="<?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['event_name']) : '' ?>"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                            </div>
+
+
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Venue</label>
+                                <select name="venue_id" id="venueSelect" onchange="toggleDynamicVenue()"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                    <option value="">— Select Venue —</option>
+                                    <?php if (!empty($allVenues)): ?>
+                                        <?php foreach ($allVenues as $v): ?>
+                                            <option value="<?= $v['id'] ?>" <?= $action === 'edit' && $editEvent && $editEvent['venue_id'] == $v['id'] ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($v['name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                    <option value="new">+ Add New Venue</option>
+                                </select>
+                            </div>
+
+                            <div id="dynamicVenueFields"
+                                class="hidden p-4 border border-dashed border-purple-300 rounded-xl bg-purple-50/50 space-y-3">
+                                <p class="text-xs font-semibold text-purple-600">New Venue Details</p>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Venue Name</label>
+                                    <input type="text" name="dynamic_venue_name" id="dynamicVenueName"
+                                        class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                                        <input type="text" name="dynamic_venue_address"
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Capacity</label>
+                                        <input type="number" name="dynamic_venue_capacity" min="1"
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Price (MMK)</label>
+                                        <input type="number" name="dynamic_venue_price" min="0" step="0.01"
+                                            class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Image</label>
+                                        <input type="file" name="dynamic_venue_image" accept="image/*"
+                                            class="w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-purple-100 file:text-purple-700 file:font-semibold file:text-xs hover:file:bg-purple-200">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                <textarea name="description" rows="4" required
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"><?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['description']) : '' ?></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Event Image</label>
+                                <?php if ($action === 'edit' && $editEvent && $editEvent['image']): ?>
+                                    <img src="<?= $editEvent['image'] ?>" class="w-24 h-24 rounded-lg object-cover mb-2">
+                                <?php endif; ?>
+                                <input type="file" name="image" accept="image/*"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Gallery Images</label>
+                                <?php if ($action === 'edit' && !empty($editGallery)): ?>
+                                    <div class="flex flex-wrap gap-2 mb-3">
+                                        <?php foreach ($editGallery as $photo): ?>
+                                            <div class="relative group">
+                                                <img src="<?= $photo['image_path'] ?>"
+                                                    class="w-20 h-20 rounded-lg object-cover border">
+                                                <a href="events.php?delete_gallery=<?= $photo['id'] ?>"
+                                                    onclick="return confirm('Delete this gallery image?')"
+                                                    class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
+                                                    &times;
+                                                </a>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="gallery_images[]" multiple accept="image/*"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
+                                <p class="text-xs text-gray-400 mt-1">Upload multiple gallery images</p>
+                            </div>
+
+                            <div class="flex items-center gap-4 pt-2">
+                                <button type="submit"
+                                    class="bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
+                                    <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-2"></i>
+                                    <?= $action === 'add' ? 'Create Event' : 'Update Event' ?>
+                                </button>
+                                <button type="button" onclick="closeModal()"
+                                    class="text-gray-500 hover:text-gray-700 font-medium text-sm">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    function toggleDynamicVenue() {
+                        const sel = document.getElementById('venueSelect');
+                        const fields = document.getElementById('dynamicVenueFields');
+                        if (sel && fields) {
+                            fields.classList.toggle('hidden', sel.value !== 'new');
+                            if (sel.value === 'new') sel.removeAttribute('required');
+                            else sel.setAttribute('required', 'required');
+                        }
+                    }
+                    document.addEventListener('DOMContentLoaded', toggleDynamicVenue);
+
+                    function closeModal() {
+                        window.location.href = 'events.php<?= $redirectQuery ?>';
+                    }
+
+                    <?php if ($action === 'add' || $action === 'edit'): ?>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const modal = document.getElementById('eventModal');
+                            if (modal) modal.classList.remove('hidden');
+                        });
+                    <?php endif; ?>
+                </script>
+
+            </main>
+
         </div>
-
-        <script>
-            function toggleDynamicVenue() {
-                const sel = document.getElementById('venueSelect');
-                const fields = document.getElementById('dynamicVenueFields');
-                if (sel && fields) {
-                    fields.classList.toggle('hidden', sel.value !== 'new');
-                    if (sel.value === 'new') sel.removeAttribute('required');
-                    else sel.setAttribute('required', 'required');
-                }
-            }
-            document.addEventListener('DOMContentLoaded', toggleDynamicVenue);
-
-            function closeModal() {
-                window.location.href = 'events.php<?= $redirectQuery ?>';
-            }
-
-            <?php if ($action === 'add' || $action === 'edit'): ?>
-            document.addEventListener('DOMContentLoaded', function () {
-                const modal = document.getElementById('eventModal');
-                if (modal) modal.classList.remove('hidden');
-            });
-            <?php endif; ?>
-        </script>
-
-    </main>
 
     </div>
 
-</div>
-
 </body>
+
 </html>

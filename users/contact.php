@@ -44,10 +44,12 @@ include '../includes/header.php';
             </p>
 
             <?php if ($success): ?>
-                <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl"><?= htmlspecialchars($success) ?></div>
+                <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                    <?= htmlspecialchars($success) ?></div>
             <?php endif; ?>
             <?php if ($error): ?>
-                <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl"><?= htmlspecialchars($error) ?></div>
+                <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                    <?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <form method="POST" action="" class="space-y-4">

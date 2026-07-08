@@ -362,14 +362,14 @@ function activeMenu($page)
                 <!-- Venues -->
                 <a href="venues.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('venues.php') ?>">
-                    <i class="fa-solid fa-handshake w-5 text-purple-brand"></i>
+                    <i class="fa-solid fa-hotel w-5 text-purple-brand"></i>
                     Venues
                 </a>
 
                 <!-- Packages -->
                 <a href="packages.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('packages.php') ?>">
-                    <i class="fa-solid fa-layer-group w-5 text-purple-brand"></i>
+                    <i class="fa-solid fa-gift w-5 text-purple-brand"></i>
                     Packages
                 </a>
 
@@ -383,7 +383,7 @@ function activeMenu($page)
                 <!-- Bookings -->
                 <a href="bookings.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('bookings.php') ?>">
-                    <i class="fa-solid fa-book-bookmark w-5 text-purple-brand"></i>
+                    <i class="fa-solid fa-clipboard-list w-5 text-purple-brand"></i>
                     Bookings
                 </a>
 
@@ -402,11 +402,11 @@ function activeMenu($page)
                 </a>
 
                 <!-- Notifications -->
-                <!-- <a href="notifications.php"
+                <a href="notifications.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('notifications.php') ?>">
                     <i class="fa-solid fa-bell w-5 text-purple-400"></i>
                     Notifications
-                </a> -->
+                </a>
 
                 <!-- Profile -->
                 <!-- <a href="profile.php"

@@ -19,7 +19,8 @@ if ($bookingId > 0) {
                        JOIN venues v ON b.venue_id = v.id
                        LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
                        WHERE b.id = $bookingId");
-    if ($r) $booking = $r->fetch_assoc();
+    if ($r)
+        $booking = $r->fetch_assoc();
 }
 
 $pageTitle = "Booking Confirmed";
@@ -37,7 +38,8 @@ include '../includes/header.php';
 
         <h1 class="text-2xl font-extrabold text-slate-800 mb-2">Booking Confirmed</h1>
         <p class="text-slate-500 text-sm mb-8 leading-relaxed">
-            Thank you for your booking. Your request has been submitted successfully and our team will review it shortly.
+            Thank you for your booking. Your request has been submitted successfully and our team will review it
+            shortly.
         </p>
 
         <div class="bg-slate-50 rounded-2xl p-5 mb-8 text-left space-y-4">
@@ -81,10 +83,12 @@ include '../includes/header.php';
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-            <a href="my_bookings.php" class="bg-[#2a1b40] text-white py-3 rounded-xl text-sm font-semibold hover:bg-opacity-90 transition shadow-md">
+            <a href="my_bookings.php"
+                class="bg-[#2a1b40] text-white py-3 rounded-xl text-sm font-semibold hover:bg-opacity-90 transition shadow-md">
                 View My Bookings
             </a>
-            <a href="index.php" class="bg-white text-slate-700 py-3 rounded-xl text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition">
+            <a href="index.php"
+                class="bg-white text-slate-700 py-3 rounded-xl text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition">
                 Return Home
             </a>
         </div>

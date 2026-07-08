@@ -67,7 +67,9 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
     <meta charset="UTF-8">
     <title>Admin Services</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -75,7 +77,12 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
             font-family: 'Poppins', sans-serif;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Playfair Display', serif;
         }
 
@@ -152,7 +159,8 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                             <?php foreach ($services as $s): ?>
                                 <tr class="hover:bg-gray-50 transition">
                                     <!-- <td class="px-6 py-4 text-gray-500"><?= $s['id'] ?></td> -->
-                                    <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($s['service_name']) ?></td>
+                                    <td class="px-6 py-4 font-medium text-gray-800">
+                                        <?= htmlspecialchars($s['service_name']) ?></td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <a href="services.php?action=edit&id=<?= $s['id'] ?>"
@@ -170,7 +178,8 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                             <?php endforeach; ?>
                             <?php if (empty($services)): ?>
                                 <tr>
-                                    <td colspan="3" class="px-6 py-10 text-center text-gray-400">No services found. Click "+ Add Service" to create one.</td>
+                                    <td colspan="3" class="px-6 py-10 text-center text-gray-400">No services found. Click "+
+                                        Add Service" to create one.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
