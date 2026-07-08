@@ -327,7 +327,7 @@ function activeMenu($page)
         <div class="flex flex-col flex-1">
 
             <!-- HEADER -->
-            <div class="p-5 flex items-center gap-3 border-b border-gray-200">
+            <div class="p-3 flex items-center gap-3 border-b border-gray-200">
                 <div class="w-8 h-8 bg-purple-brand rounded-lg flex items-center justify-center text-white font-bold">
                     <i class="fa-solid fa-calendar-days"></i>
                 </div>
@@ -394,6 +394,13 @@ function activeMenu($page)
                     Customers
                 </a>
 
+                <!-- Messages -->
+                <a href="contact_messages.php"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('contact_messages.php') ?>">
+                    <i class="fa-solid fa-message w-5 text-purple-brand"></i>
+                    Messages
+                </a>
+
                 <!-- Notifications -->
                 <!-- <a href="notifications.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('notifications.php') ?>">
@@ -415,7 +422,7 @@ function activeMenu($page)
         <div class="p-4 border-t border-gray-200">
 
             <a href="../auth/logout.php"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-400 hover:text-red-600 transition-all text-sm font-medium border border-red-200 bg-red-400/30">
+                class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-400 hover:text-red-600 transition-all text-sm font-medium border border-red-200/40 bg-red-400 text-white">
                 <i class="fa-solid fa-right-from-bracket w-5"></i>
                 Log Out
             </a>

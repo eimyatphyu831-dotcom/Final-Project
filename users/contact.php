@@ -1,4 +1,37 @@
 <?php
+require_once '../config/db.php';
+require_once '../includes/notification_helper.php';
+
+$success = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $event_type = trim($_POST['event_type'] ?? '');
+    $message_text = trim($_POST['message'] ?? '');
+
+    if ($name && $email && $message_text) {
+        $stmt = $conn->prepare("INSERT INTO contact_messages (name, email, event_type, message) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $email, $event_type, $message_text);
+        if ($stmt->execute()) {
+            $success = "Thank you, $name! Your inquiry has been submitted. We'll get back to you soon.";
+            // Notify all admins
+            $adminResult = $conn->query("SELECT id FROM admins");
+            if ($adminResult) {
+                while ($admin = $adminResult->fetch_assoc()) {
+                    createNotification($conn, $admin['id'], 'New Contact Message', "$name sent a message: " . substr($message_text, 0, 50) . (strlen($message_text) > 50 ? '...' : ''), '../admin/contact_messages.php');
+                }
+            }
+        } else {
+            $error = 'Failed to submit your inquiry. Please try again.';
+        }
+        $stmt->close();
+    } else {
+        $error = 'Please fill in all required fields.';
+    }
+}
+
 include '../includes/header.php';
 ?>
 
@@ -10,32 +43,39 @@ include '../includes/header.php';
             <p class="text-xs text-slate-400 mb-8">Submit details below and a personal concierge planner will reach out.
             </p>
 
-            <form class="space-y-4">
+            <?php if ($success): ?>
+                <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl"><?= htmlspecialchars($success) ?></div>
+            <?php endif; ?>
+            <?php if ($error): ?>
+                <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
-                        <input type="text" placeholder="John Doe"
+                        <input type="text" name="name" placeholder="John Doe" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
-                        <input type="email" placeholder="john@example.com"
+                        <input type="email" name="email" placeholder="john@example.com" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Event Type</label>
-                    <select
+                    <select name="event_type"
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-400 focus:outline-none focus:border-brand-200">
-                        <option>Select Option...</option>
-                        <option>Wedding Ceremony</option>
-                        <option>Corporate Seminar/Gala</option>
-                        <option>Social/Private Party</option>
+                        <option value="">Select Option...</option>
+                        <option value="Wedding Ceremony">Wedding Ceremony</option>
+                        <option value="Corporate Seminar/Gala">Corporate Seminar/Gala</option>
+                        <option value="Social/Private Party">Social/Private Party</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Special Requirements</label>
-                    <textarea rows="3" placeholder="Tell us more about your ideas..."
+                    <textarea name="message" rows="3" placeholder="Tell us more about your ideas..." required
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200"></textarea>
                 </div>
                 <button type="submit"

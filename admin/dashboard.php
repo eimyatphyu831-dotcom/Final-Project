@@ -167,7 +167,7 @@ for ($i = 6; $i >= 0; $i--) {
     <!-- Header -->
      <div class="flex-1 flex flex-col overflow-y-auto ml-64">
 
-          <header class="bg-white border-b border-gray-100 px-8 py-2 flex items-center justify-between sticky top-0 z-20">
+          <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
               <form method="GET" class="flex items-center gap-3 flex-1">
                   <!-- <div class="relative w-72">
                       <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
@@ -339,7 +339,7 @@ for ($i = 6; $i >= 0; $i--) {
                           <div class="w-1/2 space-y-2.5 text-xs text-gray-600">
                               <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> Pending</span><span class="font-semibold text-gray-800 "><?= $pending ?> (<?= $totalBookings > 0 ? round($pending/$totalBookings*100) : 0 ?>%)</span></div>
                               <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Confirmed</span><span class="font-semibold text-gray-800 "><?= $confirmed ?> (<?= $totalBookings > 0 ? round($confirmed/$totalBookings*100) : 0 ?>%)</span></div>
-                              <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled/$totalBookings*100) : 0 ?>%)</span></div>
+                              <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled/$totalBookings*100) : 0 ?>%)</span></div> -->
                           </div>
                      </div>
                  </div>

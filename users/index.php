@@ -80,28 +80,29 @@ if (isset($_SESSION['success'])) {
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fafafa]/40 z-10"></div>
 
     <!-- Hero Content -->
-    <div class="relative max-w-3xl mx-auto z-20">
+    <div class="relative max-w-3xl mx-auto z-20 -mt-10 md:-mt-18">
 
         <!-- <div class="inline-block bg-brand-600 text-brand-900 px-4 py-1 rounded-full text-label-sm mb-6 animate-pulse">
                 Event Solutions
             </div> -->
 
-        <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
+        <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-8">
             Plan Your Perfect
-            <span class="text-brand-600 text-[2.3rem] md:text-[3rem]">
+            <span
+                class="text-[2.3rem] md:text-[3.7rem] font-extrabold bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(168,85,247,0.45)]">
                 Event
             </span>
             with Us
         </h1>
 
-        <p class="text-lg text-white max-w-xl mx-auto mb-8">
+        <p class="text-lg text-white max-w-xl mx-auto mb-9">
             From weddings to corporate galas, we craft elegant, seamless,
             and unforgettable experiences tailored just for you.
         </p>
 
         <div class="flex flex-wrap justify-center gap-4">
 
-            <a href="events.php"
+            <a href="viewevents.php"
                 class="bg-brand-200 hover:bg-brand-900 hover:text-white text-brand-900 px-8 py-3 rounded-full font-semibold transition">
                 Explore Events
             </a>

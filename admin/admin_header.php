@@ -15,7 +15,7 @@ $adminAvatar = $adminImg ? 'uploads/profile/' . $adminImg : null;
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #a78bfa; }
     .custom-scroll { scrollbar-width: thin; scrollbar-color: #c4b5fd transparent; }
 </style>
-<header class="bg-white border-b border-gray-100 px-8 py-2 flex items-center justify-between sticky top-0 z-20">
+<header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
     <div class="flex items-center gap-3 flex-1"></div>
     <div class="flex items-center gap-6">
         <!-- Notification Bell -->
