@@ -22,7 +22,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php');
-            createNotification($conn, $_SESSION['user_id'], 'Booking Confirmed', "You confirmed {$bk['event_name']} booking for {$dateStr}.", '../admin/bookings.php');
         }
         $message = "Booking confirmed!";
     } elseif ($_GET['action'] === 'cancel') {
@@ -31,7 +30,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../users/my_bookings.php');
-            createNotification($conn, $_SESSION['user_id'], 'Booking Cancelled', "You cancelled {$bk['event_name']} booking for {$dateStr}.", '../admin/bookings.php');
         }
         $message = "Booking  cancelled.";
     } elseif ($_GET['action'] === 'delete') {

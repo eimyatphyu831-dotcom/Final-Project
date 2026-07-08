@@ -48,7 +48,7 @@ $username = $_SESSION['user_name'] ?? '';
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -57,17 +57,27 @@ $username = $_SESSION['user_name'] ?? '';
     <?php
     $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
-    function navLinkClass($pageName, $currentPage)
+    $navGroups = [
+        'index.php'       => ['index.php'],
+        'events.php'      => ['events.php', 'viewevents.php', 'viewdetails.php'],
+        'services.php'    => ['services.php'],
+        'venues.php'      => ['venues.php', 'viewvenues.php'],
+        'about.php'       => ['about.php'],
+        'contact.php'     => ['contact.php'],
+    ];
+
+    function navLinkClass($navPage, $currentPage, $navGroups)
     {
-        return $pageName === $currentPage
+        $pages = $navGroups[$navPage] ?? [$navPage];
+        return in_array($currentPage, $pages, true)
             ? 'hover:text-brand-600 transition border-b-2 border-brand-600 text-brand-600'
-            : 'hover:text-brand-600 transition';
+            : 'hover:text-brand-600 transition border-b-2 border-transparent hover:border-brand-600';
     }
     ?>
     <!-- =========================================================================
          1. HEADER & NAVIGATION SYSTEM
          ========================================================================= -->
-    <header class="w-full bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+    <header class="w-full bg-[#f3f1f6] backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
             <div class="flex items-center gap-2 font-bold text-xl text-brand-900">
                 <div class="w-8 h-8 rounded-lg bg-brand-200 flex items-center justify-center">
@@ -81,11 +91,11 @@ $username = $_SESSION['user_name'] ?? '';
 
                 <nav class="flex items-center gap-8 text-md font-medium text-brand-900">
 
-                    <a href="../users/index.php" class="<?= navLinkClass('index.php', $currentPage) ?>">Home</a>
+                    <a href="../users/index.php" class="<?= navLinkClass('index.php', $currentPage, $navGroups) ?>">Home</a>
 
                     <div class="relative group">
                         <a href="../users/events.php"
-                            class="<?= navLinkClass('events.php', $currentPage) ?> flex items-center gap-1">
+                            class="<?= navLinkClass('events.php', $currentPage, $navGroups) ?> flex items-center gap-1">
                             Events
                             <svg class="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -112,13 +122,13 @@ $username = $_SESSION['user_name'] ?? '';
                     </div>
 
                     <a href="../users/services.php"
-                        class="<?= navLinkClass('services.php', $currentPage) ?>">Services</a>
+                        class="<?= navLinkClass('services.php', $currentPage, $navGroups) ?>">Services</a>
 
-                    <a href="../users/venues.php" class="<?= navLinkClass('venues.php', $currentPage) ?>">Venues</a>
+                    <a href="../users/venues.php" class="<?= navLinkClass('venues.php', $currentPage, $navGroups) ?>">Venues</a>
 
-                    <a href="../users/about.php" class="<?= navLinkClass('about.php', $currentPage) ?>">About</a>
+                    <a href="../users/about.php" class="<?= navLinkClass('about.php', $currentPage, $navGroups) ?>">About</a>
 
-                    <a href="../users/contact.php" class="<?= navLinkClass('contact.php', $currentPage) ?>">Contact</a>
+                    <a href="../users/contact.php" class="<?= navLinkClass('contact.php', $currentPage, $navGroups) ?>">Contact</a>
 
                 </nav>
 

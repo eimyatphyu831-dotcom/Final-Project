@@ -139,9 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} for " . number_format($total) . " MMK.", '../admin/bookings.php');
                     }
                 }
-                // Notify the user about their own booking
-                createNotification($conn, $userId, 'Booking Submitted', "Your booking for {$eventName} on {$dateStr} has been submitted and is pending confirmation.", '../users/my_bookings.php');
-                header("Location: index.php?booking_id=$bookingId");
+                header("Location: booking_success.php?booking_id=$bookingId");
                 exit();
             }
             $stmt->close();
