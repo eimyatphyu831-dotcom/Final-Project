@@ -103,6 +103,91 @@ for ($i = 6; $i >= 0; $i--) {
     $thisWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$d'")->fetch_assoc()['c'] ?? 0);
     $lastWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$lw'")->fetch_assoc()['c'] ?? 0);
 }
+
+// Booking overview chart
+if (isset($_GET['booking_chart'])) {
+
+    header("Content-Type: application/json");
+
+
+    $type = $_GET['type'] ?? "week";
+
+    $labels = [];
+    $values = [];
+
+
+    if ($type == "week") {
+
+
+        for ($i = 6; $i >= 0; $i--) {
+
+            $date = date(
+                "Y-m-d",
+                strtotime("-$i days")
+            );
+
+
+            $labels[] = date(
+                "D",
+                strtotime($date)
+            );
+
+
+            $stmt = $conn->prepare(
+                "SELECT COUNT(*) total 
+                 FROM bookings
+                 WHERE DATE(created_at)=?"
+            );
+
+            $stmt->bind_param("s", $date);
+
+            $stmt->execute();
+
+
+            $values[] = $stmt->get_result()->fetch_assoc()['total'];
+        }
+    } else {
+
+
+        for ($i = 29; $i >= 0; $i--) {
+
+            $date = date(
+                "Y-m-d",
+                strtotime("-$i days")
+            );
+
+
+            $labels[] = date(
+                "d M",
+                strtotime($date)
+            );
+
+
+            $stmt = $conn->prepare(
+                "SELECT COUNT(*) total
+                 FROM bookings
+                 WHERE DATE(created_at)=?"
+            );
+
+
+            $stmt->bind_param("s", $date);
+
+            $stmt->execute();
+            $values[] = $stmt->get_result()->fetch_assoc()['total'];
+
+        }
+
+    }
+
+
+    echo json_encode([
+        "labels" => $labels,
+        "values" => $values
+    ]);
+
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -354,50 +439,7 @@ for ($i = 6; $i >= 0; $i--) {
                 </div>
 
             </div>
-            <!-- Booking overwiew -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div
-                    class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base font-bold text-gray-800">Booking Overview</h3>
-                        <select
-                            class="border border-gray-200 text-xs px-3 py-1.5 rounded-lg bg-white font-medium text-gray-600 focus:outline-none">
-                            <option>This Week</option>
-                            <option>Last Month</option>
-                        </select>
-                    </div>
-                    <div class="h-64">
-                        <canvas id="bookingOverviewChart"></canvas>
-                    </div>
-                </div>
-                <!-- Event status -->
-                <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-base font-bold text-gray-800">Event Status</h3>
-                    </div>
-                    <div class="flex items-center justify-between gap-2 h-full">
-                        <div class="w-1/2 relative flex items-center justify-center">
-                            <canvas id="eventStatusChart"></canvas>
-                            <div class="absolute text-center">
-                                <h4 class="text-2xl font-bold text-gray-800 leading-none"><?= $totalBookings ?></h4>
-                                <span
-                                    class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Total</span>
-                            </div>
-                        </div>
-                        <div class="w-1/2 space-y-2.5 text-xs text-gray-600">
-                            <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span
-                                        class="w-2 h-2 rounded-full bg-yellow-400"></span> Pending</span><span
-                                    class="font-semibold text-gray-800 "><?= $pending ?>
-                                    (<?= $totalBookings > 0 ? round($pending / $totalBookings * 100) : 0 ?>%)</span></div>
-                            <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span
-                                        class="w-2 h-2 rounded-full bg-emerald-400"></span> Confirmed</span><span
-                                    class="font-semibold text-gray-800 "><?= $confirmed ?>
-                                    (<?= $totalBookings > 0 ? round($confirmed / $totalBookings * 100) : 0 ?>%)</span></div>
-                            <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div> -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Recent bookings -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -422,13 +464,16 @@ for ($i = 6; $i >= 0; $i--) {
                                         <tr class="hover:bg-gray-50/50">
                                             <!-- <td class="py-3.5 text-gray-400 text-xs font-medium">#BK-<?= str_pad($rb['id'], 4, '0', STR_PAD_LEFT) ?></td> -->
                                             <td class="py-3.5 font-semibold text-gray-800">
-                                                <?= htmlspecialchars($rb['event_name']) ?></td>
+                                                <?= htmlspecialchars($rb['event_name']) ?>
+                                            </td>
                                             <td class="py-3.5 text-gray-500"><?= htmlspecialchars($rb['customer_name']) ?>
                                             </td>
                                             <td class="py-3.5 text-gray-500">
-                                                <?= date('M j, Y', strtotime($rb['event_date'])) ?></td>
+                                                <?= date('M j, Y', strtotime($rb['event_date'])) ?>
+                                            </td>
                                             <td class="py-3.5 font-medium text-gray-800">
-                                                <?= number_format($rb['total_cost']) ?> MMK</td>
+                                                <?= number_format($rb['total_cost']) ?> MMK
+                                            </td>
                                             <td class="py-3.5">
                                                 <span
                                                     class="px-2.5 py-1 text-xs font-medium rounded-lg
@@ -472,7 +517,8 @@ for ($i = 6; $i >= 0; $i--) {
                                     </div>
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-800">
-                                            <?= htmlspecialchars($te['event_name']) ?></h4>
+                                            <?= htmlspecialchars($te['event_name']) ?>
+                                        </h4>
                                         <span class="text-[11px] text-gray-400"><?= $te['cnt'] ?> Bookings</span>
                                     </div>
                                 </div>
@@ -481,6 +527,84 @@ for ($i = 6; $i >= 0; $i--) {
                         <?php if (empty($topEvents)): ?>
                             <p class="text-xs text-gray-400 text-center py-4">No events yet</p>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking overwiew -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div
+                    class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-base font-bold text-gray-800">
+                            Booking Overview
+                        </h3>
+
+                        <select id="bookingFilter"
+                            class="border border-gray-200 text-xs px-3 py-1.5 rounded-lg bg-white font-medium text-gray-600 focus:outline-none">
+
+                            <option value="week">This Week</option>
+                            <option value="month">Last Month</option>
+
+                        </select>
+                    </div>
+
+                    <div class="h-64">
+                        <canvas id="bookingOverviewChart"></canvas>
+                    </div>
+
+                </div>
+                <!-- Event status -->
+                <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-gray-800">Event Status</h3>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 h-full">
+                        <div class="w-1/2 relative flex items-center justify-center">
+                            <canvas id="eventStatusChart"></canvas>
+                            <div class="absolute text-center">
+                                <h4 class="text-2xl font-bold text-gray-800 leading-none"><?= $totalBookings ?>
+                                </h4>
+                                <span
+                                    class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Total</span>
+                            </div>
+                        </div>
+                        <div class="w-1/2 space-y-2.5 text-xs text-gray-600">
+
+                            <div class="flex justify-between items-center">
+                                <span class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                    Pending
+                                </span>
+
+                                <span class="font-semibold text-gray-800 flex items-center gap-1 whitespace-nowrap">
+                                    <span>
+                                        <?= $pending ?>
+                                    </span>
+                                    <span>(
+                                        <?= $totalBookings > 0 ? round($pending / $totalBookings * 100) : 0 ?>%)
+                                    </span>
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between items-center gap-4">
+                                <span class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    Confirmed
+                                </span>
+
+                                <span class="font-semibold text-gray-800 flex items-center whitespace-nowrap">
+                                    <span>
+                                        <?= $confirmed ?>
+                                    </span>
+                                    <span class="ml-0.5">(
+                                        <?= $totalBookings > 0 ? round($confirmed / $totalBookings * 100) : 0 ?>%)
+                                    </span>
+                                </span>
+                            </div>
+                            <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -568,9 +692,7 @@ for ($i = 6; $i >= 0; $i--) {
                 }
             }
         });
-    </script>
 
-    <script>
         (function () {
             const toggle = document.getElementById('dashNotifBtn');
             const menu = document.getElementById('dashNotifMenu');
@@ -715,6 +837,80 @@ for ($i = 6; $i >= 0; $i--) {
                 updateIcon();
             });
         }
+
+
+        let bookingChart;
+
+
+        function loadBookingChart(type = "week") {
+
+            fetch("dashboard.php?booking_chart=1&type=" + type)
+
+                .then(response => response.json())
+
+                .then(data => {
+
+
+                    if (bookingChart) {
+                        bookingChart.destroy();
+                    }
+
+
+                    bookingChart = new Chart(
+                        document.getElementById("bookingOverviewChart"),
+                        {
+                            type: "line",
+
+                            data: {
+                                labels: data.labels,
+
+                                datasets: [{
+                                    label: "Bookings",
+                                    data: data.values,
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            precision: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+
+                });
+        }
+
+
+        // First load
+        loadBookingChart();
+
+
+        // Change dropdown
+        document
+            .getElementById("bookingFilter")
+            .addEventListener("change", function () {
+
+                loadBookingChart(this.value);
+
+            });
     </script>
 </body>
 

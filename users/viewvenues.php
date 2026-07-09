@@ -116,8 +116,10 @@ foreach ($venues as $v) {
                         <!-- <p class="text-slate-500 text-sm mb-4">Located at <?= htmlspecialchars($v['address']) ?> &mdash;
                             capacity up to <?= number_format($v['capacity']) ?> guests.</p> -->
                         <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-6">
-                            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                                <?= htmlspecialchars($v['address']) ?></span>
+                            <div class="flex items-start gap-1 text-xs text-slate-400 mt-1 font-medium">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0 mt-0.5"></i>
+                                <span><?= htmlspecialchars($v['address']) ?></span>
+                            </div>
                             <span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i>
                                 <?= number_format($v['capacity']) ?> </span>
                         </div>

@@ -337,7 +337,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
                                 Receipt</label>
-                            <input type="file" name="receipt" accept="image/*,.pdf"
+                            <input type="file" name="receipt" accept="image/*,.pdf" required
                                 class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition text-sm">
                         </div>
 

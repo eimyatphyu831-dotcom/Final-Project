@@ -53,9 +53,9 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
                                         <span
                                             class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-700"><?= htmlspecialchars($v['event_name']) ?></span>
                                     <?php endif; ?> -->
-                                    <div class="flex items-center gap-1 text-xs text-slate-400 mt-1 font-medium">
-                                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                                        <span><?= htmlspecialchars($v['address']) ?></span>
+                                    <div class="flex items-start gap-1 text-xs text-slate-400 mt-1 font-medium">
+                                        <i data-lucide="map-pin" class="w-3.5 h-3.5 mt-0.5 flex-shrink-0"></i>
+                                        <span class="leading-5"><?= htmlspecialchars($v['address']) ?></span>
                                     </div>
                                 </div>
                                 <span
