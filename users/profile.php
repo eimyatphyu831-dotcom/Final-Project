@@ -11,7 +11,7 @@ $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
 
-$stmt = $conn->prepare("SELECT id, name, email, phone FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, name, email, phone, registration_reason FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -22,6 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['name']);
     $email = strtolower(trim($_POST['email']));
     $phone = trim($_POST['phone']);
+    $registration_reason = trim($_POST['registration_reason'] ?? '');
     $current_password = $_POST['current_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
@@ -52,8 +53,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $error = "New password must be at least 6 characters.";
                 } else {
                     $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-                    $update = $conn->prepare("UPDATE users SET name = ?, email = ?, phone = ?, password = ? WHERE id = ?");
-                    $update->bind_param("ssssi", $name, $email, $phone, $hashed, $user_id);
+                    $update = $conn->prepare("UPDATE users SET name = ?, email = ?, phone = ?, registration_reason = ?, password = ? WHERE id = ?");
+                    $update->bind_param("sssssi", $name, $email, $phone, $registration_reason, $hashed, $user_id);
                     if ($update->execute()) {
                         $_SESSION['user_name'] = $name;
                         $_SESSION['user_email'] = $email;
@@ -61,14 +62,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $user['name'] = $name;
                         $user['email'] = $email;
                         $user['phone'] = $phone;
+                        $user['registration_reason'] = $registration_reason;
                     } else {
                         $error = "Update failed. Please try again.";
                     }
                     $update->close();
                 }
             } else {
-                $update = $conn->prepare("UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?");
-                $update->bind_param("sssi", $name, $email, $phone, $user_id);
+                $update = $conn->prepare("UPDATE users SET name = ?, email = ?, phone = ?, registration_reason = ? WHERE id = ?");
+                $update->bind_param("ssssi", $name, $email, $phone, $registration_reason, $user_id);
                 if ($update->execute()) {
                     $_SESSION['user_name'] = $name;
                     $_SESSION['user_email'] = $email;
@@ -76,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $user['name'] = $name;
                     $user['email'] = $email;
                     $user['phone'] = $phone;
+                    $user['registration_reason'] = $registration_reason;
                 } else {
                     $error = "Update failed. Please try again.";
                 }
@@ -126,18 +129,23 @@ include "../includes/header.php";
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-brand-900 mb-1.5">Full Name</label>
-                    <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required
+                    <input type="text" name="name" value="<?= htmlspecialchars($user['name'] ?? '') ?>" required
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-brand-900 mb-1.5">Email</label>
-                    <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required
+                    <input type="email" name="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" required
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-brand-900 mb-1.5">Phone</label>
                     <input type="text" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>"
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-brand-900 mb-1.5">Why did you register?</label>
+                    <textarea name="registration_reason" rows="3"
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm resize-none"><?= htmlspecialchars($user['registration_reason'] ?? '') ?></textarea>
                 </div>
             </div>
 

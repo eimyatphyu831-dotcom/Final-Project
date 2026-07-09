@@ -104,90 +104,6 @@ for ($i = 6; $i >= 0; $i--) {
     $lastWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$lw'")->fetch_assoc()['c'] ?? 0);
 }
 
-// Booking overview chart
-if (isset($_GET['booking_chart'])) {
-
-    header("Content-Type: application/json");
-
-
-    $type = $_GET['type'] ?? "week";
-
-    $labels = [];
-    $values = [];
-
-
-    if ($type == "week") {
-
-
-        for ($i = 6; $i >= 0; $i--) {
-
-            $date = date(
-                "Y-m-d",
-                strtotime("-$i days")
-            );
-
-
-            $labels[] = date(
-                "D",
-                strtotime($date)
-            );
-
-
-            $stmt = $conn->prepare(
-                "SELECT COUNT(*) total 
-                 FROM bookings
-                 WHERE DATE(created_at)=?"
-            );
-
-            $stmt->bind_param("s", $date);
-
-            $stmt->execute();
-
-
-            $values[] = $stmt->get_result()->fetch_assoc()['total'];
-        }
-    } else {
-
-
-        for ($i = 29; $i >= 0; $i--) {
-
-            $date = date(
-                "Y-m-d",
-                strtotime("-$i days")
-            );
-
-
-            $labels[] = date(
-                "d M",
-                strtotime($date)
-            );
-
-
-            $stmt = $conn->prepare(
-                "SELECT COUNT(*) total
-                 FROM bookings
-                 WHERE DATE(created_at)=?"
-            );
-
-
-            $stmt->bind_param("s", $date);
-
-            $stmt->execute();
-            $values[] = $stmt->get_result()->fetch_assoc()['total'];
-
-        }
-
-    }
-
-
-    echo json_encode([
-        "labels" => $labels,
-        "values" => $values
-    ]);
-
-    exit;
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -263,412 +179,279 @@ if (isset($_GET['booking_chart'])) {
     </style>
 </head>
 
-<body class="bg-gray-50 flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <?php include 'sidebar.php';
-    ?>
-    <!-- Header -->
-    <div class="flex-1 flex flex-col overflow-y-auto ml-64">
+<body class="bg-gray-50 min-h-screen overflow-hidden">
 
-        <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
-            <form method="GET" class="flex items-center gap-3 flex-1">
-                <!-- <div class="relative w-72">
-                      <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                      <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search events, customers..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 bg-gray-50/50">
-                      </div> -->
-                <!-- <button type="submit" class="px-4 py-2 bg-purple-600 text-white text-sm rounded-xl hover:bg-purple-700 transition font-medium"><i class="fa-solid fa-search mr-1"></i>Search</button> -->
-                <?php if ($search || $period !== 'all' || $dateFrom): ?>
-                    <a href="dashboard.php" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"><i
-                            class="fa-solid fa-xmark"></i> Clear</a>
-                <?php endif; ?>
-                <input type="hidden" name="period" value="<?= $period ?>">
-                <input type="hidden" name="date_from" value="<?= $dateFrom ?>">
-                <input type="hidden" name="date_to" value="<?= $dateTo ?>">
-            </form>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <?php include 'sidebar.php'; ?>
 
-            <div class="flex items-center gap-6">
-                <div class="relative" id="dashboardNotifDropdown">
-                    <button id="dashNotifBtn" class="relative text-gray-500 hover:text-gray-700">
-                        <i class="fa-regular fa-bell text-xl"></i>
-                        <span id="dashNotifBadge"
-                            class="hidden absolute -top-1 -right-1 bg-purple-brand text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">0</span>
-                    </button>
-                    <div id="dashNotifMenu"
-                        class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                        <div class="p-3 border-b border-gray-100 flex items-center justify-between">
-                            <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
-                            <button id="dashMarkAllRead"
-                                class="text-xs text-purple-600 hover:text-purple-800 cursor-pointer">Mark all
-                                read</button>
-                        </div>
-                        <div id="dashNotifList" class="max-h-60 overflow-y-auto custom-scroll">
-                            <div class="p-6 text-center text-sm text-gray-400">Loading...</div>
-                        </div>
-                        <a href="notifications.php"
-                            class="block p-3 text-center text-sm text-purple-600 hover:bg-purple-50 font-medium border-t border-gray-100">View
-                            All Notifications</a>
-                    </div>
-                </div>
-                <button id="adminThemeToggle"
-                    class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
-                    aria-label="Toggle theme">
-                    <svg class="theme-moon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                    </svg>
-                    <svg class="theme-sun w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-                    </svg>
-                </button>
-                <div class="relative">
-                    <button id="profileBtn"
-                        class="flex items-center gap-3 border-l pl-6 border-gray-200 cursor-pointer">
+        <div class="flex-1 flex flex-col ml-64">
+            <!-- Header -->
+            <?php include 'admin_header.php'; ?>
+
+            <main class="flex-1 p-10 space-y-6 overflow-y-auto">
+
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="?period=all<?= $search ? '&search=' . urlencode($search) : '' ?>"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'all' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">All
+                            Time</a>
+                        <a href="?period=this_week<?= $search ? '&search=' . urlencode($search) : '' ?>"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'this_week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">This
+                            Week</a>
+                        <a href="?period=last_week<?= $search ? '&search=' . urlencode($search) : '' ?>"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'last_week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Last
+                            Week</a>
+                        <form method="GET" class="flex items-center gap-2 ml-2">
+                            <input type="date" name="date_from" value="<?= $dateFrom ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <span class="text-xs text-gray-400">—</span>
+                            <input type="date" name="date_to" value="<?= $dateTo ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <?php if ($search): ?><input type="hidden" name="search"
+                                    value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
+                            <button type="submit"
+                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">Go</button>
+                        </form>
                         <div
-                            class="w-10 h-10 rounded-full overflow-hidden <?= $adminAvatar ? '' : 'bg-purple-100 flex items-center justify-center' ?>">
-                            <?php if ($adminAvatar): ?>
-                                <img src="<?= $adminAvatar ?>?t=<?= time() ?>" alt="Admin profile"
-                                    class="w-full h-full object-cover">
-                            <?php else: ?>
-                                <i class="fa-solid fa-user text-purple-500 text-sm"></i>
-                            <?php endif; ?>
+                            class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-gray-500">
+                            <i class="fa-regular fa-calendar text-gray-400"></i>
+                            <span class="font-medium text-gray-700"><?= $dateLabel ?></span>
                         </div>
-                        <div class="text-left">
-                            <h4 class="text-sm font-semibold text-gray-400 leading-none">
-                                <?= htmlspecialchars($_SESSION['user_name'] ?? 'Admin') ?>
-                            </h4>
+                    </div>
+                </div>
+
+                <!-- Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                    <div
+                        class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
+                        <div
+                            class="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-base">
+                            <i class="fa-regular fa-calendar-check"></i>
                         </div>
-                    </button>
-                    <div id="profileDropdown"
-                        class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                        <a href="profile.php"
-                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-all"><i
-                                class="fa-solid fa-user text-purple-500"></i> My Profile</a>
-                        <a href="../auth/logout.php"
-                            class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-all"><i
-                                class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-medium">Total Events</p>
+                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalEvents ?></h3>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="p-10 space-y-6 max-w-[1700px] w-full mx-auto">
-
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">Welcome back, Admin! Here's what's happening today.</p>
-                </div>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <a href="?period=all<?= $search ? '&search=' . urlencode($search) : '' ?>"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'all' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">All
-                        Time</a>
-                    <a href="?period=this_week<?= $search ? '&search=' . urlencode($search) : '' ?>"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'this_week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">This
-                        Week</a>
-                    <a href="?period=last_week<?= $search ? '&search=' . urlencode($search) : '' ?>"
-                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'last_week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Last
-                        Week</a>
-                    <form method="GET" class="flex items-center gap-2 ml-2">
-                        <input type="date" name="date_from" value="<?= $dateFrom ?>"
-                            class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
-                        <span class="text-xs text-gray-400">—</span>
-                        <input type="date" name="date_to" value="<?= $dateTo ?>"
-                            class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
-                        <?php if ($search): ?><input type="hidden" name="search"
-                                value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
-                        <button type="submit"
-                            class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">Go</button>
-                    </form>
                     <div
-                        class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-gray-500">
-                        <i class="fa-regular fa-calendar text-gray-400"></i>
-                        <span class="font-medium text-gray-700"><?= $dateLabel ?></span>
+                        class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
+                        <div
+                            class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-base">
+                            <i class="fa-solid fa-users-rectangle"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-medium">Total Bookings</p>
+                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalBookings ?></h3>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Dashboard -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                <div
-                    class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
                     <div
-                        class="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-base">
-                        <i class="fa-regular fa-calendar-check"></i>
+                        class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
+                        <div
+                            class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-base">
+                            <i class="fa-solid fa-dollar-sign"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-medium">Revenue (MMK)</p>
+                            <h3 class="text-2xl font-bold text-gray-800"><?= number_format($totalRevenue) ?></h3>
+                        </div>
                     </div>
-                    <div class="space-y-1">
-                        <p class="text-xs text-gray-400 font-medium">Total Events</p>
-                        <h3 class="text-2xl font-bold text-gray-800"><?= $totalEvents ?></h3>
-                    </div>
-                </div>
-                <div
-                    class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
                     <div
-                        class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-base">
-                        <i class="fa-solid fa-users-rectangle"></i>
+                        class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
+                        <div
+                            class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-base">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-400 font-medium">Customers</p>
+                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalCustomers ?></h3>
+                        </div>
                     </div>
-                    <div class="space-y-1">
-                        <p class="text-xs text-gray-400 font-medium">Total Bookings</p>
-                        <h3 class="text-2xl font-bold text-gray-800"><?= $totalBookings ?></h3>
-                    </div>
-                </div>
-                <div
-                    class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
-                    <div
-                        class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-base">
-                        <i class="fa-solid fa-dollar-sign"></i>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-xs text-gray-400 font-medium">Revenue (MMK)</p>
-                        <h3 class="text-2xl font-bold text-gray-800"><?= number_format($totalRevenue) ?></h3>
-                    </div>
-                </div>
-                <div
-                    class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3 hover:shadow-md transition">
-                    <div
-                        class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-base">
-                        <i class="fa-regular fa-user"></i>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-xs text-gray-400 font-medium">Customers</p>
-                        <h3 class="text-2xl font-bold text-gray-800"><?= $totalCustomers ?></h3>
-                    </div>
+
                 </div>
 
-            </div>
 
-
-            <!-- Recent bookings -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div
-                    class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-base font-bold text-gray-800 mb-4">Recent Bookings</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
-                                        <!-- <th class="pb-3 font-medium">Booking ID</th> -->
-                                        <th class="pb-3 font-medium">Event Name</th>
-                                        <th class="pb-3 font-medium">Customer</th>
-                                        <th class="pb-3 font-medium">Date</th>
-                                        <th class="pb-3 font-medium">Amount</th>
-                                        <th class="pb-3 font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
-                                    <?php foreach ($recentBookings as $rb): ?>
-                                        <tr class="hover:bg-gray-50/50">
-                                            <!-- <td class="py-3.5 text-gray-400 text-xs font-medium">#BK-<?= str_pad($rb['id'], 4, '0', STR_PAD_LEFT) ?></td> -->
-                                            <td class="py-3.5 font-semibold text-gray-800">
-                                                <?= htmlspecialchars($rb['event_name']) ?>
-                                            </td>
-                                            <td class="py-3.5 text-gray-500"><?= htmlspecialchars($rb['customer_name']) ?>
-                                            </td>
-                                            <td class="py-3.5 text-gray-500">
-                                                <?= date('M j, Y', strtotime($rb['event_date'])) ?>
-                                            </td>
-                                            <td class="py-3.5 font-medium text-gray-800">
-                                                <?= number_format($rb['total_cost']) ?> MMK
-                                            </td>
-                                            <td class="py-3.5">
-                                                <span
-                                                    class="px-2.5 py-1 text-xs font-medium rounded-lg
+                <!-- Recent bookings -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div
+                        class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800 mb-4">Recent Bookings</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
+                                            <!-- <th class="pb-3 font-medium">Booking ID</th> -->
+                                            <th class="pb-3 font-medium">Event Name</th>
+                                            <th class="pb-3 font-medium">Customer</th>
+                                            <th class="pb-3 font-medium">Date</th>
+                                            <th class="pb-3 font-medium">Amount</th>
+                                            <th class="pb-3 font-medium">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+                                        <?php foreach ($recentBookings as $rb): ?>
+                                            <tr class="hover:bg-gray-50/50">
+                                                <!-- <td class="py-3.5 text-gray-400 text-xs font-medium">#BK-<?= str_pad($rb['id'], 4, '0', STR_PAD_LEFT) ?></td> -->
+                                                <td class="py-3.5 font-semibold text-gray-800">
+                                                    <?= htmlspecialchars($rb['event_name']) ?>
+                                                </td>
+                                                <td class="py-3.5 text-gray-500">
+                                                    <?= htmlspecialchars($rb['customer_name']) ?>
+                                                </td>
+                                                <td class="py-3.5 text-gray-500">
+                                                    <?= date('M j, Y', strtotime($rb['event_date'])) ?>
+                                                </td>
+                                                <td class="py-3.5 font-medium text-gray-800">
+                                                    <?= number_format($rb['total_cost']) ?> MMK
+                                                </td>
+                                                <td class="py-3.5">
+                                                    <span
+                                                        class="px-2.5 py-1 text-xs font-medium rounded-lg
                                                   <?= $rb['status'] === 'Confirmed' ? 'text-emerald-600 bg-emerald-50' : ($rb['status'] === 'Cancelled' ? 'text-rose-600 bg-rose-50' : 'text-amber-600 bg-amber-50') ?>">
-                                                    <?= $rb['status'] ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                    <?php if (empty($recentBookings)): ?>
-                                        <tr>
-                                            <td colspan="6" class="py-4 text-center text-gray-400 text-sm">No bookings yet
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
+                                                        <?= $rb['status'] ?>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                        <?php if (empty($recentBookings)): ?>
+                                            <tr>
+                                                <td colspan="6" class="py-4 text-center text-gray-400 text-sm">No bookings
+                                                    yet
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-50 text-center">
+                            <a href="bookings.php"
+                                class="text-xs font-semibold text-purple-brand hover:text-purple-700 inline-flex items-center gap-2">View
+                                All Bookings <i class="fa-solid fa-arrow-right"></i></a>
                         </div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-gray-50 text-center">
-                        <a href="bookings.php"
-                            class="text-xs font-semibold text-purple-brand hover:text-purple-700 inline-flex items-center gap-2">View
-                            All Bookings <i class="fa-solid fa-arrow-right"></i></a>
-                    </div>
-                </div>
 
-                <!-- Top events -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base font-bold text-gray-800">Top Events</h3>
-                        <a href="events.php" class="text-xs text-purple-brand font-medium hover:underline">View All</a>
-                    </div>
-                    <div class="space-y-4 h-full flex flex-col justify-between">
-                        <?php foreach ($topEvents as $i => $te): ?>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs font-bold text-gray-400 w-4"><?= $i + 1 ?></span>
-                                    <div
-                                        class="w-12 h-10 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 flex items-center justify-center text-purple-400 font-bold text-sm">
-                                        <?= strtoupper(substr($te['event_name'], 0, 2)) ?>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-gray-800">
-                                            <?= htmlspecialchars($te['event_name']) ?>
-                                        </h4>
-                                        <span class="text-[11px] text-gray-400"><?= $te['cnt'] ?> Bookings</span>
+                    <!-- Top events -->
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-bold text-gray-800">Top Events</h3>
+                            <a href="events.php" class="text-xs text-purple-brand font-medium hover:underline">View
+                                All</a>
+                        </div>
+                        <div class="space-y-4 h-full flex flex-col justify-between">
+                            <?php foreach ($topEvents as $i => $te): ?>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-bold text-gray-400 w-4"><?= $i + 1 ?></span>
+                                        <div
+                                            class="w-12 h-10 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 flex items-center justify-center text-purple-400 font-bold text-sm">
+                                            <?= strtoupper(substr($te['event_name'], 0, 2)) ?>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-800">
+                                                <?= htmlspecialchars($te['event_name']) ?>
+                                            </h4>
+                                            <span class="text-[11px] text-gray-400"><?= $te['cnt'] ?> Bookings</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <?php if (empty($topEvents)): ?>
-                            <p class="text-xs text-gray-400 text-center py-4">No events yet</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Booking overwiew -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div
-                    class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-base font-bold text-gray-800">
-                            Booking Overview
-                        </h3>
-
-                        <select id="bookingFilter"
-                            class="border border-gray-200 text-xs px-3 py-1.5 rounded-lg bg-white font-medium text-gray-600 focus:outline-none">
-
-                            <option value="week">This Week</option>
-                            <option value="month">Last Month</option>
-
-                        </select>
-                    </div>
-
-                    <div class="h-64">
-                        <canvas id="bookingOverviewChart"></canvas>
-                    </div>
-
-                </div>
-                <!-- Event status -->
-                <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-base font-bold text-gray-800">Event Status</h3>
-                    </div>
-                    <div class="flex items-center justify-between gap-2 h-full">
-                        <div class="w-1/2 relative flex items-center justify-center">
-                            <canvas id="eventStatusChart"></canvas>
-                            <div class="absolute text-center">
-                                <h4 class="text-2xl font-bold text-gray-800 leading-none"><?= $totalBookings ?>
-                                </h4>
-                                <span
-                                    class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Total</span>
-                            </div>
-                        </div>
-                        <div class="w-1/2 space-y-2.5 text-xs text-gray-600">
-
-                            <div class="flex justify-between items-center">
-                                <span class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
-                                    Pending
-                                </span>
-
-                                <span class="font-semibold text-gray-800 flex items-center gap-1 whitespace-nowrap">
-                                    <span>
-                                        <?= $pending ?>
-                                    </span>
-                                    <span>(
-                                        <?= $totalBookings > 0 ? round($pending / $totalBookings * 100) : 0 ?>%)
-                                    </span>
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between items-center gap-4">
-                                <span class="flex items-center gap-1">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                    Confirmed
-                                </span>
-
-                                <span class="font-semibold text-gray-800 flex items-center whitespace-nowrap">
-                                    <span>
-                                        <?= $confirmed ?>
-                                    </span>
-                                    <span class="ml-0.5">(
-                                        <?= $totalBookings > 0 ? round($confirmed / $totalBookings * 100) : 0 ?>%)
-                                    </span>
-                                </span>
-                            </div>
-                            <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div> -->
+                            <?php endforeach; ?>
+                            <?php if (empty($topEvents)): ?>
+                                <p class="text-xs text-gray-400 text-center py-4">No events yet</p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </main>
+                <!-- Booking overwiew -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div
+                        class="lg:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-bold text-gray-800">
+                                Booking Overview
+                            </h3>
+
+                            <select id="bookingFilter"
+                                class="border border-gray-200 text-xs px-3 py-1.5 rounded-lg bg-white font-medium text-gray-600 focus:outline-none">
+
+                                <option value="week">This Week</option>
+                                <option value="month">Last Month</option>
+
+                            </select>
+                        </div>
+
+                        <div class="h-64">
+                            <canvas id="bookingOverviewChart"></canvas>
+                        </div>
+
+                    </div>
+                    <!-- Event status -->
+                    <div
+                        class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-base font-bold text-gray-800">Event Status</h3>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="w-1/2 h-40 relative flex items-center justify-center mb-16">
+                                <canvas id="eventStatusChart"></canvas>
+                                <div class="absolute text-center">
+                                    <h4 class="text-2xl font-bold text-gray-800 leading-none"><?= $totalBookings ?>
+                                    </h4>
+                                    <span
+                                        class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Total</span>
+                                </div>
+                            </div>
+                            <div class="w-1/2 space-y-4 text-xs text-gray-600 mb-14">
+
+                                <div class="flex justify-between items-center">
+                                    <span class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                                        Pending
+                                    </span>
+
+                                    <span class="font-semibold text-gray-800 flex items-center gap-1 whitespace-nowrap">
+                                        <span>
+                                            <?= $pending ?>
+                                        </span>
+                                        <span>(
+                                            <?= $totalBookings > 0 ? round($pending / $totalBookings * 100) : 0 ?>%)
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="flex justify-between items-center gap-1">
+                                    <span class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                        Confirmed
+                                    </span>
+
+                                    <span class="font-semibold text-gray-800 flex items-center whitespace-nowrap">
+                                        <span>
+                                            <?= $confirmed ?>
+                                        </span>
+                                        <span class="ml-0.5">(
+                                            <?= $totalBookings > 0 ? round($confirmed / $totalBookings * 100) : 0 ?>%)
+                                        </span>
+                                    </span>
+                                </div>
+                                <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
     </div>
 
     <script>
         const thisWeek = <?= json_encode($thisWeekData) ?>;
         const lastWeek = <?= json_encode($lastWeekData) ?>;
-
-        // Line Chart (Booking Overview)
-        const ctxLine = document.getElementById('bookingOverviewChart').getContext('2d');
-        new Chart(ctxLine, {
-            type: 'line',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'This Week',
-                    data: thisWeek,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'transparent',
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointBackgroundColor: '#8b5cf6'
-                },
-                {
-                    label: 'Last Week',
-                    data: lastWeek,
-                    borderColor: '#cbd5e1',
-                    backgroundColor: 'transparent',
-                    tension: 0.4,
-                    borderWidth: 2,
-                    pointBackgroundColor: '#cbd5e1',
-                    borderDash: [5, 5]
-                }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        min: 0,
-                        grid: {
-                            color: '#f1f5f9'
-                        },
-                        ticks: {
-                            stepSize: 1
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
 
         // Donut Chart (Booking Status)
         const ctxDonut = document.getElementById('eventStatusChart').getContext('2d');
@@ -693,211 +476,70 @@ if (isset($_GET['booking_chart'])) {
             }
         });
 
-        (function () {
-            const toggle = document.getElementById('dashNotifBtn');
-            const menu = document.getElementById('dashNotifMenu');
-            const list = document.getElementById('dashNotifList');
-            const badge = document.getElementById('dashNotifBadge');
-            const markAllBtn = document.getElementById('dashMarkAllRead');
-
-            function timeAgo(dateStr) {
-                const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-                if (diff < 60) return 'Just now';
-                if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-                if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-                if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-                return new Date(dateStr).toLocaleDateString();
-            }
-
-            function renderNotifications(data) {
-                if (!data.notifications || data.notifications.length === 0) {
-                    list.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications</div>';
-                } else {
-                    list.innerHTML = data.notifications.map(n => `
-                          <a href="${n.link || 'notifications.php'}"
-                              class="flex items-start gap-3 p-3 hover:bg-gray-50 border-b border-gray-50 transition-all"
-                              data-id="${n.id}">
-                              <div class="w-8 h-8 rounded-full ${n.is_read == 0 ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'} flex items-center justify-center flex-shrink-0">
-                                  <i class="fa-solid fa-bell text-xs"></i>
-                              </div>
-                              <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-medium text-gray-800 truncate">${n.title}</p>
-                                  <p class="text-xs text-gray-500 truncate">${n.message}</p>
-                                  <p class="text-xs text-gray-400 mt-0.5">${timeAgo(n.created_at)}</p>
-                              </div>
-                              ${n.is_read == 0 ? '<span class="w-2 h-2 rounded-full bg-purple-brand flex-shrink-0 mt-2"></span>' : ''}
-                          </a>
-                      `).join('');
-
-                    list.querySelectorAll('[data-id]').forEach(el => {
-                        el.addEventListener('click', function (e) {
-                            const id = this.dataset.id;
-                            fetch('../api/admin_notifications.php?action=mark_read', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                body: 'id=' + id
-                            });
-                        });
-                    });
-                }
-                if (data.unread > 0) {
-                    badge.textContent = data.unread > 99 ? '99+' : data.unread;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-
-            function fetchNotifications() {
-                fetch('../api/admin_notifications.php?action=fetch&limit=8')
-                    .then(r => r.json())
-                    .then(renderNotifications)
-                    .catch(() => { });
-            }
-
-            function fetchUnreadCount() {
-                fetch('../api/admin_notifications.php?action=unread_count')
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.unread > 0) {
-                            badge.textContent = data.unread > 99 ? '99+' : data.unread;
-                            badge.classList.remove('hidden');
-                        } else {
-                            badge.classList.add('hidden');
-                        }
-                    })
-                    .catch(() => { });
-            }
-
-            if (toggle && menu) {
-                toggle.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const isHidden = menu.classList.contains('hidden');
-                    menu.classList.toggle('hidden');
-                    if (isHidden) fetchNotifications();
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
-                        menu.classList.add('hidden');
-                    }
-                });
-
-                menu.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                });
-            }
-
-            if (markAllBtn) {
-                markAllBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    fetch('../api/admin_notifications.php?action=mark_all_read', { method: 'POST' })
-                        .then(() => fetchNotifications());
-                });
-            }
-
-            fetchUnreadCount();
-            setInterval(fetchUnreadCount, 30000);
-        })();
-
-        const profileBtn = document.getElementById('profileBtn');
-        const profileDropdown = document.getElementById('profileDropdown');
-
-        if (profileBtn) {
-            profileBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                profileDropdown.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', function () {
-                if (!profileDropdown.classList.contains('hidden')) {
-                    profileDropdown.classList.add('hidden');
-                }
-            });
-
-            profileDropdown.addEventListener('click', function (e) {
-                e.stopPropagation();
-            });
-        }
-
-        const adminToggle = document.getElementById('adminThemeToggle');
-        if (adminToggle) {
-            const moon = adminToggle.querySelector('.theme-moon');
-            const sun = adminToggle.querySelector('.theme-sun');
-            const updateIcon = () => {
-                const isDark = document.documentElement.classList.contains('dark');
-                moon.classList.toggle('hidden', isDark);
-                sun.classList.toggle('hidden', !isDark);
-            };
-            updateIcon();
-            adminToggle.addEventListener('click', function () {
-                const html = document.documentElement;
-                const isDark = html.classList.toggle('dark');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                updateIcon();
-            });
-        }
-
-
         let bookingChart;
 
-
         function loadBookingChart(type = "week") {
+            if (bookingChart) {
+                bookingChart.destroy();
+            }
 
-            fetch("dashboard.php?booking_chart=1&type=" + type)
+            const datasets = [{
+                label: 'This Week',
+                data: thisWeek,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139,92,246,0.08)',
+                tension: 0.4,
+                borderWidth: 0.5,
+                pointBackgroundColor: '#8b5cf6',
+                fill: true
+            }];
 
-                .then(response => response.json())
+            if (type === "week") {
+                datasets.push({
+                    label: 'Last Week',
+                    data: lastWeek,
+                    borderColor: '#cbd5e1',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    borderWidth: 0.5,
+                    pointBackgroundColor: '#cbd5e1',
+                    borderDash: [5, 5]
+                });
+            }
 
-                .then(data => {
-
-
-                    if (bookingChart) {
-                        bookingChart.destroy();
-                    }
-
-
-                    bookingChart = new Chart(
-                        document.getElementById("bookingOverviewChart"),
-                        {
-                            type: "line",
-
-                            data: {
-                                labels: data.labels,
-
-                                datasets: [{
-                                    label: "Bookings",
-                                    data: data.values,
-                                    borderWidth: 2,
-                                    tension: 0.4,
-                                    fill: true
-                                }]
+            bookingChart = new Chart(
+                document.getElementById("bookingOverviewChart"),
+                {
+                    type: "line",
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: type === "week",
+                                position: 'top',
+                                labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                min: 0,
+                                beginAtZero: true,
+                                grid: { color: '#f1f5f9' },
+                                ticks: { stepSize: 1, precision: 0 }
                             },
-
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                },
-
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            precision: 0
-                                        }
-                                    }
-                                }
+                            x: {
+                                grid: { display: false }
                             }
                         }
-                    );
-
-                });
+                    }
+                }
+            );
         }
-
 
         // First load
         loadBookingChart();
@@ -907,9 +549,7 @@ if (isset($_GET['booking_chart'])) {
         document
             .getElementById("bookingFilter")
             .addEventListener("change", function () {
-
                 loadBookingChart(this.value);
-
             });
     </script>
 </body>

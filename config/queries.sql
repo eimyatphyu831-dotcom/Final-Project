@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     phone varchar(25) NOT NULL,
+    registration_reason TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -140,6 +141,9 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     is_read TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migration: Add registration_reason to existing users table
+-- ALTER TABLE users ADD COLUMN registration_reason TEXT DEFAULT NULL;
 
 -- Notifications Table
 CREATE TABLE IF NOT EXISTS notifications (

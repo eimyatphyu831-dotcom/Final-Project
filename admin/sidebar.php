@@ -11,28 +11,19 @@ function activeMenu($page)
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php if (!defined('_SIDEBAR_INCLUDED')): ?>
+<script>
+    (function () {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+</script>
+<?php define('_SIDEBAR_INCLUDED', true); endif; ?>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sidebar</title>
-
-    <script>
-        (function () {
-            const stored = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (stored === 'dark' || (!stored && prefersDark)) {
-                document.documentElement.classList.add('dark');
-            }
-        })();
-    </script>
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <style>
+<style>
         .dark body,
         .dark {
             --admin-bg: #0f0f1a;
@@ -316,12 +307,9 @@ function activeMenu($page)
         .dark img:hover {
             opacity: 1;
         }
-    </style>
-</head>
+</style>
 
-<body>
-
-    <aside class="w-64 bg-sidebar text-gray-500 flex flex-col h-screen fixed left-0 top-0 z-10">
+<aside class="w-64 bg-sidebar text-gray-500 flex flex-col h-screen fixed left-0 top-0 z-10">
 
         <!-- TOP WRAPPER -->
         <div class="flex flex-col flex-1">
@@ -430,7 +418,3 @@ function activeMenu($page)
         </div>
 
     </aside>
-
-</body>
-
-</html>

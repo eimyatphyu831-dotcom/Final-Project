@@ -7,6 +7,21 @@ $stmt->execute();
 $adminImg = $stmt->get_result()->fetch_assoc()['profile_image'] ?? null;
 $stmt->close();
 $adminAvatar = $adminImg ? 'uploads/profile/' . $adminImg : null;
+
+$pageTitles = [
+    'dashboard.php' => ['title' => 'Dashboard', 'subtitle' => 'Welcome back, Admin! Here\'s what\'s happening today.'],
+    'events.php'    => ['title' => 'Events', 'subtitle' => 'Manage your events and schedules.'],
+    'venues.php'    => ['title' => 'Venues', 'subtitle' => 'Manage your event venues.'],
+    'packages.php'  => ['title' => 'Packages', 'subtitle' => 'Manage your service packages.'],
+    'services.php'  => ['title' => 'Services', 'subtitle' => 'Manage your available services.'],
+    'bookings.php'  => ['title' => 'Bookings', 'subtitle' => 'View and manage all bookings.'],
+    'customers.php' => ['title' => 'Customers', 'subtitle' => 'View and manage your customers.'],
+    'contact_messages.php' => ['title' => 'Messages', 'subtitle' => 'View contact messages from customers.'],
+    'profile.php'   => ['title' => 'Profile', 'subtitle' => 'Manage your admin profile.'],
+];
+
+$currentPage = basename($_SERVER['PHP_SELF']);
+$pageInfo = $pageTitles[$currentPage] ?? ['title' => 'Admin', 'subtitle' => ''];
 ?>
 <style>
     .custom-scroll::-webkit-scrollbar {
@@ -32,7 +47,12 @@ $adminAvatar = $adminImg ? 'uploads/profile/' . $adminImg : null;
     }
 </style>
 <header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
-    <div class="flex items-center gap-3 flex-1"></div>
+    <div class="flex items-center gap-3 flex-1">
+        <div>
+            <h1 class="text-xl font-bold text-gray-800 leading-tight"><?= htmlspecialchars($pageInfo['title']) ?></h1>
+            <p class="text-xs text-gray-500 mt-0.5"><?= htmlspecialchars($pageInfo['subtitle']) ?></p>
+        </div>
+    </div>
     <div class="flex items-center gap-6">
         <!-- Notification Bell -->
         <div class="relative" id="adminNotifDropdown">

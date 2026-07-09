@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
+    $registration_reason = trim($_POST['registration_reason'] ?? '');
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm-password'];
     $redirect = $_POST['redirect'] ?? '';
@@ -30,8 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message = "Email already registered!";
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users(name,email,phone,password) VALUES(?,?,?,?)");
-            $stmt->bind_param("ssss", $name, $email, $phone, $hashedPassword);
+            $stmt = $conn->prepare("INSERT INTO users(name,email,phone,registration_reason,password) VALUES(?,?,?,?,?)");
+            $stmt->bind_param("sssss", $name, $email, $phone, $registration_reason, $hashedPassword);
 
             if ($stmt->execute()) {
                 header("Location: login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
@@ -113,6 +114,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="+959..."
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label for="registration_reason" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Why are you registering?</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <textarea id="registration_reason" name="registration_reason" rows="2"
+                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all resize-none"
+                        placeholder="Tell us why you're interested..."></textarea>
                 </div>
             </div>
 
