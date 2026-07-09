@@ -134,7 +134,7 @@ $stmt->close();
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Contact Messages</h2>
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Contact Messages</h2> -->
 
                     <form method="GET" class="flex gap-2">
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"

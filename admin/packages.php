@@ -179,10 +179,10 @@ $pkgColors = [
 
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-8">
-                    <div>
+                    <!-- <div>
                         <h2 class="text-2xl font-bold text-gray-800">Packages</h2>
                         <p class="text-sm text-gray-500 mt-1">Manage your service packages and pricing</p>
-                    </div>
+                    </div> -->
                     <a href="packages.php?action=add"
                         class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
                         <i class="fa-solid fa-plus text-xs"></i> Add Package

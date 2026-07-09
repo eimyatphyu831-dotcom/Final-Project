@@ -104,6 +104,18 @@ for ($i = 6; $i >= 0; $i--) {
     $lastWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$lw'")->fetch_assoc()['c'] ?? 0);
 }
 
+// Last month data: daily booking counts for the previous calendar month
+$lastMonthStart = date('Y-m-01', strtotime('first day of last month'));
+$lastMonthEnd = date('Y-m-t', strtotime('first day of last month'));
+$lastMonthLabels = [];
+$lastMonthValues = [];
+$daysInLastMonth = (int) date('t', strtotime('first day of last month'));
+for ($i = 1; $i <= $daysInLastMonth; $i++) {
+    $d = sprintf('%s-%02d', date('Y-m', strtotime('first day of last month')), $i);
+    $lastMonthLabels[] = $i;
+    $lastMonthValues[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$d'")->fetch_assoc()['c'] ?? 0);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -452,6 +464,8 @@ for ($i = 6; $i >= 0; $i--) {
     <script>
         const thisWeek = <?= json_encode($thisWeekData) ?>;
         const lastWeek = <?= json_encode($lastWeekData) ?>;
+        const lastMonthLabels = <?= json_encode($lastMonthLabels) ?>;
+        const lastMonthValues = <?= json_encode($lastMonthValues) ?>;
 
         // Donut Chart (Booking Status)
         const ctxDonut = document.getElementById('eventStatusChart').getContext('2d');
@@ -483,19 +497,32 @@ for ($i = 6; $i >= 0; $i--) {
                 bookingChart.destroy();
             }
 
-            const datasets = [{
-                label: 'This Week',
-                data: thisWeek,
-                borderColor: '#8b5cf6',
-                backgroundColor: 'rgba(139,92,246,0.08)',
-                tension: 0.4,
-                borderWidth: 0.5,
-                pointBackgroundColor: '#8b5cf6',
-                fill: true
-            }];
+            let labels, datasets;
 
-            if (type === "week") {
-                datasets.push({
+            if (type === "month") {
+                labels = lastMonthLabels.map(d => 'Day ' + d);
+                datasets = [{
+                    label: 'Last Month',
+                    data: lastMonthValues,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139,92,246,0.08)',
+                    tension: 0.4,
+                    borderWidth: 0.5,
+                    pointBackgroundColor: '#8b5cf6',
+                    fill: true
+                }];
+            } else {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                datasets = [{
+                    label: 'This Week',
+                    data: thisWeek,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139,92,246,0.08)',
+                    tension: 0.4,
+                    borderWidth: 0.5,
+                    pointBackgroundColor: '#8b5cf6',
+                    fill: true
+                }, {
                     label: 'Last Week',
                     data: lastWeek,
                     borderColor: '#cbd5e1',
@@ -504,7 +531,7 @@ for ($i = 6; $i >= 0; $i--) {
                     borderWidth: 0.5,
                     pointBackgroundColor: '#cbd5e1',
                     borderDash: [5, 5]
-                });
+                }];
             }
 
             bookingChart = new Chart(
@@ -512,7 +539,7 @@ for ($i = 6; $i >= 0; $i--) {
                 {
                     type: "line",
                     data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        labels: labels,
                         datasets: datasets
                     },
                     options: {
@@ -520,7 +547,7 @@ for ($i = 6; $i >= 0; $i--) {
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: type === "week",
+                                display: type !== "month",
                                 position: 'top',
                                 labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } }
                             }

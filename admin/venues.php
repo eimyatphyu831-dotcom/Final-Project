@@ -186,10 +186,11 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Venues</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Venues</h2> -->
+                     <div class="flex">
                     <div class="flex gap-3">
                         <a href="venues.php?action=add<?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
                             class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">+ Add Venue</a>
@@ -211,12 +212,13 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                     </div> -->
                     <div>
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search venue..." class="px-4 py-2.5 border rounded-xl w-64" onchange="this.form.submit()">
+                            placeholder="Search venue..." class="px-4 py-2.5 border rounded-xl w-64 mt-4" onchange="this.form.submit()">
                     </div>
                     <?php if ($filterEventId > 0): ?>
                         <a href="venues.php" class="text-sm text-purple-600 hover:underline self-center">Clear filter</a>
                     <?php endif; ?>
                 </form>
+                </div>
 
             <!-- Table -->
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">

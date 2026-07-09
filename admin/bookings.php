@@ -125,7 +125,7 @@ if (empty($bookings)) {
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Bookings</h2>
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Bookings</h2> -->
 
                     <div class="flex items-center gap-3">
                         <?php if ($message): ?>

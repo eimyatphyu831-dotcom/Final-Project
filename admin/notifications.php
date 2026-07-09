@@ -75,7 +75,7 @@ $stmt->close();
             <?php include 'admin_header.php'; ?>
             <main class="flex-1 p-8 overflow-y-auto">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Notifications</h2>
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Notifications</h2> -->
                     <button id="clearAllBtn"
                         class="text-sm text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
                         Clear all

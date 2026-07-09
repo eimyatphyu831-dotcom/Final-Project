@@ -283,10 +283,11 @@ if ($vResult)
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Events</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Events</h2> -->
+                    <div class="flex">
                     <div class="flex gap-3">
                         <a href="events.php?action=add"
                             class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">
@@ -297,9 +298,10 @@ if ($vResult)
 
                 <form method="GET" class="mb-6">
                     <input type="text" name="search" value="<?= htmlspecialchars($searchEvent) ?>"
-                        placeholder="Search events..." class="px-4 py-2.5 border rounded-xl w-64"
+                        placeholder="Search events..." class="px-4 py-2.5 border rounded-xl w-64 mt-3"
                         onchange="this.form.submit()">
                 </form>
+                </div>
 
                 <!-- Table -->
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">

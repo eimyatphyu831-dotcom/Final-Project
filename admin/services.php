@@ -138,7 +138,7 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Services</h2>
+                    <!-- <h2 class="text-2xl font-bold text-gray-800">Services</h2> -->
                     <div class="flex gap-3">
                         <a href="services.php?action=add"
                             class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">+ Add Service</a>

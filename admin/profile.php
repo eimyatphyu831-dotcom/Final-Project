@@ -163,10 +163,10 @@ $avatar = $admin['profile_image']
 
             <main class="flex-1 p-8 overflow-y-auto">
 
-                <div class="mb-6">
+                <!-- <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">My Profile</h2>
                     <p class="text-sm text-gray-500 mt-1">Manage your admin account and profile image</p>
-                </div>
+                </div> -->
 
                 <?php if ($message): ?>
                     <div class="bg-green-100 text-green-700 px-4 py-3 rounded-xl text-sm mb-4 border border-green-200">
