@@ -188,36 +188,23 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
             <main class="flex-1 p-6 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-4">
-                    <!-- <h2 class="text-2xl font-bold text-gray-800">Venues</h2> -->
-                     <div class="flex">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <form method="GET" class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search venues..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white"
+                            onchange="this.form.submit()">
+                        <?php if ($filterEventId > 0): ?>
+                            <input type="hidden" name="event_id" value="<?= $filterEventId ?>">
+                        <?php endif; ?>
+                    </form>
                     <div class="flex gap-3">
                         <a href="venues.php?action=add<?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
-                            class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">+ Add Venue</a>
+                            class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
+                            <i class="fa-solid fa-plus text-xs"></i> Add Venue
+                        </a>
                     </div>
-                </div>
-
-                <form method="GET" class="mb-6 flex gap-4 items-end">
-                    <!-- <div>
-                        <label class="block text-sm font-semibold text-gray-600 mb-1">Filter by Event</label>
-                        <select name="event_id" onchange="this.form.submit()"
-                            class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-white min-w-[220px]">
-                            <option value="0">All Events</option>
-                            <?php foreach ($eventsList as $ev): ?>
-                                <option value="<?= $ev['id'] ?>" <?= $filterEventId === (int)$ev['id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($ev['event_name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div> -->
-                    <div>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search venue..." class="px-4 py-2.5 border rounded-xl w-64 mt-4" onchange="this.form.submit()">
-                    </div>
-                    <?php if ($filterEventId > 0): ?>
-                        <a href="venues.php" class="text-sm text-purple-600 hover:underline self-center">Clear filter</a>
-                    <?php endif; ?>
-                </form>
                 </div>
 
             <!-- Table -->

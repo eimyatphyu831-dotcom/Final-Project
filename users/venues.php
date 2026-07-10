@@ -19,19 +19,29 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
     <?php include '../includes/header.php'; ?>
     <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
     <section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-7xl mx-auto">
+            <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 
-            <!-- Left-aligned Section Header matching image_cd21e4.jpg -->
-            <div class="flex justify-between">
-                <div class="mb-10 pl-2">
-                    <h2 class="text-3xl font-bold text-brand-600 tracking-tight font-sans-serif">Exclusive Venues</h2>
+                <!-- Center Title + Description -->
+                <div class="absolute left-1/2 -translate-x-1/2 text-center w-full">
+                    <h2 class="text-3xl font-bold text-brand-600 tracking-tight">
+                        Exclusive Venues
+                    </h2>
+
+                    <p class="text-md text-slate-500 mt-3 max-w-xl mx-auto leading-relaxed">
+                        Discover our handpicked collection of elegant venues, each designed
+                        to create the perfect atmosphere.
+                    </p>
                 </div>
-                <div class="mb-10 pl-2">
-                    <a href="viewvenues.php"
-                        class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition">
-                        View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </a>
-                </div>
+
+
+                <!-- Right View All -->
+                <a href="viewvenues.php"
+                    class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+                    View All
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+
             </div>
 
             <!-- Venue Card Stack Container -->

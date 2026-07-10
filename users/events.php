@@ -16,17 +16,23 @@ $badges = [
 <?php include '../includes/header.php'; ?>
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
-        <div>
-            <h2 class="text-3xl font-sans-serif font-bold text-brand-600">Featured Events</h2>
-            <p class="text-md text-slate-500 mt-2 max-w-xl">Witness the excellence of our past projects and get inspired
-                for your next big occasion.</p>
+    <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
+
+        <!-- Center Title + Paragraph -->
+        <div class="absolute left-1/2 -translate-x-1/2 text-center">
+            <h2 class="text-3xl font-bold text-brand-600">Featured Events</h2>
+            <p class="text-md text-slate-500 mt-2 max-w-xl mx-auto">
+                Witness the excellence of our past projects and get inspired
+                for your next big occasion.
+            </p>
         </div>
+
+        <!-- Right Side View All -->
         <a href="viewevents.php"
-            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition">
+            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
             View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
     </div>
@@ -63,7 +69,7 @@ $badges = [
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm">
+                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
                         View Details
                     </a>
 

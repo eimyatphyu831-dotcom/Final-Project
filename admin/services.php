@@ -137,11 +137,17 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
 
             <main class="flex-1 p-8 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-6">
-                    <!-- <h2 class="text-2xl font-bold text-gray-800">Services</h2> -->
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="serviceSearch" placeholder="Search services..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <div class="flex gap-3">
                         <a href="services.php?action=add"
-                            class="bg-purple-600 text-white px-5 py-2 rounded-xl hover:bg-purple-700">+ Add Service</a>
+                            class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
+                            <i class="fa-solid fa-plus text-xs"></i> Add Service
+                        </a>
                     </div>
                 </div>
 
@@ -238,6 +244,14 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                             if (m) m.classList.remove('hidden');
                         });
                     <?php endif; ?>
+
+                    document.getElementById('serviceSearch').addEventListener('input', function () {
+                        const q = this.value.toLowerCase();
+                        document.querySelectorAll('tbody tr').forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(q) ? '' : 'none';
+                        });
+                    });
                 </script>
 
             </main>

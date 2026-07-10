@@ -74,8 +74,12 @@ $stmt->close();
         <div class="flex-1 flex flex-col ml-64">
             <?php include 'admin_header.php'; ?>
             <main class="flex-1 p-8 overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <!-- <h2 class="text-2xl font-bold text-gray-800">Notifications</h2> -->
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="notifSearch" placeholder="Search notifications..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <button id="clearAllBtn"
                         class="text-sm text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
                         Clear all
@@ -121,6 +125,14 @@ $stmt->close();
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('notifSearch').addEventListener('input', function () {
+                const q = this.value.toLowerCase();
+                document.querySelectorAll('.notif-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+
             document.querySelectorAll('.notif-item').forEach(el => {
                 el.addEventListener('click', function () {
                     const link = this.dataset.link;

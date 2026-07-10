@@ -178,11 +178,12 @@ $pkgColors = [
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <!-- Header -->
-                <div class="flex justify-between items-center mb-8">
-                    <!-- <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Packages</h2>
-                        <p class="text-sm text-gray-500 mt-1">Manage your service packages and pricing</p>
-                    </div> -->
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="packageSearch" placeholder="Search packages..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <a href="packages.php?action=add"
                         class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
                         <i class="fa-solid fa-plus text-xs"></i> Add Package
@@ -499,6 +500,14 @@ $pkgColors = [
 
                 <script>
                     function closeModal() { window.location.href = 'packages.php'; }
+
+                    document.getElementById('packageSearch').addEventListener('input', function () {
+                        const q = this.value.toLowerCase();
+                        document.querySelectorAll('.pkg-card').forEach(card => {
+                            const text = card.textContent.toLowerCase();
+                            card.style.display = text.includes(q) ? '' : 'none';
+                        });
+                    });
                 </script>
             </main>
         </div>

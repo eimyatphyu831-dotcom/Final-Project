@@ -16,7 +16,7 @@ $username = $_SESSION['user_name'] ?? '';
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -51,7 +51,12 @@ $username = $_SESSION['user_name'] ?? '';
             font-family: 'Poppins', sans-serif;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Playfair Display', serif;
         }
     </style>
@@ -62,12 +67,12 @@ $username = $_SESSION['user_name'] ?? '';
     $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
     $navGroups = [
-        'index.php'       => ['index.php'],
-        'events.php'      => ['events.php', 'viewevents.php', 'viewdetails.php'],
-        'services.php'    => ['services.php'],
-        'venues.php'      => ['venues.php', 'viewvenues.php'],
-        'about.php'       => ['about.php'],
-        'contact.php'     => ['contact.php'],
+        'index.php' => ['index.php'],
+        'events.php' => ['events.php', 'viewevents.php', 'viewdetails.php'],
+        'services.php' => ['services.php'],
+        'venues.php' => ['venues.php', 'viewvenues.php'],
+        'about.php' => ['about.php'],
+        'contact.php' => ['contact.php'],
     ];
 
     function navLinkClass($navPage, $currentPage, $navGroups)
@@ -95,7 +100,8 @@ $username = $_SESSION['user_name'] ?? '';
 
                 <nav class="flex items-center gap-8 text-md font-medium text-brand-900">
 
-                    <a href="../users/index.php" class="<?= navLinkClass('index.php', $currentPage, $navGroups) ?>">Home</a>
+                    <a href="../users/index.php"
+                        class="<?= navLinkClass('index.php', $currentPage, $navGroups) ?>">Home</a>
 
                     <div class="relative group">
                         <a href="../users/events.php"
@@ -128,11 +134,14 @@ $username = $_SESSION['user_name'] ?? '';
                     <a href="../users/services.php"
                         class="<?= navLinkClass('services.php', $currentPage, $navGroups) ?>">Services</a>
 
-                    <a href="../users/venues.php" class="<?= navLinkClass('venues.php', $currentPage, $navGroups) ?>">Venues</a>
+                    <a href="../users/venues.php"
+                        class="<?= navLinkClass('venues.php', $currentPage, $navGroups) ?>">Venues</a>
 
-                    <a href="../users/about.php" class="<?= navLinkClass('about.php', $currentPage, $navGroups) ?>">About</a>
+                    <a href="../users/about.php"
+                        class="<?= navLinkClass('about.php', $currentPage, $navGroups) ?>">About</a>
 
-                    <a href="../users/contact.php" class="<?= navLinkClass('contact.php', $currentPage, $navGroups) ?>">Contact</a>
+                    <a href="../users/contact.php"
+                        class="<?= navLinkClass('contact.php', $currentPage, $navGroups) ?>">Contact</a>
 
                 </nav>
 
@@ -185,131 +194,6 @@ $username = $_SESSION['user_name'] ?? '';
                             </div>
                         </div>
                     </div>
-
-                    <script>
-                            (function () {
-                                const toggle = document.getElementById('notifToggle');
-                                const menu = document.getElementById('notifMenu');
-                                const list = document.getElementById('notifList');
-                                const badge = document.getElementById('notifBadge');
-                                const markAllBtn = document.getElementById('markAllRead');
-                                let pollInterval = null;
-
-                                function timeAgo(dateStr) {
-                                    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-                                    if (diff < 60) return 'Just now';
-                                    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-                                    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-                                    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
-                                    return new Date(dateStr).toLocaleDateString();
-                                }
-
-                                function renderNotifications(data) {
-                                    if (!data.notifications || data.notifications.length === 0) {
-                                        list.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications yet</div>';
-                                    } else {
-                                        list.innerHTML = data.notifications.map(n => `
-                                    <div class="px-4 py-3 hover:bg-brand-50 transition cursor-pointer ${n.is_read == 0 ? 'bg-brand-50/50' : ''}"
-                                         data-id="${n.id}" data-link="${n.link || ''}">
-                                        <div class="flex items-start gap-3">
-                                            <div class="mt-0.5 shrink-0">
-                                                ${n.is_read == 0
-                                            ? '<span class="block w-2 h-2 rounded-full bg-brand-600"></span>'
-                                            : '<span class="block w-2 h-2 rounded-full bg-gray-200"></span>'}
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-brand-900 leading-tight">${n.title}</p>
-                                                <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">${n.message}</p>
-                                                <p class="text-[11px] text-gray-400 mt-1">${timeAgo(n.created_at)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('');
-
-                                        list.querySelectorAll('[data-id]').forEach(el => {
-                                            el.addEventListener('click', function () {
-                                                const id = this.dataset.id;
-                                                const link = this.dataset.link;
-                                                fetch('../api/notifications.php?action=mark_read', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                                                    body: 'id=' + id
-                                                }).then(() => {
-                                                    if (link) window.location.href = link;
-                                                    else fetchNotifications();
-                                                });
-                                            });
-                                        });
-                                    }
-                                    // Update badge
-                                    if (data.unread > 0) {
-                                        badge.textContent = data.unread > 99 ? '99+' : data.unread;
-                                        badge.classList.remove('hidden');
-                                    } else {
-                                        badge.classList.add('hidden');
-                                    }
-                                }
-
-                                function fetchNotifications() {
-                                    fetch('../api/notifications.php?action=fetch&limit=8')
-                                        .then(r => r.json())
-                                        .then(renderNotifications)
-                                        .catch(() => { });
-                                }
-
-                                function fetchUnreadCount() {
-                                    fetch('../api/notifications.php?action=unread_count')
-                                        .then(r => r.json())
-                                        .then(data => {
-                                            if (data.unread > 0) {
-                                                badge.textContent = data.unread > 99 ? '99+' : data.unread;
-                                                badge.classList.remove('hidden');
-                                            } else {
-                                                badge.classList.add('hidden');
-                                            }
-                                        })
-                                        .catch(() => { });
-                                }
-
-                                // Toggle dropdown
-                                if (toggle && menu) {
-                                    toggle.addEventListener('click', function (e) {
-                                        e.stopPropagation();
-                                        const isHidden = menu.classList.contains('hidden');
-                                        menu.classList.toggle('hidden');
-                                        menu.classList.toggle('opacity-0');
-                                        menu.classList.toggle('scale-95');
-                                        if (isHidden) fetchNotifications();
-                                    });
-
-                                    document.addEventListener('click', function (e) {
-                                        if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
-                                            menu.classList.add('hidden');
-                                            menu.classList.add('opacity-0');
-                                            menu.classList.add('scale-95');
-                                        }
-                                    });
-                                }
-
-                                // Mark all read
-                                if (markAllBtn) {
-                                    markAllBtn.addEventListener('click', function (e) {
-                                        e.stopPropagation();
-                                        fetch('../api/notifications.php?action=mark_all_read', { method: 'POST' })
-                                            .then(() => fetchNotifications());
-                                    });
-                                }
-
-                                // Poll every 30 seconds
-                                fetchUnreadCount();
-                                pollInterval = setInterval(function() {
-                                    fetchUnreadCount();
-                                    if (!menu.classList.contains('hidden')) {
-                                        fetchNotifications();
-                                    }
-                                }, 30000);
-                            })();
-                    </script>
 
                     <div class="relative" id="userDropdown">
                         <button id="dropdownToggle"
@@ -373,46 +257,14 @@ $username = $_SESSION['user_name'] ?? '';
                         </div>
                     </div>
 
-                    <script>
-                        (function () {
-                            const toggle = document.getElementById('dropdownToggle');
-                            const menu = document.getElementById('dropdownMenu');
-                            const arrow = document.getElementById('dropdownArrow');
-
-                            if (!toggle || !menu) return;
-
-                            toggle.addEventListener('click', function (e) {
-                                e.stopPropagation();
-                                const isHidden = menu.classList.contains('hidden');
-                                menu.classList.toggle('hidden');
-                                menu.classList.toggle('opacity-0');
-                                menu.classList.toggle('scale-95');
-                                if (arrow) {
-                                    arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-                                }
-                            });
-
-                            document.addEventListener('click', function (e) {
-                                if (!menu.classList.contains('hidden')) {
-                                    menu.classList.add('hidden');
-                                    menu.classList.add('opacity-0');
-                                    menu.classList.add('scale-95');
-                                    if (arrow) {
-                                        arrow.style.transform = 'rotate(0deg)';
-                                    }
-                                }
-                            });
-                        })();
-                    </script>
-
                 <?php else: ?>
 
-                    <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition">
+                    <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition font-medium">
                         Sign In
                     </a>
 
                     <a href="../auth/register.php"
-                        class="bg-brand-200 hover:bg-brand-900 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">
+                        class="bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">
                         Get Started
                     </a>
 
@@ -422,8 +274,162 @@ $username = $_SESSION['user_name'] ?? '';
         </div>
     </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
     <script>
+
+
+            (function () {
+                const toggle = document.getElementById('notifToggle');
+                const menu = document.getElementById('notifMenu');
+                const list = document.getElementById('notifList');
+                const badge = document.getElementById('notifBadge');
+                const markAllBtn = document.getElementById('markAllRead');
+                let pollInterval = null;
+
+                function timeAgo(dateStr) {
+                    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+                    if (diff < 60) return 'Just now';
+                    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+                    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+                    if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+                    return new Date(dateStr).toLocaleDateString();
+                }
+
+                function renderNotifications(data) {
+                    if (!data.notifications || data.notifications.length === 0) {
+                        list.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications yet</div>';
+                    } else {
+                        list.innerHTML = data.notifications.map(n => `
+                                    <div class="px-4 py-3 hover:bg-brand-50 transition cursor-pointer ${n.is_read == 0 ? 'bg-brand-50/50' : ''}"
+                                         data-id="${n.id}" data-link="${n.link || ''}">
+                                        <div class="flex items-start gap-3">
+                                            <div class="mt-0.5 shrink-0">
+                                                ${n.is_read == 0
+                                ? '<span class="block w-2 h-2 rounded-full bg-brand-600"></span>'
+                                : '<span class="block w-2 h-2 rounded-full bg-gray-200"></span>'}
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-brand-900 leading-tight">${n.title}</p>
+                                                <p class="text-xs text-gray-500 mt-0.5 line-clamp-2">${n.message}</p>
+                                                <p class="text-[11px] text-gray-400 mt-1">${timeAgo(n.created_at)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('');
+
+                        list.querySelectorAll('[data-id]').forEach(el => {
+                            el.addEventListener('click', function () {
+                                const id = this.dataset.id;
+                                const link = this.dataset.link;
+                                fetch('../api/notifications.php?action=mark_read', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                    body: 'id=' + id
+                                }).then(() => {
+                                    if (link) window.location.href = link;
+                                    else fetchNotifications();
+                                });
+                            });
+                        });
+                    }
+                    // Update badge
+                    if (data.unread > 0) {
+                        badge.textContent = data.unread > 99 ? '99+' : data.unread;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+
+                function fetchNotifications() {
+                    fetch('../api/notifications.php?action=fetch&limit=8')
+                        .then(r => r.json())
+                        .then(renderNotifications)
+                        .catch(() => { });
+                }
+
+                function fetchUnreadCount() {
+                    fetch('../api/notifications.php?action=unread_count')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.unread > 0) {
+                                badge.textContent = data.unread > 99 ? '99+' : data.unread;
+                                badge.classList.remove('hidden');
+                            } else {
+                                badge.classList.add('hidden');
+                            }
+                        })
+                        .catch(() => { });
+                }
+
+                // Toggle dropdown
+                if (toggle && menu) {
+                    toggle.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const isHidden = menu.classList.contains('hidden');
+                        menu.classList.toggle('hidden');
+                        menu.classList.toggle('opacity-0');
+                        menu.classList.toggle('scale-95');
+                        if (isHidden) fetchNotifications();
+                    });
+
+                    document.addEventListener('click', function (e) {
+                        if (!menu.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+                            menu.classList.add('hidden');
+                            menu.classList.add('opacity-0');
+                            menu.classList.add('scale-95');
+                        }
+                    });
+                }
+
+                // Mark all read
+                if (markAllBtn) {
+                    markAllBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        fetch('../api/notifications.php?action=mark_all_read', { method: 'POST' })
+                            .then(() => fetchNotifications());
+                    });
+                }
+
+                // Poll every 30 seconds
+                fetchUnreadCount();
+                pollInterval = setInterval(function () {
+                    fetchUnreadCount();
+                    if (!menu.classList.contains('hidden')) {
+                        fetchNotifications();
+                    }
+                }, 30000);
+            })();
+        (function () {
+            const toggle = document.getElementById('dropdownToggle');
+            const menu = document.getElementById('dropdownMenu');
+            const arrow = document.getElementById('dropdownArrow');
+
+            if (!toggle || !menu) return;
+
+            toggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const isHidden = menu.classList.contains('hidden');
+                menu.classList.toggle('hidden');
+                menu.classList.toggle('opacity-0');
+                menu.classList.toggle('scale-95');
+                if (arrow) {
+                    arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                    menu.classList.add('opacity-0');
+                    menu.classList.add('scale-95');
+                    if (arrow) {
+                        arrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+        })();
+
         function renderLucideIcons() {
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
                 try {

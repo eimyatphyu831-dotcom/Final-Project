@@ -133,16 +133,12 @@ $stmt->close();
 
             <main class="flex-1 p-8 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-6">
-                    <!-- <h2 class="text-2xl font-bold text-gray-800">Contact Messages</h2> -->
-
-                    <form method="GET" class="flex gap-2">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <form method="GET" class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search name, email or message..." class="px-4 py-2 border rounded-xl w-64">
-
-                        <button class="bg-purple-600 text-white px-4 py-2 rounded-xl">
-                            Search
-                        </button>
+                            placeholder="Search messages..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                     </form>
                 </div>
 

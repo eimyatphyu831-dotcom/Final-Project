@@ -79,7 +79,7 @@ foreach ($venues as $v) {
 <section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
         <div class="mb-10 pl-2">
-            <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Explore Venues</h2>
+            <h2 class="text-3xl font-extrabold text-brand-600 tracking-tight">Explore Venues</h2>
             <p class="text-slate-500 mt-1">Browse and filter venues by capacity and location</p>
         </div>
 
@@ -97,18 +97,18 @@ foreach ($venues as $v) {
         <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             <?php foreach ($venues as $v): ?>
                 <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>')"
-                    class="venue-card cursor-pointer bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200"
+                    class="venue-card cursor-pointer bg-white rounded-[2rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200"
                     data-name="<?= htmlspecialchars($v['name']) ?>">
-                    <div class="w-full h-[240px] relative rounded-2xl overflow-hidden">
+                    <div class="w-full h-[240px] relative rounded-t-2xl overflow-hidden">
                         <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                             alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
                     </div>
-                    <div class="pt-5 flex-1 flex flex-col justify-center">
-                        <h3 class="text-2xl font-extrabold text-slate-800 mb-2"><?= htmlspecialchars($v['name']) ?></h3>
+                    <div class="px-4 pt-2 flex-1 flex flex-col justify-center">
+                        <h3 class="text-2xl font-extrabold text-brand-900 mb-2"><?= htmlspecialchars($v['name']) ?></h3>
                         <?php if (!empty($v['event_name'])): ?>
-                            <div class="flex py-2 w-full mt-2">
+                            <div class="flex py-2 w-full">
                                 <span
-                                    class="block w-max px-3 py-1 text-xs text-center font-semibold rounded-lg bg-purple-100 text-purple-700">
+                                    class="block w-max px-3 py-1 text-xs text-center font-semibold rounded-lg bg-purple-400 text-white">
                                     <?= htmlspecialchars($v['event_name']) ?>
                                 </span>
                             </div>

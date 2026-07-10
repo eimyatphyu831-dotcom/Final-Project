@@ -11,15 +11,6 @@ $allevents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 // Get venues with event name
 $vResult = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY v.name ASC LIMIT 2");
 $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
-
-// if (empty($venues)) {
-//     $venues = [
-//         ['name' => 'Grand Ballroom', 'address' => 'Downtown NYC', 'capacity' => 1000, 'price' => 200000.00, 'image_path' => '../assets/images/venue1.png', 'event_name' => ''],
-//         ['name' => 'Lakeside Pavilion', 'address' => 'Hudson Valley', 'capacity' => 350, 'price' => 150000.00, 'image_path' => '../assets/images/venue2.png', 'event_name' => ''],
-//     ];
-// }
-
-// change color on event_type
 $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
@@ -80,13 +71,13 @@ if (isset($_SESSION['success'])) {
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#fafafa]/40 z-10"></div>
 
     <!-- Hero Content -->
-    <div class="relative max-w-3xl mx-auto z-20 -mt-10 md:-mt-18">
+    <div class="relative max-w-3xl mx-auto z-20 space-y-8">
 
         <!-- <div class="inline-block bg-brand-600 text-brand-900 px-4 py-1 rounded-full text-label-sm mb-6 animate-pulse">
                 Event Solutions
             </div> -->
 
-        <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight">
             Plan Your Perfect
             <span
                 class="text-[2.3rem] md:text-[3.7rem] font-extrabold bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(168,85,247,0.45)]">
@@ -95,7 +86,7 @@ if (isset($_SESSION['success'])) {
             with Us
         </h1>
 
-        <p class="text-lg text-white max-w-xl mx-auto mb-9">
+        <p class="text-lg text-white max-w-xl mx-auto">
             From weddings to corporate galas, we craft elegant, seamless,
             and unforgettable experiences tailored just for you.
         </p>
@@ -103,13 +94,17 @@ if (isset($_SESSION['success'])) {
         <div class="flex flex-wrap justify-center gap-4">
 
             <a href="viewevents.php"
-                class="bg-brand-200 hover:bg-brand-900 hover:text-white text-brand-900 px-8 py-3 rounded-full font-semibold transition">
+                class="bg-brand-200 hover:bg-purple-400 text-white text-brand-900 px-8 py-3 rounded-full font-semibold transition border-brand-200">
                 Explore Events
             </a>
 
             <a href="events.php"
-                class="border-2 border-white text-white px-8 py-3 rounded-full hover:bg-white hover:text-black transition">
-                Book Now
+                class="group relative inline-flex items-center justify-center overflow-hidden border-2 border-white text-white px-8 py-3 rounded-full transition">
+
+                <span
+                    class="absolute inset-0 bg-brand-200 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
+
+                <span class="relative z-10">Book Now</span>
             </a>
 
         </div>
@@ -124,14 +119,20 @@ if (isset($_SESSION['success'])) {
 <section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
-        <div>
-            <h2 class="text-3xl font-sans-serif font-bold text-brand-600">Featured Events</h2>
-            <p class="text-md text-slate-500 mt-2 max-w-xl">Witness the excellence of our past projects and get inspired
-                for your next big occasion.</p>
+    <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
+
+        <!-- Center Title + Paragraph -->
+        <div class="absolute left-1/2 -translate-x-1/2 text-center">
+            <h2 class="text-3xl font-bold text-brand-600">Featured Events</h2>
+            <p class="text-md text-slate-500 mt-2 max-w-xl mx-auto">
+                Witness the excellence of our past projects and get inspired
+                for your next big occasion.
+            </p>
         </div>
+
+        <!-- Right Side View All -->
         <a href="viewevents.php"
-            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition">
+            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
             View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
     </div>
@@ -168,7 +169,7 @@ if (isset($_SESSION['success'])) {
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm">
+                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
                         View Details
                     </a>
 
@@ -268,19 +269,29 @@ if (isset($_SESSION['success'])) {
 
 <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
 <section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
+        <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 
-        <!-- Left-aligned Section Header matching image_cd21e4.jpg -->
-        <div class="flex justify-between">
-            <div class="mb-10 pl-2">
-                <h2 class="text-3xl font-bold text-brand-600 tracking-tight font-sans-serif">Exclusive Venues</h2>
+            <!-- Center Title + Description -->
+            <div class="absolute left-1/2 -translate-x-1/2 text-center w-full">
+                <h2 class="text-3xl font-bold text-brand-600 tracking-tight">
+                    Exclusive Venues
+                </h2>
+
+                <p class="text-md text-slate-500 mt-3 max-w-xl mx-auto leading-relaxed">
+                    Discover our handpicked collection of elegant venues, each designed
+                    to create the perfect atmosphere.
+                </p>
             </div>
-            <div class="mb-10 pl-2">
-                <a href="viewvenues.php"
-                    class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition">
-                    View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </a>
-            </div>
+
+
+            <!-- Right View All -->
+            <a href="viewvenues.php"
+                class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+                View All
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+
         </div>
 
         <!-- Venue Card Stack Container -->

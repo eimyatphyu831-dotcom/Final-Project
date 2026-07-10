@@ -155,7 +155,7 @@ foreach ($venues as $v) {
 
             <!-- Decorative background -->
             <div
-                class="absolute -inset-4 bg-gradient-to-r from-purple-200 via-pink-100 to-purple-300 rounded-[40px] blur-2xl opacity-60 group-hover:opacity-90 transition duration-700">
+                class="absolute -inset-4 bg-gradient-to-r from-purple-50 via-pink-100 to-purple-100 rounded-[40px] blur-xl opacity-60 group-hover:opacity-90 transition duration-700">
             </div>
 
             <!-- Main image -->
@@ -166,14 +166,10 @@ foreach ($venues as $v) {
                     class="w-full h-[450px] object-cover transition duration-700 group-hover:scale-110">
 
                 <!-- Dark gradient -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                <!-- <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div> -->
 
                 <!-- Floating Badge -->
-                <div class="absolute top-6 left-6">
-
-
-
-                </div>
+                <div class="absolute top-6 left-6"></div>
 
             </div>
 
@@ -181,7 +177,7 @@ foreach ($venues as $v) {
 
         <!-- Content -->
         <div>
-            <h1 class="text-purple-400 #9d84c7 text-3xl">
+            <h1 class="text-purple-400 #9d84c7 text-4xl font-bold">
                 <?php echo htmlspecialchars($event['event_name']); ?>&nbsp;Event
             </h1>
             <p class="mt-8 text-lg text-gray-600 leading-9">
@@ -192,16 +188,21 @@ foreach ($venues as $v) {
 
 
                 <button type="button" onclick="handleBooking('bookingform.php?event_id=<?php echo $event['id']; ?>')"
-                    class="px-8 py-4 rounded-xl bg-purple-400 text-white font-bold hover:bg-purple-700 transition shadow-xl cursor-pointer">
+                    class="px-8 py-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-purple-700 transition shadow-xl cursor-pointer">
 
                     Book This Event
 
                 </button>
 
                 <a href="events.php"
-                    class="px-8 py-4 rounded-xl border-2 border-purple-300 text-purple-600 font-bold hover:bg-purple-50 transition">
+                    class="group relative inline-flex items-center justify-center overflow-hidden px-8 py-4 rounded-xl border-2 border-purple-300 text-purple-600 font-bold transition">
 
-                    Back to Events
+                    <span
+                        class="absolute inset-0 bg-brand-600 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
+
+                    <span class="relative z-10 group-hover:text-white transition">
+                        Back to Events
+                    </span>
 
                 </a>
 
@@ -302,7 +303,7 @@ foreach ($venues as $v) {
 
 <section id="packagesSection" class="max-w-7xl mx-auto px-6 pb-16 mt-4 hidden">
 
-    <h2 id="selectedVenueTitle" class="text-2xl font-bold mb-8 text-purple-400">
+    <h2 id="selectedVenueTitle" class="text-2xl font-bold mb-8 text-brand-600">
         Available Packages
     </h2>
 

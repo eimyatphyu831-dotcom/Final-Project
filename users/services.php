@@ -2,12 +2,12 @@
 include '../includes/header.php';
 ?>
 <!-- CORE SERVICES / BENEFITS GRID -->
-<section id="services" class="w-full bg-[#f6f3fa] py-20 px-4 sm:px-6 lg:px-8">
+<section id="services" class="w-full bg-[#f6f3fa] py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
         <!-- Centered Header Section matching image_cd171b.png -->
         <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-2xl font-bold text-brand-600 tracking-tight">Our Professional Services</h2>
+            <h2 class="text-3xl font-bold text-brand-600 tracking-tight">Our Professional Services</h2>
             <p class="text-sm text-slate-500 mt-4 leading-relaxed">
                 We provide end-to-end solutions to ensure every aspect of your event is handled with expert care and
                 creative flair.

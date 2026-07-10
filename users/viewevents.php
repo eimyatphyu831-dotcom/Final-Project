@@ -29,7 +29,7 @@ include '../includes/header.php';
 
 <!-- TITLE -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <h2 class="text-3xl font-bold text-slate-800">Explore Events</h2>
+    <h2 class="text-3xl font-bold text-brand-600">Explore Events</h2>
     <p class="text-sm text-slate-500 mt-2">Browse and filter events by category</p>
 </section>
 
@@ -103,11 +103,11 @@ include '../includes/header.php';
 
                     <div class="px-2">
 
-                        <?php if (!empty($event['venue_name'])): ?>
+                        <!-- <?php if (!empty($event['venue_name'])): ?>
                             <p class="text-xs text-purple-500 font-medium mb-2 flex items-center gap-1">
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
-                        <?php endif; ?>
+                        <?php endif; ?> -->
                         <p class="text-sm text-slate-500 mb-6">
                             <?php echo $event['description'] ?>
                         </p>
@@ -116,7 +116,7 @@ include '../includes/header.php';
 
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm">
+                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
                         View Details
                     </a>
 

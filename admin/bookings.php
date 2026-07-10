@@ -124,22 +124,22 @@ if (empty($bookings)) {
 
             <main class="flex-1 p-8 overflow-y-auto">
 
-                <div class="flex justify-between items-center mb-6">
-                    <!-- <h2 class="text-2xl font-bold text-gray-800">Bookings</h2> -->
-
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div class="relative flex-1 max-w-sm">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="bookingSearch" placeholder="Search bookings..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <div class="flex items-center gap-3">
                         <?php if ($message): ?>
                             <span
                                 class="text-sm text-green-600 font-semibold bg-green-50 px-4 py-2 rounded-xl border border-green-200"><?= $message ?></span>
                         <?php endif; ?>
                         <form method="GET">
-                            <select name="status" onchange="this.form.submit()" class="px-4 py-2 rounded-xl border">
-                                <option value="all">All</option>
-                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending
-                                </option>
-                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed
-                                </option>
-                                <!-- <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option> -->
+                            <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                                <option value="all">All Status</option>
+                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending</option>
+                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
                             </select>
                         </form>
                     </div>
@@ -262,6 +262,14 @@ if (empty($bookings)) {
     </div>
 
     <script>
+        document.getElementById('bookingSearch').addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(q) ? '' : 'none';
+            });
+        });
+
         function openReceiptModal(src) {
             const modal = document.getElementById('receiptModal');
             document.getElementById('receiptModalImg').src = src;
