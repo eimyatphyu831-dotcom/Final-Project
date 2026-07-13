@@ -76,20 +76,32 @@ foreach ($venues as $v) {
 ?>
 <?php include '../includes/header.php'; ?>
 
-<section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
+<!-- Explore Venues -->
+<section id="venues" class="w-full bg-purple-50 py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
-        <div class="mb-10 pl-2">
-            <h2 class="text-3xl font-extrabold text-brand-600 tracking-tight">Explore Venues</h2>
-            <p class="text-slate-500 mt-1">Browse and filter venues by capacity and location</p>
+        <div class="mb-10 text-center">
+            <h2 class="text-3xl font-extrabold text-brand-600 tracking-tight">
+                Explore Venues
+            </h2>
+
+            <p class="text-slate-500 mt-2">
+                Browse and filter venues by name
+            </p>
         </div>
 
-        <form class="mb-6 flex flex-col sm:flex-row gap-3" onsubmit="event.preventDefault(); filterVenues();">
+
+        <form class="mb-8 flex justify-center" onsubmit="event.preventDefault(); filterVenues();">
+
             <div
-                class="w-full sm:max-w-sm rounded-full border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-purple-400 flex items-center px-4 py-2">
+                class="w-full sm:max-w-md rounded-full border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-purple-400 flex items-center px-4 py-2">
+
                 <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+
                 <input type="text" id="venueSearch" placeholder="Enter venue name" oninput="filterVenues()"
                     class="w-full bg-transparent text-sm text-slate-700 outline-none">
+
             </div>
+
         </form>
 
         <p id="noVenueMessage" class="hidden mb-6 text-sm text-slate-500">No venues found for your search.</p>
@@ -130,7 +142,9 @@ foreach ($venues as $v) {
     </div>
 </section>
 
-<section id="packagesSection" class="max-w-7xl mx-auto px-6 pb-16 mt-4 hidden">
+
+<!-- Available Packages -->
+<section id="packagesSection" class="max-w-7xl mx-auto px-6 pb-16  hidden bg-purple-50 ">
 
     <h2 id="selectedVenueTitle" class="text-2xl font-bold mb-8 text-purple-400">
         Available Packages
@@ -169,8 +183,6 @@ foreach ($venues as $v) {
 
         </div>
 
-
-
         <!-- Gold -->
         <!-- <div class="bg-white rounded-3xl shadow-md border border-orange-400 p-6 relative flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300"> -->
         <div
@@ -203,10 +215,7 @@ foreach ($venues as $v) {
                 class="mt-6 w-full py-3 rounded-xl bg-orange-400 text-white font-semibold text-sm hover:bg-orange-500 hover:shadow-md transition">
                 Select Package
             </button>
-
         </div>
-
-
 
         <!-- Diamond -->
         <div

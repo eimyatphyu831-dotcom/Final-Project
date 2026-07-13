@@ -11,6 +11,7 @@ $allevents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 // Get venues with event name
 $vResult = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY v.name ASC LIMIT 2");
 $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
+
 $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
@@ -116,7 +117,7 @@ if (isset($_SESSION['success'])) {
 
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#f6f3fa]">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
@@ -268,7 +269,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
-<section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
+<section id="venues" class="w-full py-16 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa]">
     <div class="max-w-7xl mx-auto">
         <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 
@@ -299,7 +300,7 @@ if (isset($_SESSION['success'])) {
             <?php foreach ($venues as $i => $v): ?>
                 <?php $reverse = $i % 2 !== 0; ?>
                 <div
-                    class="bg-[#f3f1f6] rounded-[2rem] overflow-hidden flex flex-col md:flex-row <?= $reverse ? 'md:flex-row-reverse' : '' ?> items-stretch">
+                    class="bg-white rounded-[2rem] overflow-hidden flex flex-col md:flex-row <?= $reverse ? 'md:flex-row-reverse' : '' ?> items-stretch">
                     <div class="w-full md:w-[38%] min-h-[280px] relative">
                         <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                             alt="<?= htmlspecialchars($v['name']) ?>" class="absolute inset-0 w-full h-full object-cover">
@@ -339,7 +340,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- ANALYTICS & STUDIO BIOGRAPHY OVERVIEW (GEOMETRIC TRIPTYCH) -->
-<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#f6f3fa]">
     <div
         class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-12">
 
@@ -411,7 +412,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CONCIERGE BOOKING REQUEST SYSTEM -->
-<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#f6f3fa]">
     <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100">
         <!-- Dynamic Intake Fields -->
         <div class="p-8 md:p-12 flex-1">

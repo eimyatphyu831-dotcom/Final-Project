@@ -27,55 +27,65 @@ $badges = [
 include '../includes/header.php';
 ?>
 
-<!-- TITLE -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <h2 class="text-3xl font-bold text-brand-600">Explore Events</h2>
-    <p class="text-sm text-slate-500 mt-2">Browse and filter events by category</p>
-</section>
+<!-- TITLE + FILTER SECTION -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-purple-50 ">
+    
+    <div class="bg-purple-50 px-6 py-10 shadow-sm  text-center">
 
-<!-- FILTER BUTTONS -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-wrap gap-3">
+        <!-- Title -->
+        <h2 class="text-3xl font-bold text-brand-600">
+            Explore Events
+        </h2>
 
-    <?php
-    function btnClass($filterType, $type)
-    {
-        return $filterType === $type ? 'bg-purple-600 text-white' : 'bg-white border hover:bg-purple-300';
-    }
-    ?>
+        <p class="text-sm text-slate-500 mt-2">
+            Browse and filter events by name
+        </p>
 
-    <button onclick="filterEvents('all')" class="px-4 py-2 text-sm rounded-full <?= btnClass($filterType, 'all') ?>">
-        All
-    </button>
+        <!-- Filter Buttons -->
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
 
-    <button onclick="filterEvents('corporate')"
-        class="px-4 py-2 text-sm rounded-full <?= btnClass($filterType, 'corporate') ?>">
-        Corporate
-    </button>
+            <?php
+            function btnClass($filterType, $type)
+            {
+                return $filterType === $type
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-white border border-purple-200 text-slate-700 hover:bg-purple-100';
+            }
+            ?>
 
-    <button onclick="filterEvents('wedding')"
-        class="px-4 py-2 text-sm rounded-full <?= btnClass($filterType, 'wedding') ?>">
-        Wedding
-    </button>
+            <button onclick="filterEvents('all')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'all') ?>">
+                All
+            </button>
 
-    <button onclick="filterEvents('birthday')"
-        class="px-4 py-2 text-sm rounded-full <?= btnClass($filterType, 'birthday') ?>">
-        Birthday
-    </button>
+            <button onclick="filterEvents('corporate')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'corporate') ?>">
+                Corporate
+            </button>
 
-    <button onclick="filterEvents('music')"
-        class="px-4 py-2 text-sm rounded-full <?= btnClass($filterType, 'music') ?>">
-        Music
-    </button>
+            <button onclick="filterEvents('wedding')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'wedding') ?>">
+                Wedding
+            </button>
 
-    <!-- <button onclick="filterEvents('educational')"
-            class="px-4 py-2 text-sm rounded-full bg-white border hover:bg-purple-300">
-            Educational
-        </button> -->
+            <button onclick="filterEvents('birthday')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'birthday') ?>">
+                Birthday
+            </button>
+
+            <button onclick="filterEvents('music')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'music') ?>">
+                Music
+            </button>
+
+        </div>
+
+    </div>
 
 </section>
 
 <!-- EVENT GRID -->
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 bg-purple-50 ">
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <?php

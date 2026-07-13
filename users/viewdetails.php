@@ -275,23 +275,26 @@ foreach ($venues as $v) {
 
 </section>
 
+<!-- Availble Venues -->
 <section class="max-w-7xl mx-auto px-6 pb-12">
     <h2 class="text-3xl font-bold text-purple-400 mb-8">Available Venues</h2>
     <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <?php foreach ($venues as $v): ?>
             <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>')"
-                class="venue-card cursor-pointer bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
-                <div class="w-full h-[240px] relative rounded-2xl overflow-hidden">
+                class="venue-card cursor-pointer bg-white rounded-[2rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
+                <div class="w-full h-[240px] relative rounded-t-2xl overflow-hidden">
                     <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                         alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
                 </div>
-                <div class="pt-5 flex-1 flex flex-col">
+                <div class="p-4 flex-1 flex flex-col">
                     <h3 class="text-2xl font-extrabold text-slate-800 mb-2"><?= htmlspecialchars($v['name']) ?></h3>
                     <!-- <p class="text-slate-500 text-sm mb-6">Located at <?= htmlspecialchars($v['address']) ?> &mdash;
                         capacity up to <?= number_format($v['capacity']) ?> guests.</p> -->
                     <div class="mt-auto flex items-center gap-4 text-xs text-slate-400 font-medium">
-                        <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                            <?= htmlspecialchars($v['address']) ?></span>
+                        <span class="flex items-center gap-1 whitespace-nowrap">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i>
+                            <?= htmlspecialchars($v['address']) ?>
+                        </span>
                         <span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i>
                             <?= number_format($v['capacity']) ?> </span>
                     </div>
@@ -301,6 +304,8 @@ foreach ($venues as $v) {
     </div>
 </section>
 
+
+<!-- Available Packages -->
 <section id="packagesSection" class="max-w-7xl mx-auto px-6 pb-16 mt-4 hidden">
 
     <h2 id="selectedVenueTitle" class="text-2xl font-bold mb-8 text-brand-600">

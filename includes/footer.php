@@ -1,7 +1,7 @@
     <!-- =========================================================================
          8. GLOBAL FOOTER PLATFORM MAP
          ========================================================================= -->
-    <footer class="bg-white text-slate-400 pt-16 pb-8">
+    <footer class="bg-[#f6f3fa] text-slate-400 pt-16 pb-8 border-t border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div class="col-span-2 md:col-span-1">
                 <div class="flex items-center gap-2 font-bold text-xl text-white mb-4">
@@ -38,14 +38,12 @@
                     <li><a href="#" class="hover:text-brand-700 transition">Cookie Preferences</a></li>
                 </ul>
             </div>
+
+           
         </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-slate-600">
             <p>&copy; 2026 EventPro Inc. All rights reserved.</p>
-            <div class="flex gap-4">
-                <a href="#" class="hover:text-white"><i data-lucide="facebook" class="w-4 h-4"></i></a>
-                <a href="#" class="hover:text-white"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-                <a href="#" class="hover:text-white"><i data-lucide="twitter" class="w-4 h-4"></i></a>
-            </div>
+            
         </div>
     </footer>
 
