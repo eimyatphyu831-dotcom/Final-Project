@@ -201,7 +201,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
             <!-- Header -->
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-10 space-y-6 overflow-y-auto">
+            <main class="flex-1 p-6 space-y-6 overflow-y-auto">
 
                 <div class="flex flex-wrap items-center gap-4">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -223,7 +223,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                             <?php if ($search): ?><input type="hidden" name="search"
                                     value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
                             <button type="submit"
-                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">Go</button>
+                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
                         </form>
                         <div
                             class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-gray-500">
@@ -244,7 +244,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Total Events</p>
-                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalEvents ?></h3>
+                            <p class="text-2xl font-bold text-gray-600"><?= $totalEvents ?></h3>
                         </div>
                     </div>
                     <div
@@ -255,7 +255,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Total Bookings</p>
-                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalBookings ?></h3>
+                            <p class="text-2xl font-bold text-gray-600"><?= $totalBookings ?></h3>
                         </div>
                     </div>
                     <div
@@ -266,7 +266,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Revenue (MMK)</p>
-                            <h3 class="text-2xl font-bold text-gray-800"><?= number_format($totalRevenue) ?></h3>
+                            <p class="text-2xl font-bold text-gray-600"><?= number_format($totalRevenue) ?></h3>
                         </div>
                     </div>
                     <div
@@ -277,7 +277,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Customers</p>
-                            <h3 class="text-2xl font-bold text-gray-800"><?= $totalCustomers ?></h3>
+                            <p class="text-2xl font-bold text-gray-600"><?= $totalCustomers ?></h3>
                         </div>
                     </div>
 

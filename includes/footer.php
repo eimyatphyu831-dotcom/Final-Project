@@ -11,7 +11,7 @@
                 EventPro
             </h3>
 
-            <p class="text-gray-500 leading-4 mb-8">
+            <p class="text-gray-500 text-sm mb-8">
                 We create unforgettable event celebrations and
                 luxury experiences with professional planning
                 and exceptional service.
@@ -25,12 +25,13 @@
         </div>
 
         <!-- Useful Links -->
-        <div>
+        
+        <div class="ml-14">
             <h3 class="text-lg font-bold text-brand-600 mb-4">
                 USEFUL LINKS
             </h3>
 
-            <ul class="space-y-5 text-gray-500 text-md">
+            <ul class="space-y-5 text-gray-500 text-sm">
                 <li>
                     <a href="index.php" class="hover:text-brand-600">Home</a>
                 </li>
@@ -55,9 +56,9 @@
                 CONTACT
             </h3>
 
-            <div class="space-y-6 text-gray-500">
+            <div class="space-y-6 text-gray-500 text-sm">
 
-                <div class="flex gap-3">
+                <div class="flex gap-2">
                     <!-- <i class="fa-solid fa-house text-brand-600 text-lg mt-2"></i> -->
                     <i data-lucide="map-pin" class="w-5 h-5 mt-2 shrink-0 text-brand-600"></i>
                     <p class="leading-8">
@@ -66,15 +67,15 @@
                     </p>
                 </div>
 
-                <div class="flex gap-3">
+                <div class="flex gap-2">
                     <!-- <i class="fa-solid fa-envelope text-brand-600 text-lg mt-1"></i> -->
-                    <i data-lucide="mail" class="w-5 h-5 mt-1 shrink-0 text-brand-600"></i>
+                    <i data-lucide="mail" class="w-5 h-5  shrink-0 text-brand-600"></i>
                     <p>eventpro@gmail.com</p>
                 </div>
 
-                <div class="flex gap-3">
+                <div class="flex gap-2">
                     <!-- <i class="fa-solid fa-phone text-brand-600 text-lg mt-1"></i> -->
-                    <i data-lucide="phone" class="w-5 h-5  mt-1 shrink-0 text-brand-600"></i>
+                    <i data-lucide="phone" class="w-5 h-5  shrink-0 text-brand-600"></i>
                     <p>+95 9 950 305004</p>
                 </div>
 
@@ -85,9 +86,9 @@
 
     <!-- Copyright -->
     <div class="border-t mt-8 py-6">
-        <p class="text-center text-brand-900 text-md">
+        <p class="text-center text-gray-500 text-sm">
             &copy; 2026
-            <span class="text-brand-600 font-bold">EventPro</span>.
+            <span class="text-brand-600 font-bold text-md">EventPro</span>.
             All rights reserved.
         </p>
     </div>

@@ -46,7 +46,7 @@ $pageInfo = $pageTitles[$currentPage] ?? ['title' => 'Admin', 'subtitle' => ''];
         scrollbar-color: #c4b5fd transparent;
     }
 </style>
-<header class="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
+<header class="bg-white border-b border-gray-100 px-8 py-3.5 flex items-center justify-between sticky top-0 z-20">
     <div class="flex items-center gap-3 flex-1">
         <div>
             <h1 class="text-xl font-bold text-gray-800 leading-tight"><?= htmlspecialchars($pageInfo['title']) ?></h1>

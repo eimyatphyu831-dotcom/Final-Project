@@ -139,7 +139,7 @@ if (empty($bookings)) {
                             <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                                 <option value="all">All Status</option>
                                 <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                <option value="Cancelleded" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                             </select>
                         </form>
                     </div>
@@ -222,14 +222,14 @@ if (empty($bookings)) {
                                     <td class="p-3 flex gap-2">
                                         <?php if ($b['status'] === 'Pending'): ?>
                                             <a href="?action=approve&id=<?= $b['id'] ?>"
-                                                class="px-3 py-1 bg-green-400 text-white rounded-lg text-xs hover:bg-green-600">Confirm</a>
+                                                class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300">Confirm</a>
                                         <?php endif; ?>
-                                        <!-- <a href="?action=cancel&id=<?= $b['id'] ?>"
+                                        <a href="?action=cancel&id=<?= $b['id'] ?>"
                                    onclick="return confirm('Cancel this booking?')"
-                                   class="px-3 py-1 bg-yellow-400 text-white rounded-lg text-xs hover:bg-yellow-600">Cancel</a> -->
-                                        <a href="?action=delete&id=<?= $b['id'] ?>"
+                                   class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Cancel</a>
+                                        <!-- <a href="?action=delete&id=<?= $b['id'] ?>"
                                             onclick="return confirm('Delete this booking?')"
-                                            class="px-3 py-1 bg-red-400 text-white rounded-lg text-xs hover:bg-red-600">Delete</a>
+                                            class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Delete</a> -->
                                     </td>
 
                                 </tr>

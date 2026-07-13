@@ -3,7 +3,7 @@ include '../includes/header.php';
 ?>
 
 <!-- ANALYTICS & STUDIO BIOGRAPHY OVERVIEW (GEOMETRIC TRIPTYCH) -->
-<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
+<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#f6f3fa]">
     <div
         class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-12">
 
