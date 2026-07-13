@@ -315,7 +315,7 @@ function activeMenu($page)
         <div class="flex flex-col flex-1">
 
             <!-- HEADER -->
-            <div class="p-3 flex items-center gap-3 border-b border-gray-200">
+            <div class="p-2.5 flex items-center gap-3 border-b border-gray-200">
                 <div class="w-8 h-8 bg-purple-brand rounded-lg flex items-center justify-center text-white font-bold">
                     <i class="fa-solid fa-calendar-days"></i>
                 </div>
@@ -331,60 +331,67 @@ function activeMenu($page)
             </div>
 
             <!-- NAVIGATION -->
-            <nav class="mt-6 px-3 space-y-1 flex-1 overflow-y-auto">
+            <nav class="mt-4 px-3 space-y-0.5 flex-1 overflow-y-auto">
 
                 <!-- Dashboard -->
                 <a href="dashboard.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('dashboard.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('dashboard.php') ?>">
                     <i class="fa-solid fa-house w-5 text-purple-brand"></i>
                     Dashboard
                 </a>
 
                 <!-- Events -->
                 <a href="events.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('events.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('events.php') ?>">
                     <i class="fa-solid fa-calendar-days w-5 text-purple-brand"></i>
                     Events
                 </a>
 
                 <!-- Venues -->
                 <a href="venues.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('venues.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('venues.php') ?>">
                     <i class="fa-solid fa-hotel w-5 text-purple-brand"></i>
                     Venues
                 </a>
 
                 <!-- Packages -->
                 <a href="packages.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('packages.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('packages.php') ?>">
                     <i class="fa-solid fa-gift w-5 text-purple-brand"></i>
                     Packages
                 </a>
 
                 <!-- Services -->
                 <a href="services.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('services.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('services.php') ?>">
                     <i class="fa-solid fa-concierge-bell w-5 text-purple-brand"></i>
                     Services
                 </a>
 
                 <!-- Bookings -->
                 <a href="bookings.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('bookings.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('bookings.php') ?>">
                     <i class="fa-solid fa-clipboard-list w-5 text-purple-brand"></i>
                     Bookings
                 </a>
 
                 <!-- Customers -->
                 <a href="customers.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('customers.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('customers.php') ?>">
                     <i class="fa-solid fa-users w-5 text-purple-brand"></i>
                     Customers
                 </a>
 
+                <!-- Reports -->
+                <a href="reports.php"
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('reports.php') ?>">
+                    <i class="fa-solid fa-chart-column w-5 text-purple-brand"></i>
+                    Reports
+                </a>
+
                 <!-- Messages -->
                 <a href="contact_messages.php"
-                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('contact_messages.php') ?>">
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('contact_messages.php') ?>">
                     <i class="fa-solid fa-message w-5 text-purple-brand"></i>
                     Messages
                 </a>
@@ -407,10 +414,10 @@ function activeMenu($page)
         </div>
 
         <!-- BOTTOM -->
-        <div class="p-4 border-t border-gray-200">
+        <div class="p-3 border-t border-gray-200">
 
             <a href="../auth/logout.php"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-400 hover:text-red-600 transition-all text-sm font-medium border border-red-200/40 bg-red-400 text-white">
+                class="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-red-400 hover:text-red-600 transition-all text-sm font-medium border border-red-200/40 bg-red-400 text-white">
                 <i class="fa-solid fa-right-from-bracket w-5"></i>
                 Log Out
             </a>
