@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 include '../includes/header.php';
 ?>
 
-<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
     <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100">
         <!-- Dynamic Intake Fields -->
         <div class="p-8 md:p-12 flex-1">
@@ -94,15 +94,16 @@ include '../includes/header.php';
                 <div class="space-y-4 text-sm text-slate-600">
                     <div class="flex items-start gap-3">
                         <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0 text-brand-600"></i>
-                        <span>123 Elite Plaza, Suite 500, New York, NY</span>
+                        <span>No.67,Rose  Road, Pyawbwe Township,
+                        Mandalay, Myanmar</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="phone" class="w-4 h-4 shrink-0 text-brand-600"></i>
-                        <span>+1 (555) 019-2834</span>
+                        <span>+95 9 950 305004</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="mail" class="w-4 h-4 shrink-0 text-brand-600"></i>
-                        <span>hello@eventplanners.com</span>
+                        <span>eventpro@gmail.com</span>
                     </div>
                 </div>
             </div>

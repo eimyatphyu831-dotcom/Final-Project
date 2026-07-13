@@ -117,7 +117,7 @@ if (isset($_SESSION['success'])) {
 
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#f6f3fa]">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
@@ -185,13 +185,13 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CORE SERVICES / BENEFITS GRID -->
-<section id="services" class="w-full bg-[#f6f3fa] py-20 px-4 sm:px-6 lg:px-8">
+<section id="services" class="w-full bg-[#f6f3fa] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
         <!-- Centered Header Section matching image_cd171b.png -->
         <div class="text-center max-w-3xl mx-auto mb-16">
             <h2 class="text-3xl font-bold text-brand-600 tracking-tight">Our Professional Services</h2>
-            <p class="text-md text-slate-500 mt-4 leading-relaxed">
+            <p class="text-md text-slate-500 mt-2 leading-relaxed">
                 We provide end-to-end solutions to ensure every aspect of your event is handled with expert care and
                 creative flair.
             </p>
@@ -269,7 +269,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
-<section id="venues" class="w-full py-16 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa]">
+<section id="venues" class="w-full py-10 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa]">
     <div class="max-w-7xl mx-auto">
         <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 
@@ -340,7 +340,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- ANALYTICS & STUDIO BIOGRAPHY OVERVIEW (GEOMETRIC TRIPTYCH) -->
-<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#f6f3fa]">
+<section id="about" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
     <div
         class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-slate-100 flex flex-col lg:flex-row items-center justify-between gap-12">
 
@@ -412,7 +412,7 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CONCIERGE BOOKING REQUEST SYSTEM -->
-<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-[#f6f3fa]">
+<section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
     <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-100">
         <!-- Dynamic Intake Fields -->
         <div class="p-8 md:p-12 flex-1">
@@ -462,15 +462,16 @@ if (isset($_SESSION['success'])) {
                 <div class="space-y-4 text-sm text-slate-600">
                     <div class="flex items-start gap-3">
                         <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0 text-brand-600"></i>
-                        <span>123 Elite Plaza, Suite 500, New York, NY</span>
+                        <span>No.67,Rose  Road, Pyawbwe Township,
+                        Mandalay, Myanmar</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="phone" class="w-4 h-4 shrink-0 text-brand-600"></i>
-                        <span>+1 (555) 019-2834</span>
+                        <span>+95 9 950 305004</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="mail" class="w-4 h-4 shrink-0 text-brand-600"></i>
-                        <span>hello@eventplanners.com</span>
+                        <span>eventpro@gmail.com</span>
                     </div>
                 </div>
             </div>

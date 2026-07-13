@@ -36,7 +36,7 @@ include "../includes/header.php";
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h1 class="text-2xl font-bold text-brand-900">My Bookings</h1>
+                <h1 class="text-2xl font-bold text-brand-600">My Bookings</h1>
                 <p class="text-sm text-gray-500 mt-1">View all your event bookings and their status</p>
             </div>
             <!-- <a href="bookingform.php"

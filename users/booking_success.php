@@ -27,22 +27,22 @@ $pageTitle = "Booking Confirmed";
 include '../includes/header.php';
 ?>
 
-<div class="max-w-md mx-auto px-4 py-16">
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-8 text-center">
+<div class="max-w-lg mx-auto px-4 py-4">
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 text-center">
 
-        <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+        <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
             <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
             </svg>
         </div>
 
         <h1 class="text-2xl font-extrabold text-slate-800 mb-2">Booking Confirmed</h1>
-        <p class="text-slate-500 text-sm mb-8 leading-relaxed">
+        <p class="text-slate-500 text-sm mb-4 leading-relaxed">
             Thank you for your booking. Your request has been submitted successfully and our team will review it
             shortly.
         </p>
 
-        <div class="bg-slate-50 rounded-2xl p-5 mb-8 text-left space-y-4">
+        <div class="bg-slate-50 rounded-2xl p-5 mb-8 text-left space-y-1">
             <h2 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Booking Summary</h2>
 
             <?php if ($booking): ?>

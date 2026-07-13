@@ -179,6 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Form</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
@@ -253,7 +254,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-2xl font-extrabold text-purple-600/60 text-center">Complete Your Booking</h2>
                     <p class="text-gray-500 mt-1 text-center text-sm">Finalize your event request details.</p>
                 </div>
-                <a href="index.php" class="text-gray-400 hover:text-purple-600 transition flex-shrink-0">
+                <a href="viewevents.php" class="text-gray-400 hover:text-purple-600 transition flex-shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                         </path>
@@ -308,11 +309,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Event
-                                    Date</label>
-                                <input type="date" name="event_date" id="eventDatePicker"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">
+                                    Event Date
+                                </label>
+
+                                <div class="relative">
+                                    <input type="text" name="event_date" id="eventDatePicker"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-purple-500 outline-none transition"
+                                        placeholder="Select Date" required>
+
+                                    <button type="button" id="calendarBtn"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600">
+                                        <i class="fa-solid fa-calendar-days"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -344,21 +354,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
                                 Method</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <?php foreach ($paymentMethods as $pm):
-                                    $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
-                                    $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
-                                    ?>
-                                    <div class="pm-card rounded-xl border border-gray-200 p-3 text-center"
-                                        data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
-                                        onclick="selectPayment(this)">
-                                        <img src="<?= $base . $logo ?>" alt="<?= htmlspecialchars($pm['payment_name']) ?>"
-                                            class="h-10 mx-auto mb-1.5 object-contain">
-                                        <span
-                                            class="text-xs font-semibold text-gray-700"><?= htmlspecialchars($pm['payment_name']) ?></span>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
+                            <div class="grid grid-cols-4 gap-2">
+    <?php foreach ($paymentMethods as $pm):
+        $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
+        $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
+    ?>
+        <div class="pm-card rounded-lg border border-gray-200 p-2 text-center w-20 h-20 flex flex-col items-center justify-center cursor-pointer"
+            data-id="<?= $pm['id'] ?>"
+            data-qr="<?= $base . $qr ?>"
+            onclick="selectPayment(this)">
+
+            <img src="<?= $base . $logo ?>"
+                alt="<?= htmlspecialchars($pm['payment_name']) ?>"
+                class="w-8 h-8 object-contain mb-1">
+
+            <span class="text-[10px] font-semibold text-gray-700">
+                <?= htmlspecialchars($pm['payment_name']) ?>
+            </span>
+        </div>
+    <?php endforeach; ?>
+</div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 pt-3">

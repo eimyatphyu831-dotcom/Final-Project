@@ -2,7 +2,7 @@
 include '../includes/header.php';
 ?>
 <!-- CORE SERVICES / BENEFITS GRID -->
-<section id="services" class="w-full bg-[#f6f3fa] py-16 px-4 sm:px-6 lg:px-8">
+<section id="services" class="w-full bg-[#f6f3fa] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
         <!-- Centered Header Section matching image_cd171b.png -->

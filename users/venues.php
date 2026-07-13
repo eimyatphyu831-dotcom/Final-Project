@@ -18,7 +18,7 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
 
     <?php include '../includes/header.php'; ?>
     <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
-    <section id="venues" class="w-full bg-[#faf9f6] py-16 px-4 sm:px-6 lg:px-8">
+    <section id="venues" class="w-full bg-[#faf9f6] py-10 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa]">
         <div class="max-w-7xl mx-auto">
             <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 

@@ -16,7 +16,7 @@ $badges = [
 <?php include '../includes/header.php'; ?>
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
