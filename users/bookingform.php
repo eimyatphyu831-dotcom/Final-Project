@@ -246,10 +246,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <section class="max-w-3xl mx-auto px-2 sm:px-3 py-10">
+    <section class="max-w-3xl mx-auto px-2 sm:px-3 py-5">
         <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100 p-2 md:p-3">
 
-            <div class="flex items-start justify-between mb-3 gap-3">
+            <div class="flex items-start justify-between mb-2 gap-2">
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
                     <h2 class="text-2xl font-extrabold text-purple-600/60 text-center">Complete Your Booking</h2>
                     <p class="text-gray-500 mt-1 text-center text-sm">Finalize your event request details.</p>
@@ -263,14 +263,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <?php if ($message): ?>
-                <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+                <div class="mb-3 p-2 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
                     <?= htmlspecialchars($message) ?>
                 </div>
             <?php endif; ?>
 
             <div class="grid lg:grid-cols-[1fr_0.8fr] gap-3 items-start">
-                <div class="rounded-2xl border border-gray-200 p-3 bg-white shadow-sm">
-                    <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-4"
+                <div class="rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
+                    <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3"
                         onsubmit="return confirmBooking()">
 
                         <input type="hidden" name="event_id" value="<?= $eventId ?>">
@@ -279,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
                         <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
 
-                        <div class="grid md:grid-cols-2 gap-4">
+                        <div class="grid md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Full
                                     Name</label>
@@ -298,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-4">
+                        <div class="grid md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Phone
                                     Number</label>
@@ -326,7 +326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-4">
+                        <div class="grid md:grid-cols-2 gap-3">
 
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Start
@@ -355,28 +355,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
                                 Method</label>
                             <div class="grid grid-cols-4 gap-2">
-    <?php foreach ($paymentMethods as $pm):
-        $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
-        $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
-    ?>
-        <div class="pm-card rounded-lg border border-gray-200 p-2 text-center w-20 h-20 flex flex-col items-center justify-center cursor-pointer"
-            data-id="<?= $pm['id'] ?>"
-            data-qr="<?= $base . $qr ?>"
-            onclick="selectPayment(this)">
+                                <?php foreach ($paymentMethods as $pm):
+                                    $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
+                                    $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
+                                    ?>
+                                    <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
+                                        data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
+                                        onclick="selectPayment(this)">
 
-            <img src="<?= $base . $logo ?>"
-                alt="<?= htmlspecialchars($pm['payment_name']) ?>"
-                class="w-8 h-8 object-contain mb-1">
+                                        <img src="<?= $base . $logo ?>" alt="<?= htmlspecialchars($pm['payment_name']) ?>"
+                                            class="w-6 h-6 object-contain mb-0.5">
 
-            <span class="text-[10px] font-semibold text-gray-700">
-                <?= htmlspecialchars($pm['payment_name']) ?>
-            </span>
-        </div>
-    <?php endforeach; ?>
-</div>
+                                        <span class="text-[10px] font-semibold text-gray-700">
+                                            <?= htmlspecialchars($pm['payment_name']) ?>
+                                        </span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 pt-3">
+                        <div class="grid grid-cols-2 gap-3 pt-1">
                             <button type="submit"
                                 class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
                                 Booking</button>

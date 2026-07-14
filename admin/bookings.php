@@ -78,6 +78,7 @@ if (empty($bookings)) {
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -126,7 +127,8 @@ if (empty($bookings)) {
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" id="bookingSearch" placeholder="Search bookings..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                     </div>
@@ -136,11 +138,15 @@ if (empty($bookings)) {
                                 class="text-sm text-green-600 font-semibold bg-green-50 px-4 py-2 rounded-xl border border-green-200"><?= $message ?></span>
                         <?php endif; ?>
                         <form method="GET">
-                            <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                            <select name="status" onchange="this.form.submit()"
+                                class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                                 <option value="all">All Status</option>
-                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
-                                <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending
+                                </option>
+                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed
+                                </option>
+                                <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled
+                                </option>
                             </select>
                         </form>
                     </div>
@@ -223,12 +229,19 @@ if (empty($bookings)) {
                                     <td class="p-3 flex gap-2">
                                         <?php if ($b['status'] === 'Pending'): ?>
                                             <a href="?action=approve&id=<?= $b['id'] ?>"
-                                                class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300">Confirm</a>
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
+                                                <i class="fa-solid fa-circle-check"></i>
+                                                Confirm
+                                            </a>
                                         <?php endif; ?>
+
                                         <?php if ($b['status'] !== 'Cancelled'): ?>
                                             <a href="?action=cancel&id=<?= $b['id'] ?>"
-                                       onclick="return confirm('Cancel this booking?')"
-                                       class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Cancel</a>
+                                                onclick="return confirm('Cancel this booking?')"
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
+                                                <i class="fa-solid fa-circle-xmark"></i>
+                                                Cancel
+                                            </a>
                                         <?php endif; ?>
                                     </td>
 
@@ -236,7 +249,8 @@ if (empty($bookings)) {
 
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="8" class="p-6 text-center text-gray-400 text-sm">No bookings found matching your search.</td>
+                                <td colspan="8" class="p-6 text-center text-gray-400 text-sm">No bookings found matching
+                                    your search.</td>
                             </tr>
 
                         </tbody>

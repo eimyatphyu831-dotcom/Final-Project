@@ -451,7 +451,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                                         </span>
                                     </span>
                                 </div>
-                                <!-- <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div> -->
+                                <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div>
                             </div>
                         </div>
                     </div>

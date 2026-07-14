@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("sssss", $name, $email, $phone, $registration_reason, $hashedPassword);
 
             if ($stmt->execute()) {
-                header("Location: login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
+                header("Location: ../users/index.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
                 exit();
             } else {
                 $message = "Registration failed!";
@@ -47,18 +47,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <?php include '../includes/header.php'; ?>
 
-<div class="flex-grow w-full flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-slate-200/60 p-4 sm:p-8">
+<div class="flex-grow w-full flex items-center justify-center p-2">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200/60 p-2 sm:p-8">
 
-        <div class="flex flex-col items-center mb-3 text-center">
+        <div class="flex flex-col items-center mb-2 text-center">
             <div
-                class="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-2 shadow-sm">
+                class="w-8 h-8 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-1 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
             </div>
-            <h1 class="text-lg font-bold text-slate-900 tracking-tight mt-1">Get Started Now</h1>
+            <h1 class="text-lg font-bold text-slate-900 tracking-tight mt-0.5">Get Started Now</h1>
             <p class="text-[11px] text-slate-500 mt-0.5">Create your account</p>
         </div>
 
@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form action="#" method="POST" class="space-y-3" novalidate>
-            <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
+            <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>" required>
 
             <div>
                 <label for="name" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Full
@@ -82,6 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </div>
                     <input type="text" id="name" name="name" required autocomplete="name" placeholder="Alex Morgan"
+                        required
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                 </div>
             </div>
@@ -97,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </div>
                     <input type="email" id="email" name="email" required autocomplete="email"
-                        placeholder="alex@company.com"
+                        placeholder="alex@gmail.com" required
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                 </div>
             </div>
@@ -112,22 +113,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                     </div>
-                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="+959..."
+                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="+959..." required
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
-                </div>
-            </div>
-
-            <div>
-                <label for="registration_reason" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Why are you registering?</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                    </div>
-                    <textarea id="registration_reason" name="registration_reason" rows="2"
-                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all resize-none"
-                        placeholder="Tell us why you're interested..."></textarea>
                 </div>
             </div>
 
@@ -200,7 +187,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <p class="mt-3 text-center text-[11px] text-slate-500">
             Already have an account? <a href="../auth/login.php"
-                class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all">Sign in
+                class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all" required>Sign in
                 instead</a>
         </p>
     </div>

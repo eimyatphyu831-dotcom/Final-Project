@@ -125,7 +125,8 @@ $stmt->close();
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" id="searchInput" placeholder="Search customers..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                     </div>
@@ -133,11 +134,13 @@ $stmt->close();
 
                 <?php if ($message): ?>
                     <div class="bg-green-100 text-green-700 px-4 py-3 rounded-xl text-sm mb-4 border border-green-200">
-                        <?= $message ?></div>
+                        <?= $message ?>
+                    </div>
                 <?php endif; ?>
                 <?php if ($error): ?>
                     <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm mb-4 border border-red-200">
-                        <?= $error ?></div>
+                        <?= $error ?>
+                    </div>
                 <?php endif; ?>
 
                 <?php if ($viewUser): ?>
@@ -157,7 +160,8 @@ $stmt->close();
                                 </div>
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800">
-                                        <?= htmlspecialchars($viewUser['name']) ?></h4>
+                                        <?= htmlspecialchars($viewUser['name']) ?>
+                                    </h4>
                                     <p class="text-sm text-gray-500"><?= htmlspecialchars($viewUser['email']) ?></p>
                                 </div>
                             </div>
@@ -172,7 +176,8 @@ $stmt->close();
                                     <label class="block text-xs font-medium text-gray-400 uppercase tracking-wide">Member
                                         Since</label>
                                     <p class="text-sm text-gray-800 mt-1">
-                                        <?= date('F j, Y', strtotime($viewUser['created_at'])) ?></p>
+                                        <?= date('F j, Y', strtotime($viewUser['created_at'])) ?>
+                                    </p>
                                 </div>
                             </div>
 
@@ -192,15 +197,17 @@ $stmt->close();
                                                 <th class="p-2 text-left">Status</th>
                                             </tr>
                                         </thead>
-                        <tbody id="tableBody">
+                                        <tbody id="tableBody">
                                             <?php foreach ($viewBookings as $bk): ?>
                                                 <tr class="border-t hover:bg-gray-50">
                                                     <td class="p-2 font-medium text-gray-800">
-                                                        <?= htmlspecialchars($bk['event_name']) ?></td>
+                                                        <?= htmlspecialchars($bk['event_name']) ?>
+                                                    </td>
                                                     <td class="p-2 text-gray-600"><?= htmlspecialchars($bk['venue_name']) ?></td>
                                                     <td class="p-2 text-gray-600"><?= htmlspecialchars($bk['package_name']) ?></td>
                                                     <td class="p-2 text-gray-600">
-                                                        <?= date('M j, Y', strtotime($bk['event_date'])) ?></td>
+                                                        <?= date('M j, Y', strtotime($bk['event_date'])) ?>
+                                                    </td>
                                                     <td class="p-2 text-gray-800">$<?= number_format($bk['total_cost'], 2) ?></td>
                                                     <td class="p-2">
                                                         <?php
@@ -266,16 +273,24 @@ $stmt->close();
 
                                     <td class="p-3 flex gap-2">
                                         <a href="customers.php?view=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            class="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs">View</a>
+                                            class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
+                                            <i class="fa-solid fa-eye"></i>
+                                            View
+                                        </a>
+
                                         <a href="customers.php?delete=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
                                             onclick="return confirm('Delete this customer?')"
-                                            class="px-3 py-1 bg-red-800 text-white rounded-lg text-xs">Delete</a>
+                                            class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
+                                            <i class="fa-solid fa-trash-can mr-1"></i>
+                                            Delete
+                                        </a>
                                     </td>
 
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="5" class="p-6 text-center text-gray-400 text-sm">No customers found matching your search.</td>
+                                <td colspan="5" class="p-6 text-center text-gray-400 text-sm">No customers found
+                                    matching your search.</td>
                             </tr>
 
                         </tbody>

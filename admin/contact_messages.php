@@ -135,7 +135,8 @@ $stmt->close();
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <i
+                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" id="searchInput" placeholder="Search messages..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                     </div>
@@ -143,11 +144,13 @@ $stmt->close();
 
                 <?php if ($message): ?>
                     <div class="bg-green-100 text-green-700 px-4 py-3 rounded-xl text-sm mb-4 border border-green-200">
-                        <?= $message ?></div>
+                        <?= $message ?>
+                    </div>
                 <?php endif; ?>
                 <?php if ($error): ?>
                     <div class="bg-red-100 text-red-700 px-4 py-3 rounded-xl text-sm mb-4 border border-red-200">
-                        <?= $error ?></div>
+                        <?= $error ?>
+                    </div>
                 <?php endif; ?>
 
                 <?php if ($viewMessage): ?>
@@ -167,10 +170,12 @@ $stmt->close();
                                 </div>
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800">
-                                        <?= htmlspecialchars($viewMessage['name']) ?></h4>
+                                        <?= htmlspecialchars($viewMessage['name']) ?>
+                                    </h4>
                                     <p class="text-sm text-gray-500"><?= htmlspecialchars($viewMessage['email']) ?></p>
                                     <p class="text-xs text-gray-400 mt-1">
-                                        <?= date('F j, Y \a\t g:i A', strtotime($viewMessage['created_at'])) ?></p>
+                                        <?= date('F j, Y \a\t g:i A', strtotime($viewMessage['created_at'])) ?>
+                                    </p>
                                 </div>
                             </div>
 
@@ -180,13 +185,15 @@ $stmt->close();
                                         <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Event
                                             Type</span>
                                         <p class="text-sm text-gray-800 mt-1">
-                                            <?= htmlspecialchars($viewMessage['event_type']) ?></p>
+                                            <?= htmlspecialchars($viewMessage['event_type']) ?>
+                                        </p>
                                     </div>
                                 <?php endif; ?>
                                 <div>
                                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">Message</span>
                                     <p class="text-sm text-gray-800 mt-2 bg-gray-50 p-4 rounded-xl leading-relaxed">
-                                        <?= nl2br(htmlspecialchars($viewMessage['message'])) ?></p>
+                                        <?= nl2br(htmlspecialchars($viewMessage['message'])) ?>
+                                    </p>
                                 </div>
                             </div>
 
@@ -244,7 +251,8 @@ $stmt->close();
                                     </td>
 
                                     <td class="p-3 text-gray-600 max-w-xs truncate">
-                                        <?= htmlspecialchars(substr($m['message'], 0, 80)) ?>    <?= strlen($m['message']) > 80 ? '...' : '' ?>
+                                        <?= htmlspecialchars(substr($m['message'], 0, 80)) ?>
+                                        <?= strlen($m['message']) > 80 ? '...' : '' ?>
                                     </td>
 
                                     <td class="p-3 text-gray-700 whitespace-nowrap">
@@ -262,20 +270,31 @@ $stmt->close();
 
                                     <td class="p-3 flex gap-2">
                                         <a href="contact_messages.php?view=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            class="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs">View</a>
+                                            class="inline-flex items-center gap-1 px-1.5 py-1 bg-blue-200 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
+                                            <i class="fa-solid fa-eye"></i>
+                                            View
+                                        </a>
+
                                         <?php if (!$m['is_read']): ?>
                                             <a href="contact_messages.php?read=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                                class="px-3 py-1 bg-green-500 text-white rounded-lg text-xs">Read</a>
+                                                class="inline-flex items-center gap-1 px-1.5 py-1 bg-green-200 text-green-600 rounded-lg text-xs hover:bg-green-400 transition">
+                                                <i class="fa-solid fa-envelope-open"></i>
+                                                Read
+                                            </a>
                                         <?php endif; ?>
+
                                         <a href="contact_messages.php?delete=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
                                             onclick="return confirm('Delete this message?')"
-                                            class="px-3 py-1 bg-red-800 text-white rounded-lg text-xs">Delete</a>
+                                            class="inline-flex items-center gap-1 px-1.5 py-1 bg-red-200 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
+                                            <i class="fa-solid fa-trash-can mr-1"></i>
+                                            Delete
+                                        </a>
                                     </td>
-
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No messages found matching your search.</td>
+                                <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No messages found matching
+                                    your search.</td>
                             </tr>
 
                         </tbody>

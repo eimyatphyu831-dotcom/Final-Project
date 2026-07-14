@@ -142,11 +142,11 @@ include "../includes/header.php";
                     <input type="text" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>"
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm">
                 </div>
-                <div class="md:col-span-2">
+                <!-- <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-brand-900 mb-1.5">Why did you register?</label>
                     <textarea name="registration_reason" rows="3"
                         class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-200 outline-none transition text-sm resize-none"><?= htmlspecialchars($user['registration_reason'] ?? '') ?></textarea>
-                </div>
+                </div> -->
             </div>
 
             <hr class="border-slate-100">
