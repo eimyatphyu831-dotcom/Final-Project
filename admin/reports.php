@@ -16,9 +16,10 @@ $stmt->close();
 $adminAvatar = $adminImg ? 'uploads/profile/' . $adminImg : null;
 
 $reportType = $_GET['report'] ?? 'revenue';
-$period = $_GET['period'] ?? 'monthly';
+$period = $_GET['period'] ?? 'weekly';
 $selectedYear = (int)($_GET['year'] ?? date('Y'));
 $selectedMonth = (int)($_GET['month'] ?? date('m'));
+$selectedWeek = (int)($_GET['week'] ?? date('W'));
 
 // --- Revenue Report: Daily ---
 $dailyRevenueLabels = [];
@@ -60,6 +61,23 @@ if ($reportType === 'revenue' && $period === 'yearly') {
     }
 }
 
+// --- Revenue Report: Weekly ---
+$weeklyRevenueLabels = [];
+$weeklyRevenueValues = [];
+if ($reportType === 'revenue' && $period === 'weekly') {
+    $wStart = new DateTime();
+    $wStart->setISODate($selectedYear, $selectedWeek);
+    $wEnd = clone $wStart;
+    $wEnd->modify('+6 days');
+    for ($d = 0; $d < 7; $d++) {
+        $date = (clone $wStart)->modify("+$d days");
+        $dStr = $date->format('Y-m-d');
+        $weeklyRevenueLabels[] = $date->format('D M j');
+        $row = $conn->query("SELECT COALESCE(SUM(total_cost),0) rev FROM bookings WHERE status='Confirmed' AND DATE(created_at)='$dStr'")->fetch_assoc();
+        $weeklyRevenueValues[] = (float) $row['rev'];
+    }
+}
+
 // --- Revenue Summary ---
 $yearlyTotalRev = $conn->query("SELECT COALESCE(SUM(total_cost),0) rev FROM bookings WHERE status='Confirmed' AND YEAR(created_at)=$selectedYear")->fetch_assoc()['rev'] ?? 0;
 $monthlyTotalRev = $conn->query("SELECT COALESCE(SUM(total_cost),0) rev FROM bookings WHERE status='Confirmed' AND YEAR(created_at)=$selectedYear AND MONTH(created_at)=$selectedMonth")->fetch_assoc()['rev'] ?? 0;
@@ -89,6 +107,23 @@ if ($reportType === 'bookings' && $period === 'yearly') {
         $yearlyBookingLabels[] = $y;
         $row = $conn->query("SELECT COUNT(*) cnt FROM bookings WHERE status='Confirmed' AND YEAR(created_at)=$y")->fetch_assoc();
         $yearlyBookingValues[] = (int) $row['cnt'];
+    }
+}
+
+// --- Confirmed Bookings Report: Weekly ---
+$weeklyBookingLabels = [];
+$weeklyBookingValues = [];
+if ($reportType === 'bookings' && $period === 'weekly') {
+    $wStart = new DateTime();
+    $wStart->setISODate($selectedYear, $selectedWeek);
+    $wEnd = clone $wStart;
+    $wEnd->modify('+6 days');
+    for ($d = 0; $d < 7; $d++) {
+        $date = (clone $wStart)->modify("+$d days");
+        $dStr = $date->format('Y-m-d');
+        $weeklyBookingLabels[] = $date->format('D M j');
+        $row = $conn->query("SELECT COUNT(*) cnt FROM bookings WHERE status='Confirmed' AND DATE(created_at)='$dStr'")->fetch_assoc();
+        $weeklyBookingValues[] = (int) $row['cnt'];
     }
 }
 
@@ -144,6 +179,82 @@ $availableYears = [];
 $yr = $conn->query("SELECT DISTINCT YEAR(created_at) y FROM bookings ORDER BY y DESC")->fetch_all(MYSQLI_ASSOC);
 foreach ($yr as $r) $availableYears[] = (int) $r['y'];
 if (empty($availableYears)) $availableYears[] = (int) date('Y');
+
+// --- Excel Export ---
+if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
+    require_once 'XlsxWriter.php';
+
+    $xlsx = new XlsxWriter();
+    $periodLabel = ucfirst($period) . ' ' . $selectedYear;
+    if ($period === 'weekly') $periodLabel = 'Week ' . $selectedWeek . ', ' . $selectedYear;
+    elseif ($period === 'daily') $periodLabel = date('F Y', mktime(0, 0, 0, $selectedMonth, 1, $selectedYear));
+
+    $xlsx->addSheet('Report ' . $selectedYear);
+
+    $xlsx->writeRow(['Report - ' . $periodLabel], ['section' => true]);
+    $xlsx->writeRow([]);
+
+    $xlsx->writeRow([' SUMMARY '], ['section' => true]);
+    $xlsx->writeRow(['Yearly Revenue', number_format($yearlyTotalRev) . ' MMK'], ['bordered' => true]);
+    $xlsx->writeRow(['Monthly Revenue (' . date('F', mktime(0, 0, 0, $selectedMonth, 1)) . ')', number_format($monthlyTotalRev) . ' MMK'], ['bordered' => true]);
+    $xlsx->writeRow(['Daily Revenue', number_format($dailyTotalRev) . ' MMK'], ['bordered' => true]);
+    $xlsx->writeRow(['Yearly Confirmed Bookings', $yearlyTotalBk], ['bordered' => true]);
+    $xlsx->writeRow(['Monthly Confirmed Bookings (' . date('F', mktime(0, 0, 0, $selectedMonth, 1)) . ')', $monthlyTotalBk], ['bordered' => true]);
+    $xlsx->writeRow([]);
+
+    if ($period === 'weekly') {
+        $xlsx->writeRow([' Revenue by Day (Week ' . $selectedWeek . ') '], ['section' => true]);
+        $xlsx->writeRow(['Day', 'Revenue (MMK)'], ['header' => true]);
+        foreach ($weeklyRevenueLabels as $i => $label) {
+            $xlsx->writeRow([$label, $weeklyRevenueValues[$i]], ['bordered' => true]);
+        }
+        $xlsx->writeRow(['Total', array_sum($weeklyRevenueValues)], ['total' => true]);
+        $xlsx->writeRow([]);
+    } else {
+        $xlsx->writeRow([' Revenue by Month '], ['section' => true]);
+        $xlsx->writeRow(['Month', 'Revenue (MMK)'], ['header' => true]);
+        foreach ($monthlyRevenueLabels as $i => $label) {
+            $xlsx->writeRow([$label, $monthlyRevenueValues[$i]], ['bordered' => true]);
+        }
+        $xlsx->writeRow(['Total', array_sum($monthlyRevenueValues)], ['total' => true]);
+        $xlsx->writeRow([]);
+    }
+
+    if ($period === 'weekly') {
+        $xlsx->writeRow([' Confirmed Bookings by Day (Week ' . $selectedWeek . ') '], ['section' => true]);
+        $xlsx->writeRow(['Day', 'Confirmed Bookings'], ['header' => true]);
+        foreach ($weeklyBookingLabels as $i => $label) {
+            $xlsx->writeRow([$label, $weeklyBookingValues[$i]], ['bordered' => true]);
+        }
+        $xlsx->writeRow(['Total', array_sum($weeklyBookingValues)], ['total' => true]);
+        $xlsx->writeRow([]);
+    } else {
+        $xlsx->writeRow([' Confirmed Bookings by Month '], ['section' => true]);
+        $xlsx->writeRow(['Month', 'Confirmed Bookings'], ['header' => true]);
+        foreach ($monthlyBookingLabels as $i => $label) {
+            $xlsx->writeRow([$label, $monthlyBookingValues[$i]], ['bordered' => true]);
+        }
+        $xlsx->writeRow(['Total', array_sum($monthlyBookingValues)], ['total' => true]);
+        $xlsx->writeRow([]);
+    }
+
+    // Event Popularity
+    $xlsx->writeRow([' Event Popularity & Forecast '], ['section' => true]);
+    $xlsx->writeRow(['Event', 'Total Bookings', 'Confirmed', 'Revenue (MMK)', 'Upcoming', 'Forecast', 'Trend'], ['header' => true]);
+    foreach ($eventPopularity as $ep) {
+        $xlsx->writeRow([
+            $ep['event_name'],
+            (int) $ep['total_bookings'],
+            (int) $ep['confirmed_bookings'],
+            (float) $ep['total_revenue'],
+            (int) $ep['upcoming_bookings'],
+            (float) $ep['forecast_next_month'],
+            $ep['trend'],
+        ], ['bordered' => true]);
+    }
+
+    $xlsx->output('Monthly_Report_' . $selectedYear . '.xlsx');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -180,12 +291,16 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
             <main class="flex-1 p-6 space-y-6 overflow-y-auto">
 
                 <!-- Page Title -->
-                <div class="flex items-center justify-between">
+                <!-- <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Reports & Analytics</h2>
                         <p class="text-xs text-gray-400 mt-1">Revenue, bookings, and event popularity insights</p>
                     </div>
-                </div>
+                    <a href="?report=<?= $reportType ?>&period=<?= $period ?>&year=<?= $selectedYear ?>&month=<?= $selectedMonth ?>&export_excel=1"
+                        class="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel
+                    </a>
+                </div> -->
 
                 <!-- Report Type Tabs -->
                 <div class="flex items-center gap-2">
@@ -201,6 +316,10 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'forecast' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-magnifying-glass-chart mr-1"></i> Event Forecast
                     </a>
+                    <a href="?report=<?= $reportType ?>&period=<?= $period ?>&year=<?= $selectedYear ?>&month=<?= $selectedMonth ?>&week=<?= $selectedWeek ?>&export_excel=1"
+                        class="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel
+                    </a>
                 </div>
 
                 <!-- ===================== REVENUE REPORT ===================== -->
@@ -209,6 +328,8 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                 <div class="flex flex-wrap items-center gap-3">
                     <a href="?report=revenue&period=daily&year=<?= $selectedYear ?>&month=<?= $selectedMonth ?>"
                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'daily' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Daily</a>
+                    <a href="?report=revenue&period=weekly&year=<?= $selectedYear ?>&week=<?= $selectedWeek ?>"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'weekly' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Weekly</a>
                     <a href="?report=revenue&period=monthly&year=<?= $selectedYear ?>&month=<?= $selectedMonth ?>"
                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'monthly' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Monthly</a>
                     <a href="?report=revenue&period=yearly&year=<?= $selectedYear ?>&month=<?= $selectedMonth ?>"
@@ -228,6 +349,9 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                             <option value="<?= $m ?>" <?= $m === $selectedMonth ? 'selected' : '' ?>><?= date('M', mktime(0, 0, 0, $m, 1)) ?></option>
                             <?php endfor; ?>
                         </select>
+                        <?php elseif ($period === 'weekly'): ?>
+                        <input type="number" name="week" min="1" max="53" value="<?= $selectedWeek ?>"
+                            class="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
                         <?php endif; ?>
                         <button type="submit" class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
                     </form>
@@ -252,7 +376,7 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                 <!-- Revenue Chart -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="text-base font-bold text-gray-800 mb-4">
-                        Revenue <?= ucfirst($period) ?> — <?= $period === 'daily' ? date('F Y', mktime(0, 0, 0, $selectedMonth, 1, $selectedYear)) : $selectedYear ?>
+                        Revenue <?= ucfirst($period) ?> — <?= $period === 'daily' ? date('F Y', mktime(0, 0, 0, $selectedMonth, 1, $selectedYear)) : ($period === 'weekly' ? 'Week ' . $selectedWeek . ', ' . $selectedYear : $selectedYear) ?>
                     </h3>
                     <div class="h-80">
                         <canvas id="revenueChart"></canvas>
@@ -268,6 +392,8 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                                 <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
                                     <?php if ($period === 'daily'): ?>
                                     <th class="pb-3 font-medium">Day</th>
+                                    <?php elseif ($period === 'weekly'): ?>
+                                    <th class="pb-3 font-medium">Day</th>
                                     <?php elseif ($period === 'monthly'): ?>
                                     <th class="pb-3 font-medium">Month</th>
                                     <?php else: ?>
@@ -278,8 +404,10 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                             </thead>
                             <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
                                 <?php
-                                $labels = $period === 'daily' ? $dailyRevenueLabels : ($period === 'monthly' ? $monthlyRevenueLabels : $yearlyRevenueLabels);
-                                $values = $period === 'daily' ? $dailyRevenueValues : ($period === 'monthly' ? $monthlyRevenueValues : $yearlyRevenueValues);
+                                if ($period === 'daily') { $labels = $dailyRevenueLabels; $values = $dailyRevenueValues; }
+                                elseif ($period === 'weekly') { $labels = $weeklyRevenueLabels; $values = $weeklyRevenueValues; }
+                                elseif ($period === 'monthly') { $labels = $monthlyRevenueLabels; $values = $monthlyRevenueValues; }
+                                else { $labels = $yearlyRevenueLabels; $values = $yearlyRevenueValues; }
                                 $totalRev = array_sum($values);
                                 foreach ($labels as $i => $label):
                                     $pct = $totalRev > 0 ? ($values[$i] / $totalRev * 100) : 0;
@@ -310,6 +438,8 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                 <?php elseif ($reportType === 'bookings'): ?>
                 <!-- Period + Filters -->
                 <div class="flex flex-wrap items-center gap-3">
+                    <a href="?report=bookings&period=weekly&year=<?= $selectedYear ?>&week=<?= $selectedWeek ?>"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'weekly' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Weekly</a>
                     <a href="?report=bookings&period=monthly&year=<?= $selectedYear ?>"
                         class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'monthly' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Monthly</a>
                     <a href="?report=bookings&period=yearly&year=<?= $selectedYear ?>"
@@ -323,6 +453,10 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                             <option value="<?= $ay ?>" <?= $ay === $selectedYear ? 'selected' : '' ?>><?= $ay ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <?php if ($period === 'weekly'): ?>
+                        <input type="number" name="week" min="1" max="53" value="<?= $selectedWeek ?>"
+                            class="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                        <?php endif; ?>
                         <button type="submit" class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
                     </form>
                 </div>
@@ -342,7 +476,7 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                 <!-- Bookings Chart -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <h3 class="text-base font-bold text-gray-800 mb-4">
-                        Confirmed Bookings <?= $period === 'monthly' ? 'by Month' : 'by Year' ?> — <?= $selectedYear ?>
+                        Confirmed Bookings <?= $period === 'weekly' ? 'by Week' : ($period === 'monthly' ? 'by Month' : 'by Year') ?> — <?= $selectedYear ?>
                     </h3>
                     <div class="h-80">
                         <canvas id="bookingChart"></canvas>
@@ -356,14 +490,15 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
-                                    <th class="pb-3 font-medium"><?= $period === 'monthly' ? 'Month' : 'Year' ?></th>
+                                    <th class="pb-3 font-medium"><?= $period === 'weekly' ? 'Day' : ($period === 'monthly' ? 'Month' : 'Year') ?></th>
                                     <th class="pb-3 font-medium text-right">Confirmed Bookings</th>
                                 </tr>
                             </thead>
                             <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
                                 <?php
-                                $bLabels = $period === 'monthly' ? $monthlyBookingLabels : $yearlyBookingLabels;
-                                $bValues = $period === 'monthly' ? $monthlyBookingValues : $yearlyBookingValues;
+                                if ($period === 'weekly') { $bLabels = $weeklyBookingLabels; $bValues = $weeklyBookingValues; }
+                                elseif ($period === 'monthly') { $bLabels = $monthlyBookingLabels; $bValues = $monthlyBookingValues; }
+                                else { $bLabels = $yearlyBookingLabels; $bValues = $yearlyBookingValues; }
                                 $totalBk = array_sum($bValues);
                                 foreach ($bLabels as $i => $label):
                                     $pct = $totalBk > 0 ? ($bValues[$i] / $totalBk * 100) : 0;
@@ -517,10 +652,10 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
         new Chart(document.getElementById('revenueChart'), {
             type: 'bar',
             data: {
-                labels: <?= json_encode($period === 'daily' ? $dailyRevenueLabels : ($period === 'monthly' ? $monthlyRevenueLabels : $yearlyRevenueLabels)) ?>,
+                labels: <?= json_encode($period === 'daily' ? $dailyRevenueLabels : ($period === 'weekly' ? $weeklyRevenueLabels : ($period === 'monthly' ? $monthlyRevenueLabels : $yearlyRevenueLabels))) ?>,
                 datasets: [{
                     label: 'Revenue (MMK)',
-                    data: <?= json_encode($period === 'daily' ? $dailyRevenueValues : ($period === 'monthly' ? $monthlyRevenueValues : $yearlyRevenueValues)) ?>,
+                    data: <?= json_encode($period === 'daily' ? $dailyRevenueValues : ($period === 'weekly' ? $weeklyRevenueValues : ($period === 'monthly' ? $monthlyRevenueValues : $yearlyRevenueValues))) ?>,
                     backgroundColor: 'rgba(139, 92, 246, 0.7)',
                     borderColor: '#8b5cf6',
                     borderWidth: 1,
@@ -555,10 +690,10 @@ if (empty($availableYears)) $availableYears[] = (int) date('Y');
         new Chart(document.getElementById('bookingChart'), {
             type: 'bar',
             data: {
-                labels: <?= json_encode($period === 'monthly' ? $monthlyBookingLabels : $yearlyBookingLabels) ?>,
+                labels: <?= json_encode($period === 'weekly' ? $weeklyBookingLabels : ($period === 'monthly' ? $monthlyBookingLabels : $yearlyBookingLabels)) ?>,
                 datasets: [{
                     label: 'Confirmed Bookings',
-                    data: <?= json_encode($period === 'monthly' ? $monthlyBookingValues : $yearlyBookingValues) ?>,
+                    data: <?= json_encode($period === 'weekly' ? $weeklyBookingValues : ($period === 'monthly' ? $monthlyBookingValues : $yearlyBookingValues)) ?>,
                     backgroundColor: 'rgba(52, 211, 153, 0.7)',
                     borderColor: '#34d399',
                     borderWidth: 1,

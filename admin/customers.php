@@ -124,12 +124,11 @@ $stmt->close();
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <form method="GET" class="relative flex-1 max-w-sm">
+                    <div class="relative flex-1 max-w-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search customers..."
+                        <input type="text" id="searchInput" placeholder="Search customers..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </form>
+                    </div>
                 </div>
 
                 <?php if ($message): ?>
@@ -193,7 +192,7 @@ $stmt->close();
                                                 <th class="p-2 text-left">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                        <tbody id="tableBody">
                                             <?php foreach ($viewBookings as $bk): ?>
                                                 <tr class="border-t hover:bg-gray-50">
                                                     <td class="p-2 font-medium text-gray-800">
@@ -242,7 +241,7 @@ $stmt->close();
                             </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody id="tableBody">
 
                             <?php foreach ($customers as $c): ?>
                                 <tr class="border-t hover:bg-gray-50">
@@ -275,6 +274,9 @@ $stmt->close();
 
                                 </tr>
                             <?php endforeach; ?>
+                            <tr class="no-results hidden">
+                                <td colspan="5" class="p-6 text-center text-gray-400 text-sm">No customers found matching your search.</td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -287,6 +289,19 @@ $stmt->close();
 
     </div>
 
+    <script>
+        document.getElementById('searchInput')?.addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            let visible = 0;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.classList.contains('no-results')) return;
+                const match = row.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+        });
+    </script>
 </body>
 
 </html>

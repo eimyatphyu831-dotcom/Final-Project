@@ -13,18 +13,17 @@ $username = $_SESSION['user_name'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'EventPro' ?></title>
+    <!-- Dark mode: apply class before render -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -41,6 +40,13 @@ $username = $_SESSION['user_name'] ?? '';
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         html {
@@ -58,6 +64,87 @@ $username = $_SESSION['user_name'] ?? '';
         h5,
         h6 {
             font-family: 'Playfair Display', serif;
+        }
+
+        /* Dark Mode Global Styles */
+        html.dark {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #1e2a45;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0b0;
+            --border-color: #2a3a5c;
+        }
+
+        html.dark body {
+            background-color: var(--bg-primary) !important;
+        }
+
+        html.dark .bg-white,
+        html.dark .bg-gray-50,
+        html.dark .bg-gray-100 {
+            background-color: var(--bg-card) !important;
+        }
+
+        html.dark .bg-\[\#f3f1f6\] {
+            background-color: var(--bg-primary) !important;
+        }
+
+        html.dark .text-gray-800,
+        html.dark .text-gray-900,
+        html.dark .text-brand-900,
+        html.dark .text-gray-700 {
+            color: var(--text-primary) !important;
+        }
+
+        html.dark .text-gray-500,
+        html.dark .text-gray-600,
+        html.dark .text-gray-400 {
+            color: var(--text-secondary) !important;
+        }
+
+        html.dark .border-slate-100,
+        html.dark .border-gray-200,
+        html.dark .border-gray-100 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark .bg-brand-50,
+        html.dark .hover\:bg-brand-50:hover {
+            background-color: rgba(195, 177, 225, 0.1) !important;
+        }
+
+        html.dark header,
+        html.dark header.bg-\[\#f3f1f6\] {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        html.dark footer,
+        html.dark .bg-\[\#f6f3fa\] {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        html.dark .shadow-sm,
+        html.dark .shadow-lg,
+        html.dark .shadow-xl {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        html.dark .divide-gray-100,
+        html.dark .divide-slate-50 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark input,
+        html.dark textarea,
+        html.dark select {
+            background-color: #0f1a30 !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+
+        html.dark .bg-brand-200 {
+            background-color: #5a4a7a !important;
         }
     </style>
 </head>
@@ -159,6 +246,18 @@ $username = $_SESSION['user_name'] ?? '';
             ?>
 
             <div class="hidden md:flex items-center gap-4">
+
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle"
+                    class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-brand-50 transition"
+                    aria-label="Toggle theme">
+                    <svg class="theme-moon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                    <svg class="theme-sun w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                </button>
 
                 <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')): ?>
 
@@ -461,6 +560,28 @@ $username = $_SESSION['user_name'] ?? '';
         }
 
         window.addEventListener('load', renderLucideIcons);
+
+        // Dark Mode Toggle
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.getElementById('themeToggle');
+            if (!toggle) return;
+            const moon = toggle.querySelector('.theme-moon');
+            const sun = toggle.querySelector('.theme-sun');
+
+            function updateIcon() {
+                const isDark = document.documentElement.classList.contains('dark');
+                if (moon) moon.classList.toggle('hidden', isDark);
+                if (sun) sun.classList.toggle('hidden', !isDark);
+            }
+
+            updateIcon();
+
+            toggle.addEventListener('click', function () {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateIcon();
+            });
+        });
     </script>
 </body>
 

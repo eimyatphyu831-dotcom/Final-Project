@@ -189,16 +189,11 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <form method="GET" class="relative flex-1 max-w-sm">
+                    <div class="relative flex-1 max-w-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search venues..."
-                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white"
-                            onchange="this.form.submit()">
-                        <?php if ($filterEventId > 0): ?>
-                            <input type="hidden" name="event_id" value="<?= $filterEventId ?>">
-                        <?php endif; ?>
-                    </form>
+                        <input type="text" id="searchInput" placeholder="Search venues..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <div class="flex gap-3">
                         <a href="venues.php?action=add<?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
                             class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
@@ -221,10 +216,8 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody id="tableBody" class="divide-y divide-gray-100">
                         <?php foreach ($venues as $v): ?>
-                            <?php if ($search && stripos($v['name'] . $v['address'], $search) === false)
-                                continue; ?>
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4">
                                     <img src="<?= $v['image_path'] ?: '../assets/images/venue1.png' ?>"
@@ -264,6 +257,9 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                 </td>
                             </tr>
                         <?php endforeach; ?>
+                        <tr class="no-results hidden">
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -431,6 +427,19 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     </div>
 
 </div>
+    <script>
+        document.getElementById('searchInput')?.addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            let visible = 0;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.classList.contains('no-results')) return;
+                const match = row.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+        });
+    </script>
 </body>
 
 </html>

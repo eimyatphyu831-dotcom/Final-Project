@@ -139,7 +139,8 @@ if (empty($bookings)) {
                             <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                                 <option value="all">All Status</option>
                                 <option value="Pending" <?= $statusFilter == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                                <option value="Cancelleded" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed</option>
+                                <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
                             </select>
                         </form>
                     </div>
@@ -161,7 +162,7 @@ if (empty($bookings)) {
                             </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody id="tableBody">
 
                             <?php foreach ($bookings as $b): ?>
 
@@ -224,17 +225,19 @@ if (empty($bookings)) {
                                             <a href="?action=approve&id=<?= $b['id'] ?>"
                                                 class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300">Confirm</a>
                                         <?php endif; ?>
-                                        <a href="?action=cancel&id=<?= $b['id'] ?>"
-                                   onclick="return confirm('Cancel this booking?')"
-                                   class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Cancel</a>
-                                        <!-- <a href="?action=delete&id=<?= $b['id'] ?>"
-                                            onclick="return confirm('Delete this booking?')"
-                                            class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Delete</a> -->
+                                        <?php if ($b['status'] !== 'Cancelled'): ?>
+                                            <a href="?action=cancel&id=<?= $b['id'] ?>"
+                                       onclick="return confirm('Cancel this booking?')"
+                                       class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300">Cancel</a>
+                                        <?php endif; ?>
                                     </td>
 
                                 </tr>
 
                             <?php endforeach; ?>
+                            <tr class="no-results hidden">
+                                <td colspan="8" class="p-6 text-center text-gray-400 text-sm">No bookings found matching your search.</td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -264,10 +267,14 @@ if (empty($bookings)) {
     <script>
         document.getElementById('bookingSearch').addEventListener('input', function () {
             const q = this.value.toLowerCase();
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(q) ? '' : 'none';
+            let visible = 0;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.classList.contains('no-results')) return;
+                const match = row.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
             });
+            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
         });
 
         function openReceiptModal(src) {

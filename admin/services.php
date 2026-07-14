@@ -161,7 +161,7 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody id="tableBody" class="divide-y divide-gray-100">
                             <?php foreach ($services as $s): ?>
                                 <tr class="hover:bg-gray-50 transition">
                                     <!-- <td class="px-6 py-4 text-gray-500"><?= $s['id'] ?></td> -->
@@ -182,12 +182,9 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                            <?php if (empty($services)): ?>
-                                <tr>
-                                    <td colspan="3" class="px-6 py-10 text-center text-gray-400">No services found. Click "+
-                                        Add Service" to create one.</td>
-                                </tr>
-                            <?php endif; ?>
+                            <tr class="no-results hidden">
+                                <td colspan="2" class="px-6 py-10 text-center text-gray-400 text-sm">No services found matching your search.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -247,10 +244,14 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
 
                     document.getElementById('serviceSearch').addEventListener('input', function () {
                         const q = this.value.toLowerCase();
-                        document.querySelectorAll('tbody tr').forEach(row => {
-                            const text = row.textContent.toLowerCase();
-                            row.style.display = text.includes(q) ? '' : 'none';
+                        let visible = 0;
+                        document.querySelectorAll('#tableBody tr').forEach(row => {
+                            if (row.classList.contains('no-results')) return;
+                            const match = row.textContent.toLowerCase().includes(q);
+                            row.style.display = match ? '' : 'none';
+                            if (match) visible++;
                         });
+                        document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
                     });
                 </script>
 

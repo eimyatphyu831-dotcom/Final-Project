@@ -286,13 +286,11 @@ if ($vResult)
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <form method="GET" class="relative flex-1 max-w-sm">
+                    <div class="relative flex-1 max-w-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($searchEvent) ?>"
-                            placeholder="Search events..."
-                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white"
-                            onchange="this.form.submit()">
-                    </form>
+                        <input type="text" id="searchInput" placeholder="Search events..."
+                            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
+                    </div>
                     <div class="flex gap-3">
                         <a href="events.php?action=add"
                             class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
@@ -313,7 +311,7 @@ if ($vResult)
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody id="tableBody" class="divide-y divide-gray-100">
                             <?php foreach ($events as $event): ?>
                                 <tr class="hover:bg-gray-50 transition">
                                     <td class="px-6 py-4">
@@ -344,6 +342,9 @@ if ($vResult)
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
+                            <tr class="no-results hidden">
+                                <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No events found matching your search.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -509,6 +510,19 @@ if ($vResult)
 
     </div>
 
+    <script>
+        document.getElementById('searchInput')?.addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            let visible = 0;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.classList.contains('no-results')) return;
+                const match = row.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+        });
+    </script>
 </body>
 
 </html>

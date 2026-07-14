@@ -388,13 +388,13 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                                 Booking Overview
                             </h3>
 
-                            <select id="bookingFilter"
+                            <!-- <select id="bookingFilter"
                                 class="border border-gray-200 text-xs px-3 py-1.5 rounded-lg bg-white font-medium text-gray-600 focus:outline-none">
 
                                 <option value="week">This Week</option>
                                 <option value="month">Last Month</option>
 
-                            </select>
+                            </select> -->
                         </div>
 
                         <div class="h-64">

@@ -134,12 +134,11 @@ $stmt->close();
             <main class="flex-1 p-8 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <form method="GET" class="relative flex-1 max-w-sm">
+                    <div class="relative flex-1 max-w-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>"
-                            placeholder="Search messages..."
+                        <input type="text" id="searchInput" placeholder="Search messages..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </form>
+                    </div>
                 </div>
 
                 <?php if ($message): ?>
@@ -224,7 +223,7 @@ $stmt->close();
                             </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody id="tableBody">
 
                             <?php if (empty($messages)): ?>
                                 <tr>
@@ -275,6 +274,9 @@ $stmt->close();
 
                                 </tr>
                             <?php endforeach; ?>
+                            <tr class="no-results hidden">
+                                <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No messages found matching your search.</td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -287,6 +289,19 @@ $stmt->close();
 
     </div>
 
+    <script>
+        document.getElementById('searchInput')?.addEventListener('input', function () {
+            const q = this.value.toLowerCase();
+            let visible = 0;
+            document.querySelectorAll('#tableBody tr').forEach(row => {
+                if (row.classList.contains('no-results')) return;
+                const match = row.textContent.toLowerCase().includes(q);
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+        });
+    </script>
 </body>
 
 </html>
