@@ -271,19 +271,23 @@ $stmt->close();
                                             class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Active</span>
                                     </td>
 
-                                    <td class="p-3 flex gap-2">
-                                        <a href="customers.php?view=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
-                                            <i class="fa-solid fa-eye"></i>
-                                            View
-                                        </a>
+                                    <td class="p-3">
+                                        <div class="flex justify-center items-center gap-2">
 
-                                        <a href="customers.php?delete=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            onclick="return confirm('Delete this customer?')"
-                                            class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
-                                            <i class="fa-solid fa-trash-can mr-1"></i>
-                                            Delete
-                                        </a>
+                                            <a href="customers.php?view=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
+                                                <i class="fa-solid fa-eye"></i>
+                                                View
+                                            </a>
+
+                                            <a href="customers.php?delete=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                                onclick="return confirm('Delete this customer?')"
+                                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                                Delete
+                                            </a>
+
+                                        </div>
                                     </td>
 
                                 </tr>

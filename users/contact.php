@@ -68,7 +68,7 @@ include '../includes/header.php';
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Event Type</label>
                     <select name="event_type"
-                        class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-400 focus:outline-none focus:border-brand-200">
+                        class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-600 focus:outline-none focus:border-brand-200">
                         <option value="">Select Option...</option>
                         <option value="Wedding Ceremony">Wedding Ceremony</option>
                         <option value="Corporate Seminar/Gala">Corporate Seminar/Gala</option>

@@ -125,6 +125,7 @@ $username = $_SESSION['user_name'] ?? '';
         }
 
         html.dark .shadow-sm,
+        html.dark .shadow-md,
         html.dark .shadow-lg,
         html.dark .shadow-xl {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
@@ -146,6 +147,77 @@ $username = $_SESSION['user_name'] ?? '';
         html.dark .bg-brand-200 {
             background-color: #5a4a7a !important;
         }
+
+        /* events / venues / viewevents dark mode */
+        html.dark .bg-\[#f6f3fa\],
+        html.dark .bg-purple-50 {
+            background-color: var(--bg-secondary) !important;
+        }
+        html.dark .bg-\[#f7f5fa\],
+        html.dark .venue-card,
+        html.dark .event-card {
+            background-color: var(--bg-card) !important;
+        }
+        html.dark .text-slate-500,
+        html.dark .text-slate-400 {
+            color: var(--text-secondary) !important;
+        }
+        html.dark .text-slate-700,
+        html.dark .text-slate-900 {
+            color: var(--text-primary) !important;
+        }
+        html.dark .text-brand-900 {
+            color: var(--text-primary) !important;
+        }
+        html.dark .text-brand-600 {
+            color: #b8a5d6 !important;
+        }
+        html.dark .border-slate-200,
+        html.dark .border-slate-100,
+        html.dark .border-slate-200\/60,
+        html.dark .border-purple-200 {
+            border-color: var(--border-color) !important;
+        }
+        html.dark .text-purple-500,
+        html.dark .text-purple-400 {
+            color: #b8a5d6 !important;
+        }
+        html.dark .bg-purple-400 {
+            background-color: #5a4a7a !important;
+        }
+        html.dark .text-orange-700 { color: #fbbf24 !important; }
+        html.dark .text-orange-400 { color: #f59e0b !important; }
+        html.dark .text-orange-500 { color: #f59e0b !important; }
+        html.dark .text-blue-700 { color: #93c5fd !important; }
+        html.dark .text-blue-400 { color: #60a5fa !important; }
+        html.dark .text-blue-500 { color: #60a5fa !important; }
+        html.dark .text-blue-600 { color: #60a5fa !important; }
+        html.dark .border-orange-400 { border-color: #b45309 !important; }
+        html.dark .border-blue-400,
+        html.dark .border-blue-300 { border-color: #1e40af !important; }
+        html.dark .border-gray-400 { border-color: var(--border-color) !important; }
+        html.dark .border-gray-300 { border-color: var(--border-color) !important; }
+        html.dark .bg-gray-50 { background-color: #0f1a30 !important; }
+        html.dark .bg-orange-100 { background-color: #451a03 !important; }
+        html.dark .bg-blue-100 { background-color: #1e3a5f !important; }
+        html.dark .bg-blue-50 { background-color: #0f1a30 !important; }
+        html.dark .bg-orange-400 { background-color: #92400e !important; }
+        html.dark .bg-blue-400 { background-color: #1e40af !important; }
+        html.dark .text-gray-700 { color: var(--text-primary) !important; }
+        html.dark .text-gray-900 { color: var(--text-primary) !important; }
+        html.dark .text-gray-400 { color: var(--text-secondary) !important; }
+        html.dark .text-gray-600 { color: var(--text-secondary) !important; }
+        html.dark .hover\:bg-gray-700:hover { background-color: #2d3a5c !important; }
+        html.dark .border-gray-400 { border-color: var(--border-color) !important; }
+        html.dark .bg-white.rounded-3xl { background-color: var(--bg-card) !important; }
+
+        /* index.php dark mode */
+        html.dark .bg-slate-50 { background-color: #0f1a30 !important; }
+        html.dark .text-slate-600 { color: var(--text-secondary) !important; }
+        html.dark .border-slate-50\/50 { border-color: var(--border-color) !important; }
+        html.dark .bg-brand-50 { background-color: rgba(195, 177, 225, 0.08) !important; }
+        html.dark .text-brand-900 { color: var(--text-primary) !important; }
+        html.dark .bg-\[\#f6f3fa\] { background-color: var(--bg-secondary) !important; }
     </style>
 </head>
 
@@ -170,9 +242,9 @@ $username = $_SESSION['user_name'] ?? '';
             : 'hover:text-brand-600 transition border-b-2 border-transparent hover:border-brand-600';
     }
     ?>
-    <!-- =========================================================================
-         1. HEADER & NAVIGATION SYSTEM
-         ========================================================================= -->
+    
+    <!-- HEADER & NAVIGATION SYSTEM  -->
+        
     <header class="w-full bg-[#f3f1f6] backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
             <div class="flex items-center gap-2 font-bold text-xl text-brand-900">

@@ -226,23 +226,24 @@ if (empty($bookings)) {
                                         <?php endif; ?>
                                     </td>
 
-                                    <td class="p-3 flex gap-2">
-                                        <?php if ($b['status'] === 'Pending'): ?>
-                                            <a href="?action=approve&id=<?= $b['id'] ?>"
-                                                class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
-                                                <i class="fa-solid fa-circle-check"></i>
-                                                Confirm
-                                            </a>
-                                        <?php endif; ?>
-
-                                        <?php if ($b['status'] !== 'Cancelled'): ?>
-                                            <a href="?action=cancel&id=<?= $b['id'] ?>"
-                                                onclick="return confirm('Cancel this booking?')"
-                                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
-                                                <i class="fa-solid fa-circle-xmark"></i>
-                                                Cancel
-                                            </a>
-                                        <?php endif; ?>
+                                    <td class="p-3">
+    <div class="flex justify-center items-center gap-2">
+        <?php if ($b['status'] === 'Pending'): ?>
+                                                <a href="?action=approve&id=<?= $b['id'] ?>"
+                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                    Confirm
+                                                </a>
+                                            <?php endif; ?>
+                                    
+                                            <?php if ($b['status'] !== 'Cancelled'): ?>
+                                                <a href="?action=cancel&id=<?= $b['id'] ?>" onclick="return confirm('Cancel this booking?')"
+                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
+                                                    <i class="fa-solid fa-circle-xmark"></i>
+                                                    Cancel
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
 
                                 </tr>

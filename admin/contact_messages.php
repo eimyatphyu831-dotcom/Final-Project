@@ -268,27 +268,31 @@ $stmt->close();
                                         <?php endif; ?>
                                     </td>
 
-                                    <td class="p-3 flex gap-2">
-                                        <a href="contact_messages.php?view=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            class="inline-flex items-center gap-1 px-1.5 py-1 bg-blue-200 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
-                                            <i class="fa-solid fa-eye"></i>
-                                            View
-                                        </a>
+                                    <td class="p-3 text-center">
+                                        <div class="flex justify-center items-center gap-1.5">
 
-                                        <?php if (!$m['is_read']): ?>
-                                            <a href="contact_messages.php?read=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                                class="inline-flex items-center gap-1 px-1.5 py-1 bg-green-200 text-green-600 rounded-lg text-xs hover:bg-green-400 transition">
-                                                <i class="fa-solid fa-envelope-open"></i>
-                                                Read
+                                            <a href="contact_messages.php?view=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                                class="inline-flex items-center gap-0.5 px-1 py-1 bg-blue-200 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
+                                                <i class="fa-solid fa-eye"></i>
+                                                View
                                             </a>
-                                        <?php endif; ?>
 
-                                        <a href="contact_messages.php?delete=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
-                                            onclick="return confirm('Delete this message?')"
-                                            class="inline-flex items-center gap-1 px-1.5 py-1 bg-red-200 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
-                                            <i class="fa-solid fa-trash-can mr-1"></i>
-                                            Delete
-                                        </a>
+                                            <?php if (!$m['is_read']): ?>
+                                                <a href="contact_messages.php?read=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                                    class="inline-flex items-center gap-0.5 px-1 py-1 bg-green-200 text-green-600 rounded-lg text-xs hover:bg-green-400 transition">
+                                                    <i class="fa-solid fa-envelope-open"></i>
+                                                    Read
+                                                </a>
+                                            <?php endif; ?>
+
+                                            <a href="contact_messages.php?delete=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                                onclick="return confirm('Delete this message?')"
+                                                class="inline-flex items-center gap-0.5 px-1 py-1 bg-red-200 text-red-600 rounded-lg text-xs hover:bg-red-400 transition">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                                Delete
+                                            </a>
+
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

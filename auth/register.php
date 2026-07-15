@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bind_param("sssss", $name, $email, $phone, $registration_reason, $hashedPassword);
 
             if ($stmt->execute()) {
-                header("Location: ../users/index.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
+                header("Location: auth/login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
                 exit();
             } else {
                 $message = "Registration failed!";
