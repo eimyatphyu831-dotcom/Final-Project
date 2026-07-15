@@ -89,10 +89,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-$conn->close();
-
 $pageTitle = "My Profile";
 include "../includes/header.php";
+
+$conn->close();
 ?>
 
 <div class="min-h-screen bg-slate-50">

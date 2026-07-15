@@ -49,7 +49,7 @@ $username = $_SESSION['user_name'] ?? '';
         rel="stylesheet">
 
     <style>
-        html, body {
+        html {
             overflow-x: hidden;
             scroll-behavior: smooth;
         }
@@ -284,6 +284,11 @@ $username = $_SESSION['user_name'] ?? '';
         return in_array($currentPage, $pages, true)
             ? 'hover:text-brand-600 transition border-b-2 border-brand-600 text-brand-600'
             : 'hover:text-brand-600 transition border-b-2 border-transparent hover:border-brand-600';
+    }
+
+    // Ensure db connection is available for nav queries
+    if (!isset($conn) || !($conn instanceof mysqli)) {
+        require_once __DIR__ . '/../config/db.php';
     }
 
     $navEvents = [];

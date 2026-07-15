@@ -26,10 +26,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 $bookings = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
-$conn->close();
 
 $pageTitle = "My Bookings";
 include "../includes/header.php";
+
+$conn->close();
 ?>
 
 <div class="min-h-screen bg-slate-50">

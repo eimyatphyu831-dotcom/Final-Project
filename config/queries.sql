@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     event_id INT NOT NULL,
+    team_id INT NOT NULL,
+    time_slot ENUM('Morning','Evening') NOT NULL,
     venue_id INT NOT NULL,
     package_id INT NOT NULL,
     paymentmethods_id INT NOT NULL,
@@ -117,6 +119,8 @@ CREATE TABLE IF NOT EXISTS bookings (
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (team_id) REFERENCES teams(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,    
     FOREIGN KEY (venue_id) REFERENCES venues(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (package_id) REFERENCES packages(id)
@@ -142,8 +146,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Migration: Add registration_reason to existing users table
--- ALTER TABLE users ADD COLUMN registration_reason TEXT DEFAULT NULL;
+
 
 -- Teams Table
 CREATE TABLE IF NOT EXISTS teams (
@@ -153,17 +156,7 @@ CREATE TABLE IF NOT EXISTS teams (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default teams
-INSERT INTO teams (name, description) VALUES
-    ('Team Alpha', 'Morning shift team'),
-    ('Team Beta',  'Evening shift team'),
-    ('Team Gamma', 'Flexible team')
-ON DUPLICATE KEY UPDATE name=name;
 
--- Add time_slot and team_id to bookings
-ALTER TABLE bookings ADD COLUMN time_slot ENUM('Morning','Evening') AFTER venue_id;
-ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot;
-ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- Notifications Table
 CREATE TABLE IF NOT EXISTS notifications (

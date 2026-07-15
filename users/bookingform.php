@@ -14,15 +14,23 @@ $conn->query("CREATE TABLE IF NOT EXISTS teams (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
+    shift ENUM('Morning','Evening') NOT NULL DEFAULT 'Morning',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
 
+// Add shift column if missing
+$shiftCol = $conn->query("SHOW COLUMNS FROM teams LIKE 'shift'");
+if ($shiftCol && $shiftCol->num_rows === 0) {
+    $conn->query("ALTER TABLE teams ADD COLUMN shift ENUM('Morning','Evening') NOT NULL DEFAULT 'Morning' AFTER description");
+}
+
 $r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
 if ($r && $r->fetch_assoc()['cnt'] == 0) {
-    $conn->query("INSERT INTO teams (name, description) VALUES
-        ('Team Alpha', 'Morning shift team'),
-        ('Team Beta',  'Evening shift team'),
-        ('Team Gamma', 'Flexible team')");
+    $conn->query("INSERT INTO teams (name, description, shift) VALUES
+        ('Team Alpha', 'Morning shift team', 'Morning'),
+        ('Team Beta',  'Evening shift team', 'Evening'),
+        ('Team Gamma', 'Morning shift team 2', 'Morning'),
+        ('Team Delta', 'Evening shift team 2', 'Evening')");
 }
 
 $colCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
@@ -30,6 +38,12 @@ if ($colCheck && $colCheck->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD COLUMN time_slot ENUM('Morning','Evening') AFTER venue_id");
     $conn->query("ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot");
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
+}
+
+$startTimeCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
+if ($startTimeCheck && $startTimeCheck->num_rows === 0) {
+    $conn->query("ALTER TABLE bookings ADD COLUMN start_time TIME AFTER team_id");
+    $conn->query("ALTER TABLE bookings ADD COLUMN end_time TIME AFTER start_time");
 }
 
 $userName = $_SESSION['user_name'] ?? '';
@@ -87,9 +101,29 @@ if ($venueId > 0) {
     $stmt->close();
 }
 
+// Count teams per shift
+$teamCounts = ['Morning' => 0, 'Evening' => 0];
+$r = $conn->query("SELECT shift, COUNT(*) as cnt FROM teams GROUP BY shift");
+if ($r) {
+    while ($row = $r->fetch_assoc()) {
+        $teamCounts[$row['shift']] = (int)$row['cnt'];
+    }
+}
+
+// Count bookings per shift per date (non-cancelled)
+$shiftBookings = [];
+if ($venueId > 0) {
+    $r = $conn->query("SELECT event_date, time_slot, COUNT(*) as cnt FROM bookings WHERE venue_id = $venueId AND status != 'Cancelled' GROUP BY event_date, time_slot");
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $shiftBookings[$row['event_date']][$row['time_slot']] = (int)$row['cnt'];
+        }
+    }
+}
+
 // Fetch all teams for assignment
 $teams = [];
-$r = $conn->query("SELECT id, name FROM teams ORDER BY name");
+$r = $conn->query("SELECT id, name, shift FROM teams ORDER BY shift, name");
 if ($r)
     $teams = $r->fetch_all(MYSQLI_ASSOC);
 
@@ -168,29 +202,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $stmt->close();
 
-            // Auto-assign a team (round-robin: team with fewest bookings for this slot)
-            $teamId = null;
-            $r = $conn->query("SELECT t.id, COUNT(b.id) as cnt FROM teams t LEFT JOIN bookings b ON b.team_id = t.id AND b.time_slot = '$time_slot' AND b.status != 'Cancelled' GROUP BY t.id ORDER BY cnt ASC LIMIT 1");
-            if ($r && $row = $r->fetch_assoc())
-                $teamId = (int) $row['id'];
+            // Check if all teams for this shift are already assigned on this date
+            $totalTeamsForShift = $teamCounts[$time_slot] ?? 0;
+            $assignedForShift = $shiftBookings[$event_date][$time_slot] ?? 0;
+            if ($totalTeamsForShift > 0 && $assignedForShift >= $totalTeamsForShift) {
+                $message = "All {$time_slot} teams are fully booked on " . htmlspecialchars($event_date) . ". Please choose another slot or date.";
+            } else {
+                // Auto-assign a team from matching shift (fewest bookings)
+                $teamId = null;
+                $r = $conn->query("SELECT t.id, COUNT(b.id) as cnt FROM teams t LEFT JOIN bookings b ON b.team_id = t.id AND b.event_date = '$event_date' AND b.status != 'Cancelled' WHERE t.shift = '$time_slot' GROUP BY t.id ORDER BY cnt ASC LIMIT 1");
+                if ($r && $row = $r->fetch_assoc())
+                    $teamId = (int) $row['id'];
 
-            $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-            $stmt->bind_param("iiiisissdsis", $userId, $eid, $vid, $pid, $time_slot, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
-            if ($stmt->execute()) {
-                $bookingId = $stmt->insert_id;
-                $stmt->close();
-                $dateStr = date('M j, Y', strtotime($event_date));
-                $adminResult = $conn->query("SELECT id FROM admins");
-                if ($adminResult) {
-                    while ($admin = $adminResult->fetch_assoc()) {
-                        createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$time_slot}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+                $stmt->bind_param("iiiisissdsis", $userId, $eid, $vid, $pid, $time_slot, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
+                if ($stmt->execute()) {
+                    $bookingId = $stmt->insert_id;
+                    $stmt->close();
+                    $dateStr = date('M j, Y', strtotime($event_date));
+                    $adminResult = $conn->query("SELECT id FROM admins");
+                    if ($adminResult) {
+                        while ($admin = $adminResult->fetch_assoc()) {
+                            createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$time_slot}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                        }
                     }
+                    header("Location: booking_success.php?booking_id=$bookingId");
+                    exit();
                 }
-                header("Location: booking_success.php?booking_id=$bookingId");
-                exit();
+                $stmt->close();
+                $message = 'Failed to create booking. Please try again.';
             }
-            $stmt->close();
-            $message = 'Failed to create booking. Please try again.';
         }
     } else {
         $message = 'Missing required fields.';
@@ -370,14 +411,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         onclick="selectSlot(this)">
                                         <input type="radio" name="time_slot" value="Morning" class="hidden" required>
                                         <div class="text-md font-bold text-gray-700">☀️ Morning</div>
-                                        <div class="text-xs text-gray-400">9:00 AM – 12:00 PM</div>
+                                        <div class="text-xs text-gray-400">8:00 AM – 11:00 PM</div>
                                     </label>
                                     <label
                                         class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
                                         onclick="selectSlot(this)">
                                         <input type="radio" name="time_slot" value="Evening" class="hidden" required>
-                                        <div class="text-md font-bold text-gray-700">🌙 Evening</div>
-                                        <div class="text-xs text-gray-400">6:00 PM – 9:00 PM</div>
+                                        <div class="text-md font-bold text-gray-700">🌙 Night</div>
+                                        <div class="text-xs text-gray-400">7:00 PM – 10:00 PM</div>
                                     </label>
                                 </div>
                                 <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check slot
@@ -546,21 +587,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             const bookedSlots = <?= json_encode($bookedSlots) ?>;
+            const teamCounts = <?= json_encode($teamCounts) ?>;
+            const shiftBookings = <?= json_encode($shiftBookings) ?>;
             const input = document.getElementById("eventDatePicker");
             const slotRadios = document.querySelectorAll('input[name="time_slot"]');
             const slotStatus = document.getElementById('slotStatus');
 
-            // Disable dates where BOTH slots are booked
-            const fullyBookedDates = Object.keys(bookedSlots).filter(d =>
-                bookedSlots[d].includes('Morning') && bookedSlots[d].includes('Evening')
-            );
+            // Disable dates where BOTH slots are fully booked (all teams assigned)
+            const fullyBookedDates = Object.keys(bookedSlots).filter(d => {
+                const morningBooked = shiftBookings[d]?.['Morning'] ?? 0;
+                const eveningBooked = shiftBookings[d]?.['Evening'] ?? 0;
+                const morningFull = teamCounts.Morning > 0 && morningBooked >= teamCounts.Morning;
+                const eveningFull = teamCounts.Evening > 0 && eveningBooked >= teamCounts.Evening;
+                return morningFull && eveningFull;
+            });
 
             function updateSlotAvailability(selectedDate) {
                 const taken = bookedSlots[selectedDate] || [];
+                const dateShiftBookings = shiftBookings[selectedDate] || {};
                 slotRadios.forEach(r => {
                     const label = r.closest('.slot-option');
                     const isTaken = taken.includes(r.value);
-                    if (isTaken) {
+                    const shiftTotal = teamCounts[r.value] || 0;
+                    const shiftAssigned = dateShiftBookings[r.value] || 0;
+                    const allTeamsAssigned = shiftTotal > 0 && shiftAssigned >= shiftTotal;
+                    const isUnavailable = isTaken || allTeamsAssigned;
+                    if (isUnavailable) {
                         label.classList.add('opacity-40', 'pointer-events-none', 'border-red-300');
                         label.classList.remove('hover:border-purple-400', 'selected');
                         r.disabled = true;
@@ -569,18 +621,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         label.classList.add('hover:border-purple-400');
                         r.disabled = false;
                     }
-                    if (r.checked && isTaken) r.checked = false;
+                    if (r.checked && isUnavailable) r.checked = false;
                 });
 
                 const available = [...slotRadios].filter(r => !r.disabled);
                 if (available.length === 0) {
-                    slotStatus.textContent = 'Both slots are booked on this date.';
+                    slotStatus.textContent = 'All teams are fully booked on this date.';
                     slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
                 } else if (available.length === 1) {
-                    slotStatus.textContent = 'Only ' + available[0].value + ' slot is available.';
+                    slotStatus.textContent = 'Only ' + available[0].value + ' slot has available teams.';
                     slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
                 } else {
-                    slotStatus.textContent = 'Both slots are available.';
+                    slotStatus.textContent = 'Both slots have available teams.';
                     slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
                 }
             }
