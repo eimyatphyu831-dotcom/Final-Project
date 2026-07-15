@@ -280,23 +280,31 @@ foreach ($venues as $v) {
     <h2 class="text-3xl font-bold text-purple-400 mb-8">Available Venues</h2>
     <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <?php foreach ($venues as $v): ?>
-            <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>')"
-                class="venue-card cursor-pointer bg-white rounded-[2rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
-                <div class="w-full h-[240px] relative rounded-t-2xl overflow-hidden">
+            <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>', this)"
+                class="venue-card cursor-pointer bg-white rounded-[1.5rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
+                <div class="w-full h-[240px] relative rounded-t-[1.5rem] overflow-hidden">
                     <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                         alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
                 </div>
                 <div class="p-4 flex-1 flex flex-col">
-                    <h3 class="text-2xl font-extrabold text-slate-800 mb-2"><?= htmlspecialchars($v['name']) ?></h3>
-                    <!-- <p class="text-slate-500 text-sm mb-6">Located at <?= htmlspecialchars($v['address']) ?> &mdash;
-                        capacity up to <?= number_format($v['capacity']) ?> guests.</p> -->
-                    <div class="mt-auto flex items-center gap-4 text-xs text-slate-400 font-medium">
-                        <span class="flex items-center gap-1 whitespace-nowrap">
-                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i>
-                            <?= htmlspecialchars($v['address']) ?>
-                        </span>
-                        <span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i>
-                            <?= number_format($v['capacity']) ?> </span>
+    <h3 class="text-2xl font-extrabold text-slate-800 mb-2">
+        <?= htmlspecialchars($v['name']) ?>
+                    </h3>
+                
+                    <div class="mt-auto flex justify-between items-start text-sm text-slate-500">
+                        <!-- Address -->
+                        <div class="flex items-start gap-1 flex-1 pr-4">
+                            <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                            <span class="leading-5 break-words">
+                                <?= htmlspecialchars($v['address']) ?>
+                            </span>
+                        </div>
+                
+                        <!-- Capacity -->
+                        <div class="flex items-center gap-1 shrink-0 text-slate-500">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span><?= number_format($v['capacity']) ?></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -306,9 +314,9 @@ foreach ($venues as $v) {
 
 
 <!-- Available Packages -->
-<section id="packagesSection" class="max-w-7xl mx-auto px-6 pb-16 mt-4 hidden">
+<section id="packagesSection" class="max-w-7xl mx-auto px-6 mb-16 mt-4 hidden">
 
-    <h2 id="selectedVenueTitle" class="text-2xl font-bold mb-8 text-brand-600">
+    <h2 id="selectedVenueTitle" class="text-3xl font-bold mb-6 text-brand-600">
         Available Packages
     </h2>
 
@@ -421,7 +429,9 @@ foreach ($venues as $v) {
 <script>
     const venuePackageData = <?= json_encode($venuePkgData) ?>;
 
-    function showPackages(venueName) {
+    function showPackages(venueName, el) {
+        document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected-venue'));
+        if (el) el.classList.add('selected-venue');
         const section = document.getElementById('packagesSection');
         const data = venuePackageData[venueName];
 
@@ -515,5 +525,10 @@ foreach ($venues as $v) {
         to {
             transform: translateX(-50%);
         }
+    }
+
+    .venue-card.selected-venue {
+        border-color: #682bd1ff !important;
+        box-shadow: 0 0 0 3px rgba(157, 132, 199, 0.3), 0 10px 30px -5px rgba(157, 132, 199, 0.2);
     }
 </style>

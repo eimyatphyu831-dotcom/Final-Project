@@ -108,10 +108,10 @@ foreach ($venues as $v) {
 
         <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             <?php foreach ($venues as $v): ?>
-                <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>')"
-                    class="venue-card cursor-pointer bg-white rounded-[2rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200"
+                <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>', this)"
+                    class="venue-card cursor-pointer bg-white rounded-[1.5rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200"
                     data-name="<?= htmlspecialchars($v['name']) ?>">
-                    <div class="w-full h-[240px] relative rounded-t-2xl overflow-hidden">
+                    <div class="w-full h-[240px] relative rounded-t-[1.5rem] overflow-hidden">
                         <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                             alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
                     </div>
@@ -280,7 +280,9 @@ foreach ($venues as $v) {
 
     const venuePackageData = <?= json_encode($venuePkgData) ?>;
 
-    function showPackages(venueName) {
+    function showPackages(venueName, el) {
+        document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('selected-venue'));
+        if (el) el.classList.add('selected-venue');
         const section = document.getElementById('packagesSection');
         const data = venuePackageData[venueName];
 
@@ -330,3 +332,10 @@ foreach ($venues as $v) {
         }
     }
 </script>
+
+<style>
+    .venue-card.selected-venue {
+        border-color: #9d84c7 !important;
+        box-shadow: 0 0 0 3px rgba(157, 132, 199, 0.3), 0 10px 30px -5px rgba(157, 132, 199, 0.2);
+    }
+</style>
