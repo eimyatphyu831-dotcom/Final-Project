@@ -90,7 +90,8 @@ if ($venueId > 0) {
 // Fetch all teams for assignment
 $teams = [];
 $r = $conn->query("SELECT id, name FROM teams ORDER BY name");
-if ($r) $teams = $r->fetch_all(MYSQLI_ASSOC);
+if ($r)
+    $teams = $r->fetch_all(MYSQLI_ASSOC);
 
 $paymentMethods = [];
 $r = $conn->query("SELECT id, payment_name FROM payment_methods ORDER BY id");
@@ -131,8 +132,8 @@ $timeSlotMap = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'] ?? '';
-    $time_slot  = $_POST['time_slot'] ?? '';
-    $address    = $_POST['address'] ?? '';
+    $time_slot = $_POST['time_slot'] ?? '';
+    $address = $_POST['address'] ?? '';
     $eid = (int) ($_POST['event_id'] ?? 0);
     $vid = (int) ($_POST['venue_id'] ?? 0);
     $pid = (int) ($_POST['package_id'] ?? 0);
@@ -170,7 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Auto-assign a team (round-robin: team with fewest bookings for this slot)
             $teamId = null;
             $r = $conn->query("SELECT t.id, COUNT(b.id) as cnt FROM teams t LEFT JOIN bookings b ON b.team_id = t.id AND b.time_slot = '$time_slot' AND b.status != 'Cancelled' GROUP BY t.id ORDER BY cnt ASC LIMIT 1");
-            if ($r && $row = $r->fetch_assoc()) $teamId = (int) $row['id'];
+            if ($r && $row = $r->fetch_assoc())
+                $teamId = (int) $row['id'];
 
             $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
             $stmt->bind_param("iiiisissdsis", $userId, $eid, $vid, $pid, $time_slot, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
@@ -267,14 +269,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #f5f3ff;
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
         }
-
-        .schedule-table th {
-            font-size: 10px;
-            letter-spacing: 0.05em;
-        }
-        .schedule-table td {
-            font-size: 12px;
-        }
     </style>
 </head>
 
@@ -284,7 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <section class="max-w-3xl mx-auto px-2 sm:px-3 py-5">
+    <section class="max-w-4xl mx-auto px-2 sm:px-3 py-5">
         <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100 p-2 md:p-3">
 
             <div class="flex items-start justify-between mb-2 gap-2">
@@ -292,7 +286,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-2xl font-extrabold text-purple-600/60 text-center">Complete Your Booking</h2>
                     <p class="text-gray-500 mt-1 text-center text-sm">Finalize your event request details.</p>
                 </div>
-                <a href="viewevents.php" class="text-gray-400 hover:text-purple-600 transition flex-shrink-0">
+                <a href="javascript:history.back()"
+                    class="text-gray-400 hover:text-purple-600 transition flex-shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                         </path>
@@ -306,205 +301,164 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <div class="grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-3 items-start">
-                <div class="rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
-                    <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3"
-                        onsubmit="return confirmBooking()">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Booking Form -->
+                <div class="lg:col-span-2">
+                    <div class="rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
+                        <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3"
+                            onsubmit="return confirmBooking()">
 
-                        <input type="hidden" name="event_id" value="<?= $eventId ?>">
-                        <input type="hidden" name="venue_id" value="<?= $venueId ?>">
-                        <input type="hidden" name="package_id" value="<?= $packageId ?>">
-                        <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
-                        <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
+                            <input type="hidden" name="event_id" value="<?= $eventId ?>">
+                            <input type="hidden" name="venue_id" value="<?= $venueId ?>">
+                            <input type="hidden" name="package_id" value="<?= $packageId ?>">
+                            <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
+                            <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Full
-                                    Name</label>
-                                <input type="text" name="full_name" value="<?= htmlspecialchars($userName) ?>"
-                                    placeholder="Jane Doe"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Email
-                                    Address</label>
-                                <input type="email" name="email" value="<?= htmlspecialchars($userEmail) ?>"
-                                    placeholder="jane@example.com"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Phone
-                                    Number</label>
-                                <input type="tel" name="phone" value="<?= htmlspecialchars($userPhone) ?>"
-                                    placeholder="+959..."
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
-                            </div>
-
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">
-                                    Event Date
-                                </label>
-
-                                <div class="relative">
-                                    <input type="text" name="event_date" id="eventDatePicker"
-                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                        placeholder="Select Date" required>
-
-                                    <button type="button" id="calendarBtn"
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600">
-                                        <i class="fa-solid fa-calendar-days"></i>
-                                    </button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Full
+                                        Name</label>
+                                    <input type="text" name="full_name" value="<?= htmlspecialchars($userName) ?>"
+                                        placeholder="Jane Doe"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
+                                        required>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Email
+                                        Address</label>
+                                    <input type="email" name="email" value="<?= htmlspecialchars($userEmail) ?>"
+                                        placeholder="jane@example.com"
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
+                                        required>
                                 </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time Slot</label>
-                            <div id="timeSlotGroup" class="grid grid-cols-2 gap-3">
-                                <label class="slot-option border border-gray-300 rounded-xl p-3 text-center cursor-pointer transition hover:border-purple-400" onclick="selectSlot(this)">
-                                    <input type="radio" name="time_slot" value="Morning" class="hidden" required>
-                                    <div class="text-lg font-bold text-gray-700">☀️ Morning</div>
-                                    <div class="text-xs text-gray-400">9:00 AM – 12:00 PM</div>
-                                </label>
-                                <label class="slot-option border border-gray-300 rounded-xl p-3 text-center cursor-pointer transition hover:border-purple-400" onclick="selectSlot(this)">
-                                    <input type="radio" name="time_slot" value="Evening" class="hidden" required>
-                                    <div class="text-lg font-bold text-gray-700">🌙 Evening</div>
-                                    <div class="text-xs text-gray-400">6:00 PM – 9:00 PM</div>
-                                </label>
-                            </div>
-                            <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check slot availability.</p>
-                        </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Phone
+                                        Number</label>
+                                    <input type="tel" name="phone" value="<?= htmlspecialchars($userPhone) ?>"
+                                        placeholder="+959..."
+                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
+                                        required>
+                                </div>
 
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
-                                Receipt</label>
-                            <input type="file" name="receipt" accept="image/*,.pdf" required
-                                class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition text-sm">
-                        </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">
+                                        Event Date
+                                    </label>
 
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
-                                Method</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                <?php foreach ($paymentMethods as $pm):
-                                    $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
-                                    $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
-                                    ?>
-                                    <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
-                                        data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
-                                        onclick="selectPayment(this)">
+                                    <div class="relative">
+                                        <input type="text" name="event_date" id="eventDatePicker"
+                                            class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-purple-500 outline-none transition"
+                                            placeholder="Select Date" required>
 
-                                        <img src="<?= $base . $logo ?>" alt="<?= htmlspecialchars($pm['payment_name']) ?>"
-                                            class="w-6 h-6 object-contain mb-0.5">
-
-                                        <span class="text-[10px] font-semibold text-gray-700">
-                                            <?= htmlspecialchars($pm['payment_name']) ?>
-                                        </span>
+                                        <button type="button" id="calendarBtn"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600">
+                                            <i class="fa-solid fa-calendar-days"></i>
+                                        </button>
                                     </div>
-                                <?php endforeach; ?>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-3 pt-1">
-                            <button type="submit"
-                                class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
-                                Booking</button>
-                            <button type="button" onclick="window.history.back()"
-                                class="bg-white text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-50 transition">Cancel</button>
-                        </div>
-                    </form>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time
+                                    Slot</label>
+                                <div id="timeSlotGroup" class="grid grid-cols-2 gap-3">
+                                    <label
+                                        class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
+                                        onclick="selectSlot(this)">
+                                        <input type="radio" name="time_slot" value="Morning" class="hidden" required>
+                                        <div class="text-md font-bold text-gray-700">☀️ Morning</div>
+                                        <div class="text-xs text-gray-400">9:00 AM – 12:00 PM</div>
+                                    </label>
+                                    <label
+                                        class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
+                                        onclick="selectSlot(this)">
+                                        <input type="radio" name="time_slot" value="Evening" class="hidden" required>
+                                        <div class="text-md font-bold text-gray-700">🌙 Evening</div>
+                                        <div class="text-xs text-gray-400">6:00 PM – 9:00 PM</div>
+                                    </label>
+                                </div>
+                                <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check slot
+                                    availability.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
+                                    Receipt</label>
+                                <input type="file" name="receipt" accept="image/*,.pdf" required
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
+                                    Method</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <?php foreach ($paymentMethods as $pm):
+                                        $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
+                                        $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
+                                        ?>
+                                        <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
+                                            data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
+                                            onclick="selectPayment(this)">
+
+                                            <img src="<?= $base . $logo ?>"
+                                                alt="<?= htmlspecialchars($pm['payment_name']) ?>"
+                                                class="w-6 h-6 object-contain mb-0.5">
+
+                                            <span class="text-[10px] font-semibold text-gray-700">
+                                                <?= htmlspecialchars($pm['payment_name']) ?>
+                                            </span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button type="submit"
+                                    class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
+                                    Booking</button>
+                                <button type="button" onclick="window.history.back()"
+                                    class="bg-white text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-50 transition">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <!-- Schedule Table -->
-                <div class="rounded-2xl border border-gray-200 p-3 bg-gray-50 shadow-sm">
-                    <h3 class="text-lg font-bold mb-3 text-gray-800">Schedule – <?= htmlspecialchars($venueName ?: 'Venue') ?></h3>
-                    <?php
-                    $scheduleData = [];
-                    if ($venueId > 0) {
-                        $stmt = $conn->prepare("
-                            SELECT b.event_date, b.time_slot, b.start_time, b.end_time,
-                                   t.name AS team_name, u.name AS user_name, b.status
-                            FROM bookings b
-                            LEFT JOIN teams t ON t.id = b.team_id
-                            LEFT JOIN users u ON u.id = b.user_id
-                            WHERE b.venue_id = ? AND b.status != 'Cancelled'
-                            ORDER BY b.event_date DESC, b.time_slot ASC
-                            LIMIT 20
-                        ");
-                        $stmt->bind_param("i", $venueId);
-                        $stmt->execute();
-                        $sr = $stmt->get_result();
-                        if ($sr) $scheduleData = $sr->fetch_all(MYSQLI_ASSOC);
-                        $stmt->close();
-                    }
-                    ?>
-                    <?php if (count($scheduleData) > 0): ?>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-xs text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-gray-300 text-gray-500 uppercase font-bold">
-                                    <th class="py-2 pr-2">Date</th>
-                                    <th class="py-2 pr-2">Slot</th>
-                                    <th class="py-2 pr-2">Time</th>
-                                    <th class="py-2 pr-2">Team</th>
-                                    <th class="py-2">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($scheduleData as $s): ?>
-                                <tr class="border-b border-gray-200">
-                                    <td class="py-2 pr-2 font-medium text-gray-800"><?= htmlspecialchars($s['event_date'] ?? '') ?></td>
-                                    <td class="py-2 pr-2">
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold <?= ($s['time_slot'] ?? '') === 'Morning' ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700' ?>">
-                                            <?= htmlspecialchars($s['time_slot'] ?? '') ?>
-                                        </span>
-                                    </td>
-                                    <td class="py-2 pr-2 text-gray-600"><?= date('g:i A', strtotime($s['start_time'])) ?> – <?= date('g:i A', strtotime($s['end_time'])) ?></td>
-                                    <td class="py-2 pr-2 text-gray-700"><?= htmlspecialchars($s['team_name'] ?: '—') ?></td>
-                                    <td class="py-2">
-                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold <?= $s['status'] === 'Confirmed' ? 'bg-green-100 text-green-700' : ($s['status'] === 'Pending' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700') ?>">
-                                            <?= htmlspecialchars($s['status'] ?? '') ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <?php else: ?>
-                    <p class="text-xs text-gray-400 text-center py-4">No bookings yet for this venue.</p>
-                    <?php endif; ?>
-
-                    <hr class="border-gray-200 my-3">
-
-                    <h3 class="text-lg font-bold mb-3 text-gray-800">Booking Summary</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm text-gray-600"><span>Event</span> <span
-                                class="font-semibold text-gray-900"><?= htmlspecialchars($eventName) ?></span></div>
-                        <div class="flex justify-between text-sm text-gray-600"><span>Package</span> <span
-                                class="font-semibold text-gray-900"><?= htmlspecialchars($packageName) ?></span></div>
-                        <div class="flex justify-between text-sm text-gray-600"><span>Venue</span> <span
-                                class="font-semibold text-gray-900"><?= htmlspecialchars($venueName) ?></span></div>
-                        <hr class="border-gray-200">
-                        <div class="flex justify-between text-lg font-bold">
-                            <span>Total</span>
-                            <span
-                                class="text-purple-600/60"><?= $totalCost > 0 ? number_format($totalCost) . ' MMK' : '—' ?></span>
+                <!-- Booking Summary -->
+                <div class="lg:col-span-1">
+                    <div class="rounded-2xl border border-gray-200 p-4 bg-white shadow-sm  top-4">
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">Booking Summary</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>Event</span>
+                                <span class="font-semibold text-gray-900"><?= htmlspecialchars($eventName) ?></span>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>Package</span>
+                                <span class="font-semibold text-gray-900"><?= htmlspecialchars($packageName) ?></span>
+                            </div>
+                            <div class="flex justify-between items-start text-sm text-gray-600">
+                                <span class="shrink-0">Venue</span>
+                                <span class="font-semibold text-gray-900 text-right max-w-[65%] break-words">
+                                    <?= htmlspecialchars($venueName ?? '') ?>
+                                </span>
+                            </div>
+                            <hr class="border-gray-200">
+                            <div class="flex justify-between text-lg font-bold">
+                                <span>Total</span>
+                                <span class="text-purple-600/60"><?= number_format($totalCost) ?> MMK</span>
+                            </div>
                         </div>
-                    </div>
-                    <hr class="border-gray-200 my-3">
-                    <div class="text-center" id="summaryQrSection">
-                        <p class="text-xs font-bold text-gray-500 uppercase mb-2">Pay with <span
-                                id="summaryPmName">KBZPay</span></p>
-                        <img id="summaryQr" src="<?= $kpayQr ?: $base . 'kpayqr.jpg' ?>" alt="QR"
-                            class="w-40 h-40 mx-auto rounded-xl border border-gray-200 shadow-sm">
-                        <p class="text-[10px] text-gray-400 mt-2">Scan to pay</p>
+                        <hr class="border-gray-200 my-3">
+                        <div class="text-center" id="summaryQrSection">
+                            <p class="text-xs font-bold text-gray-500 uppercase mb-2">Pay with <span
+                                    id="summaryPmName">KBZPay</span></p>
+                            <img id="summaryQr" src="<?= $base ?>kpayqr.jpg"
+                                class="w-40 h-40 mx-auto rounded-xl border border-gray-200 shadow-sm">
+                            <p class="text-[10px] text-gray-400 mt-2">Scan to pay</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -536,10 +490,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('payment_method_id').value = el.dataset.id;
             selectedPm = el;
 
-            const name = el.querySelector('span').textContent;
-
-            document.getElementById('summaryQr').src = el.dataset.qr;
-            document.getElementById('summaryPmName').textContent = name;
+            // Update summary QR section
+            const pmName = el.querySelector('span') ? el.querySelector('span').textContent.trim() : 'KBZPay';
+            const qrSrc = el.dataset.qr || '<?= $base ?>kpayqr.jpg';
+            document.getElementById('summaryPmName').textContent = pmName;
+            document.getElementById('summaryQr').src = qrSrc;
         }
 
         function closeQr() {
@@ -582,8 +537,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kpayCard.classList.add('selected');
                     document.getElementById('payment_method_id').value = kpayCard.dataset.id;
                     selectedPm = kpayCard;
-                    document.getElementById('summaryQr').src = kpayCard.dataset.qr;
-                    document.getElementById('summaryPmName').textContent = kpayCard.querySelector('span').textContent;
+
+                    // Update summary QR on load
+                    const pmName = kpayCard.querySelector('span') ? kpayCard.querySelector('span').textContent.trim() : 'KBZPay';
+                    document.getElementById('summaryPmName').textContent = pmName;
+                    document.getElementById('summaryQr').src = kpayCard.dataset.qr || '<?= $base ?>kpayqr.jpg';
                 }
             }
 
