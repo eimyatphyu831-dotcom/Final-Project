@@ -2,7 +2,7 @@
 include '../includes/header.php';
 ?>
 <!-- CORE SERVICES / BENEFITS GRID -->
-<section id="services" class="w-full bg-[#f6f3fa] py-10 px-4 sm:px-6 lg:px-8">
+<section id="services" class="w-full bg-[#f6f3fa] py-10 px-4 sm:px-6 lg:px-8 page-animate fade-up">
     <div class="max-w-7xl mx-auto">
 
         <!-- Centered Header Section matching image_cd171b.png -->
@@ -19,7 +19,7 @@ include '../includes/header.php';
 
             <!-- Card 1: Decoration -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-1">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -35,7 +35,7 @@ include '../includes/header.php';
 
             <!-- Card 2: Photography -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-2">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -51,7 +51,7 @@ include '../includes/header.php';
 
             <!-- Card 3: Catering -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-3">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -67,7 +67,7 @@ include '../includes/header.php';
 
             <!-- Card 4: Entertainment -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-4">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div

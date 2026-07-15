@@ -5,20 +5,9 @@ require_once '../config/db.php';
 $vResult = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY v.name ASC limit 2");
 $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venues</title>
-</head>
-
-<body>
-
-    <?php include '../includes/header.php'; ?>
+<?php include '../includes/header.php'; ?>
     <!-- CURATED VENUES TIMELINE LIST (PERFECTED IMAGE_CD21E4.JPG UI DESIGN) -->
-    <section id="venues" class="w-full bg-[#faf9f6] py-10 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa]">
+    <section id="venues" class="w-full bg-[#faf9f6] py-10 px-4 sm:px-6 lg:px-8 bg-[#f6f3fa] page-animate fade-up">
         <div class="max-w-7xl mx-auto">
             <div class="relative flex justify-end items-center mb-12 min-h-[90px]">
 
@@ -49,7 +38,7 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
                 <?php foreach ($venues as $i => $v): ?>
                     <?php $reverse = $i % 2 !== 0; ?>
                     <div
-                        class="bg-[#f3f1f6] rounded-[2rem] overflow-hidden flex flex-col md:flex-row <?= $reverse ? 'md:flex-row-reverse' : '' ?> items-stretch">
+                        class="bg-[#f3f1f6] rounded-[2rem] overflow-hidden flex flex-col md:flex-row <?= $reverse ? 'md:flex-row-reverse' : '' ?> items-stretch page-animate <?= $reverse ? 'fade-left' : 'fade-right' ?> delay-<?= $i + 1 ?>">
                         <div class="w-full md:w-[38%] min-h-[280px] relative">
                             <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
                                 alt="<?= htmlspecialchars($v['name']) ?>"
@@ -90,10 +79,6 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
         </div>
     </section>
     <?php include '../includes/footer.php'; ?>
-
-</body>
-
-</html>
 
 <script>
 

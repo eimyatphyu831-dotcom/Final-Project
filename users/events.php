@@ -16,7 +16,7 @@ $badges = [
 <?php include '../includes/header.php'; ?>
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa] dark:bg-[#16213e]">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa] dark:bg-[#16213e] page-animate fade-up">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
@@ -38,7 +38,7 @@ $badges = [
     </div>
 
     <!-- Event Card Layout Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children">
         <?php
         foreach ($allevents as $event):
             $etype = strtolower($event['event_name'] ?? '');
@@ -46,7 +46,7 @@ $badges = [
             $label = ucfirst($etype ?: 'Event');
             ?>
             <div
-                class="bg-[#f7f5fa] dark:bg-[#1e2a45] p-4 rounded-[2rem] border border-slate-200/60 dark:border-[#2a3a5c] shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
+                class="stagger-child bg-[#f7f5fa] dark:bg-[#1e2a45] p-4 rounded-[2rem] border border-slate-200/60 dark:border-[#2a3a5c] shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
                 <div>
                     <div class="relative w-full h-52 rounded-2xl overflow-hidden mb-5">
                         <img src="<?php echo $event['image'] ?>"
@@ -64,7 +64,8 @@ $badges = [
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
                         <?php endif; ?> -->
-                        <p class="text-sm text-slate-500 dark:text-gray-400 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
+                        <p class="text-sm text-slate-500 dark:text-gray-400 mb-6 leading-relaxed">
+                            <?php echo $event['description'] ?></p>
                     </div>
                 </div>
                 <div class="px-2 pb-2 flex gap-2">

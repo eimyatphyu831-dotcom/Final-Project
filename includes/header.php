@@ -49,12 +49,56 @@ $username = $_SESSION['user_name'] ?? '';
         rel="stylesheet">
 
     <style>
-        html {
+        html, body {
+            overflow-x: hidden;
             scroll-behavior: smooth;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
+        }
+
+        /* Page Scroll Animations */
+        .page-animate {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .page-animate.fade-up { transform: translateY(40px); }
+        .page-animate.fade-left { transform: translateX(-60px); }
+        .page-animate.fade-right { transform: translateX(60px); }
+        .page-animate.scale-up { transform: scale(0.9); }
+        .page-animate.visible {
+            opacity: 1;
+            transform: translateY(0) translateX(0) scale(1);
+        }
+        .page-animate.delay-1 { transition-delay: 0.15s; }
+        .page-animate.delay-2 { transition-delay: 0.3s; }
+        .page-animate.delay-3 { transition-delay: 0.45s; }
+        .page-animate.delay-4 { transition-delay: 0.6s; }
+        .page-animate.delay-5 { transition-delay: 0.75s; }
+
+        /* Stagger Children */
+        .stagger-children .stagger-child {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .stagger-children.visible .stagger-child {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hero Animations */
+        .hero-fade {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: heroFadeIn 0.9s ease-out forwards;
+        }
+        .hero-fade.d1 { animation-delay: 0.2s; }
+        .hero-fade.d2 { animation-delay: 0.45s; }
+        .hero-fade.d3 { animation-delay: 0.7s; }
+        @keyframes heroFadeIn {
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1,
@@ -691,6 +735,25 @@ $username = $_SESSION['user_name'] ?? '';
             if (overlay) overlay.addEventListener('click', closeMenu);
             document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
         })();
+
+        // Scroll Animations
+        document.addEventListener('DOMContentLoaded', function () {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        var children = entry.target.querySelectorAll('.stagger-child');
+                        children.forEach(function (child, i) {
+                            child.style.transitionDelay = (i * 0.15) + 's';
+                        });
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.page-animate, .stagger-children').forEach(function (el) {
+                observer.observe(el);
+            });
+        });
 
         // Dark Mode Toggle
         document.addEventListener('DOMContentLoaded', function () {
