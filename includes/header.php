@@ -264,7 +264,14 @@ $username = $_SESSION['user_name'] ?? '';
                 </div>
                 <span class="text-brand-600 font-bold font-sans-serif text-2xl">EventPro</span>
             </div>
-            <!-- <nav class="hidden md:flex items-center gap-8 text-md font-medium text-brand-900"> -->
+
+            <!-- Mobile Hamburger -->
+            <button id="mobileMenuToggle" class="md:hidden text-brand-600 hover:text-brand-900 p-2" aria-label="Toggle menu">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
             <div class="hidden md:flex items-center gap-8">
 
                 <nav class="flex items-center gap-8 text-md font-medium text-brand-900">
@@ -352,7 +359,7 @@ $username = $_SESSION['user_name'] ?? '';
                         </button>
 
                         <div id="notifMenu"
-                            class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right z-50">
+                            class="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-lg border border-slate-100 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right z-50">
                             <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
                                 <h4 class="text-sm font-semibold text-brand-900">Notifications</h4>
                                 <button id="markAllRead"
@@ -449,6 +456,40 @@ $username = $_SESSION['user_name'] ?? '';
         </div>
     </header>
 
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed inset-0 z-[60] hidden md:hidden">
+        <div id="mobileOverlay" class="fixed inset-0 bg-black/50"></div>
+        <div class="top-0 left-0 right-0 bg-white dark:bg-[#1a1a2e] shadow-2xl overflow-y-auto  pb-6" id="mobilePanel" style="top: 3.5rem;">
+            <nav class="p-4 space-y-1">
+                <a href="../users/index.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Home</a>
+                <a href="../users/events.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Events</a>
+                <a href="../users/services.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Services</a>
+                <a href="../users/venues.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Venues</a>
+                <a href="../users/about.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">About</a>
+                <a href="../users/contact.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Contact</a>
+            </nav>
+            <hr class="border-slate-100 dark:border-[#2a3a5c] mx-4">
+            <div class="p-4 space-y-3">
+                <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')): ?>
+                    <a href="../users/my_bookings.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        My Bookings
+                    </a>
+                    <a href="../users/profile.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        My Profile
+                    </a>
+                    <a href="../auth/logout.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-[#2a1020] transition">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Logout
+                    </a>
+                <?php else: ?>
+                    <a href="../auth/login.php" class="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 border border-slate-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Sign In</a>
+                    <a href="../auth/register.php" class="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white transition">Get Started</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
     <script>
 
@@ -636,6 +677,20 @@ $username = $_SESSION['user_name'] ?? '';
         }
 
         window.addEventListener('load', renderLucideIcons);
+
+        // Mobile Menu Toggle
+        (function () {
+            const toggle = document.getElementById('mobileMenuToggle');
+            const menu = document.getElementById('mobileMenu');
+            const overlay = document.getElementById('mobileOverlay');
+
+            function openMenu() { if (menu) menu.classList.remove('hidden'); }
+            function closeMenu() { if (menu) menu.classList.add('hidden'); }
+
+            if (toggle) toggle.addEventListener('click', openMenu);
+            if (overlay) overlay.addEventListener('click', closeMenu);
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+        })();
 
         // Dark Mode Toggle
         document.addEventListener('DOMContentLoaded', function () {

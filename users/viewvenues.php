@@ -106,7 +106,7 @@ foreach ($venues as $v) {
 
         <p id="noVenueMessage" class="hidden mb-6 text-sm text-slate-500">No venues found for your search.</p>
 
-        <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             <?php foreach ($venues as $v): ?>
                 <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>', this)"
                     class="venue-card cursor-pointer bg-white rounded-[1.5rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200"
@@ -150,7 +150,7 @@ foreach ($venues as $v) {
         Available Packages
     </h2>
 
-    <div class="grid lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <!-- Silver -->
         <div

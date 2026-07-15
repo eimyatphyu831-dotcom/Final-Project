@@ -35,7 +35,7 @@ include '../includes/header.php';
 
             <!-- Shape 1: Perfect Circle Frame -->
             <div class="flex flex-col items-center justify-center">
-                <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-md border-4 border-slate-50/50 hover:scale-105 transition duration-300 animate-pulse"
+                <div class="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 rounded-full overflow-hidden shadow-md border-4 border-slate-50/50 hover:scale-105 transition duration-300 animate-pulse"
                     style="animation-duration: 4s;">
                     <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400"
                         alt="Circle Studio Frame" class="w-full h-full object-cover">
@@ -44,7 +44,7 @@ include '../includes/header.php';
 
             <!-- Shape 2: Custom CSS Clip-Path Heart Frame -->
             <div class="flex flex-col items-center justify-center">
-                <div class="w-28 h-28 sm:w-36 sm:h-36 overflow-hidden shadow-xl bg-transparent hover:scale-105 transition duration-300 animate-pulse"
+                <div class="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 overflow-hidden shadow-xl bg-transparent hover:scale-105 transition duration-300 animate-pulse"
                     style="
             mask-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22black%22><path d=%22M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z%22/></svg>');
             -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22black%22><path d=%22M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z%22/></svg>');
@@ -63,7 +63,7 @@ include '../includes/header.php';
 
             <!-- Shape 3: Geometric Rounded Square Frame -->
             <div class="flex flex-col items-center justify-center">
-                <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-[1.75rem] overflow-hidden shadow-md border-4 border-slate-50/50 hover:scale-105 transition duration-300 animate-pulse"
+                <div class="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 rounded-[1.75rem] overflow-hidden shadow-md border-4 border-slate-50/50 hover:scale-105 transition duration-300 animate-pulse"
                     style="animation-duration: 4s;">
                     <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=400"
                         alt="Square Studio Frame" class="w-full h-full object-cover">

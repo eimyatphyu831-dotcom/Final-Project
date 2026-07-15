@@ -123,6 +123,7 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Venues</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -182,7 +183,7 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
 
             <?php include 'admin_header.php'; ?>
 
@@ -203,7 +204,8 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                 </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div class="overflow-x-auto">
                 <table class="w-full text-sm">
     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -262,6 +264,7 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- View Modal -->

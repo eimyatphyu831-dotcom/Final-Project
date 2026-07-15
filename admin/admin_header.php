@@ -14,6 +14,7 @@ $pageTitles = [
     'venues.php'    => ['title' => 'Venues', 'subtitle' => 'Manage your event venues.'],
     'packages.php'  => ['title' => 'Packages', 'subtitle' => 'Manage your service packages.'],
     'services.php'  => ['title' => 'Services', 'subtitle' => 'Manage your available services.'],
+    'teams.php'     => ['title' => 'Teams', 'subtitle' => 'Manage your event teams and assignments.'],
     'bookings.php'  => ['title' => 'Bookings', 'subtitle' => 'View and manage all bookings.'],
     'customers.php' => ['title' => 'Customers', 'subtitle' => 'View and manage your customers.'],
     'contact_messages.php' => ['title' => 'Messages', 'subtitle' => 'View contact messages from customers.'],
@@ -48,8 +49,11 @@ $pageInfo = $pageTitles[$currentPage] ?? ['title' => 'Admin', 'subtitle' => ''];
         scrollbar-color: #c4b5fd transparent;
     }
 </style>
-<header class="bg-white border-b border-gray-100 px-8 py-3 flex items-center justify-between sticky top-0 z-20">
+<header class="bg-white border-b border-gray-100 px-4 sm:px-8 py-3 flex items-center justify-between sticky top-0 z-20">
     <div class="flex items-center gap-3 flex-1">
+        <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-gray-700 mr-2">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
         <div>
             <h1 class="text-xl font-bold text-gray-800 leading-tight"><?= htmlspecialchars($pageInfo['title']) ?></h1>
             <p class="text-xs text-gray-500 mt-0.5"><?= htmlspecialchars($pageInfo['subtitle']) ?></p>
@@ -65,7 +69,7 @@ $pageInfo = $pageTitles[$currentPage] ?? ['title' => 'Admin', 'subtitle' => ''];
                 </span>
             </button>
             <div id="adminNotifMenu"
-                class="hidden absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                class="hidden absolute right-0 mt-3 w-80 max-w-[90vw] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50">
                 <div class="p-3 border-b border-gray-100 flex items-center justify-between">
                     <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
                     <button id="adminMarkAllRead"

@@ -212,6 +212,7 @@ if ($vResult)
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Events Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -279,7 +280,7 @@ if ($vResult)
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
 
             <?php include 'admin_header.php'; ?>
 
@@ -300,7 +301,8 @@ if ($vResult)
                 </div>
 
                 <!-- Table -->
-                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                    <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>

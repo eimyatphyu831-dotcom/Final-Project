@@ -41,17 +41,20 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 // Fetch from DB
 $bookings = [];
 $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
+                  b.time_slot,
                   u.name AS customer_name, u.email,
                   e.event_name,
                   p.name AS package_name,
                   v.name AS venue_name,
-                  pm.payment_name
+                  pm.payment_name,
+                  t.name AS team_name
            FROM bookings b
            JOIN users u ON b.user_id = u.id
            JOIN events e ON b.event_id = e.id
            JOIN packages p ON b.package_id = p.id
            JOIN venues v ON b.venue_id = v.id
            LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
+           LEFT JOIN teams t ON b.team_id = t.id
            ORDER BY b.created_at DESC";
 $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
@@ -61,7 +64,7 @@ if ($result && $result->num_rows > 0) {
 // Fallback if no data
 if (empty($bookings)) {
     $bookings = [
-        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "—", "created_at" => "", "payment_name" => "—"]
+        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "—", "created_at" => "", "payment_name" => "—", "time_slot" => "", "team_name" => ""]
     ];
 }
 ?>
@@ -71,6 +74,7 @@ if (empty($bookings)) {
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Bookings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -119,7 +123,7 @@ if (empty($bookings)) {
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
 
             <?php include 'admin_header.php'; ?>
 
@@ -152,7 +156,8 @@ if (empty($bookings)) {
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+                    <div class="overflow-x-auto">
 
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
@@ -160,6 +165,7 @@ if (empty($bookings)) {
                                 <th class="p-3 text-left">Customer</th>
                                 <th class="p-3 text-left">Event</th>
                                 <th class="p-3 text-left">Package</th>
+                                <th class="p-3 text-left">Slot</th>
                                 <th class="p-3 text-left">Date</th>
                                 <th class="p-3 text-left">Payment</th>
                                 <th class="p-3 text-left">Receipt</th>
@@ -189,6 +195,18 @@ if (empty($bookings)) {
                                     <?= $b['package_name'] === 'Silver' ? 'bg-gray-200 text-gray-700' : ($b['package_name'] === 'Gold' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700') ?>">
                                             <?= htmlspecialchars($b['package_name']) ?>
                                         </span>
+                                    </td>
+                                    <td class="p-3">
+                                        <?php if (!empty($b['time_slot'])): ?>
+                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= $b['time_slot'] === 'Morning' ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700' ?>">
+                                                <?= htmlspecialchars($b['time_slot']) ?>
+                                            </span>
+                                            <?php if (!empty($b['team_name'])): ?>
+                                                <div class="text-[10px] text-gray-400 mt-0.5"><?= htmlspecialchars($b['team_name']) ?></div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="text-gray-400 text-xs">—</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="p-3"><?= htmlspecialchars($b['event_date']) ?></td>
                                     <td class="p-3">
@@ -250,13 +268,13 @@ if (empty($bookings)) {
 
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="8" class="p-6 text-center text-gray-400 text-sm">No bookings found matching
+                                <td colspan="9" class="p-6 text-center text-gray-400 text-sm">No bookings found matching
                                     your search.</td>
                             </tr>
 
                         </tbody>
                     </table>
-
+                    </div>
                 </div>
 
             </main>

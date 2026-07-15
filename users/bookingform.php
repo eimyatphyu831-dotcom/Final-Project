@@ -9,6 +9,29 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
 
+// --- Setup teams table and time_slot columns ---
+$conn->query("CREATE TABLE IF NOT EXISTS teams (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+
+$r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
+if ($r && $r->fetch_assoc()['cnt'] == 0) {
+    $conn->query("INSERT INTO teams (name, description) VALUES
+        ('Team Alpha', 'Morning shift team'),
+        ('Team Beta',  'Evening shift team'),
+        ('Team Gamma', 'Flexible team')");
+}
+
+$colCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
+if ($colCheck && $colCheck->num_rows === 0) {
+    $conn->query("ALTER TABLE bookings ADD COLUMN time_slot ENUM('Morning','Evening') AFTER venue_id");
+    $conn->query("ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot");
+    $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
+}
+
 $userName = $_SESSION['user_name'] ?? '';
 $userEmail = $_SESSION['user_email'] ?? '';
 $userId = $_SESSION['user_id'];
@@ -49,20 +72,25 @@ if ($packageId > 0) {
         $packageName = $row['name'];
 }
 
-// Fetch booked dates for this specific venue (non-cancelled)
-$bookedDates = [];
+// Fetch booked slots for this specific venue (non-cancelled)
+$bookedSlots = [];
 if ($venueId > 0) {
-    $stmt = $conn->prepare("SELECT DISTINCT event_date FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
+    $stmt = $conn->prepare("SELECT event_date, time_slot FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
     $stmt->bind_param("i", $venueId);
     $stmt->execute();
     $r = $stmt->get_result();
     if ($r) {
         while ($row = $r->fetch_assoc()) {
-            $bookedDates[] = $row['event_date'];
+            $bookedSlots[$row['event_date']][] = $row['time_slot'];
         }
     }
     $stmt->close();
 }
+
+// Fetch all teams for assignment
+$teams = [];
+$r = $conn->query("SELECT id, name FROM teams ORDER BY name");
+if ($r) $teams = $r->fetch_all(MYSQLI_ASSOC);
 
 $paymentMethods = [];
 $r = $conn->query("SELECT id, payment_name FROM payment_methods ORDER BY id");
@@ -96,17 +124,24 @@ $qrMap = [
     'AYAPay' => 'ayapay_qr.png',
 ];
 
+$timeSlotMap = [
+    'Morning' => ['09:00:00', '12:00:00'],
+    'Evening' => ['18:00:00', '21:00:00'],
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'] ?? '';
-    $start_time = $_POST['start_time'] ?? '';
-    $address = $_POST['address'] ?? '';
+    $time_slot  = $_POST['time_slot'] ?? '';
+    $address    = $_POST['address'] ?? '';
     $eid = (int) ($_POST['event_id'] ?? 0);
     $vid = (int) ($_POST['venue_id'] ?? 0);
     $pid = (int) ($_POST['package_id'] ?? 0);
     $total = (float) ($_POST['total_cost'] ?? 0);
-    $paymentMethodId = !empty($_POST['paymentmethods_id']) ? (int) $_POST['paymentmethods_id'] : null;
+    $paymentMethodId = !empty($_POST['paymentmethods_id']) ? (int) $_POST['paymentmethods_id'] : 0;
 
-    if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $start_time) {
+    if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $time_slot && isset($timeSlotMap[$time_slot])) {
+        [$start_time, $end_time] = $timeSlotMap[$time_slot];
+
         // Handle receipt upload
         $receiptPath = null;
         if (isset($_FILES['receipt']) && $_FILES['receipt']['error'] === UPLOAD_ERR_OK) {
@@ -121,28 +156,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Check if the venue is already booked on this date
-        $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND status != 'Cancelled'");
-        $stmt->bind_param("is", $vid, $event_date);
+        // Check if this specific slot is already booked
+        $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot = ? AND status != 'Cancelled'");
+        $stmt->bind_param("iss", $vid, $event_date, $time_slot);
         $stmt->execute();
         $stmt->store_result();
         if ($stmt->num_rows > 0) {
             $stmt->close();
-            $message = 'This venue is already booked on ' . htmlspecialchars($event_date) . '. Please choose another date.';
+            $message = "{$time_slot} slot on " . htmlspecialchars($event_date) . ' is already booked. Please choose another slot or date.';
         } else {
             $stmt->close();
 
-            $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, event_date, start_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-            $stmt->bind_param("iiiissdis", $userId, $eid, $vid, $pid, $event_date, $start_time, $total, $paymentMethodId, $receiptPath);
+            // Auto-assign a team (round-robin: team with fewest bookings for this slot)
+            $teamId = null;
+            $r = $conn->query("SELECT t.id, COUNT(b.id) as cnt FROM teams t LEFT JOIN bookings b ON b.team_id = t.id AND b.time_slot = '$time_slot' AND b.status != 'Cancelled' GROUP BY t.id ORDER BY cnt ASC LIMIT 1");
+            if ($r && $row = $r->fetch_assoc()) $teamId = (int) $row['id'];
+
+            $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+            $stmt->bind_param("iiiisissdsis", $userId, $eid, $vid, $pid, $time_slot, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
             if ($stmt->execute()) {
                 $bookingId = $stmt->insert_id;
                 $stmt->close();
-                // Notify all admins about new booking
                 $dateStr = date('M j, Y', strtotime($event_date));
                 $adminResult = $conn->query("SELECT id FROM admins");
                 if ($adminResult) {
                     while ($admin = $adminResult->fetch_assoc()) {
-                        createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                        createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$time_slot}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
                     }
                 }
                 header("Location: booking_success.php?booking_id=$bookingId");
@@ -153,21 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } else {
         $message = 'Missing required fields.';
-    }
-
-
-    $stmt = $conn->prepare("
-    SELECT id FROM bookings 
-    WHERE venue_id = ? 
-    AND event_date = ? 
-    AND status != 'Cancelled'
-");
-    $stmt->bind_param("is", $vid, $event_date);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows > 0) {
-        $message = "This date is already booked. Please choose another date.";
     }
 }
 ?>
@@ -237,6 +261,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 opacity: 1;
             }
         }
+
+        .slot-option.selected {
+            border-color: #7c3aed !important;
+            background: #f5f3ff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        }
+
+        .schedule-table th {
+            font-size: 10px;
+            letter-spacing: 0.05em;
+        }
+        .schedule-table td {
+            font-size: 12px;
+        }
     </style>
 </head>
 
@@ -268,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <div class="grid lg:grid-cols-[1fr_0.8fr] gap-3 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-3 items-start">
                 <div class="rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
                     <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3"
                         onsubmit="return confirmBooking()">
@@ -279,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
                         <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
 
-                        <div class="grid md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Full
                                     Name</label>
@@ -298,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Phone
                                     Number</label>
@@ -326,22 +364,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-3">
-
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Start
-                                    Time</label>
-                                <input type="time" name="start_time"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time Slot</label>
+                            <div id="timeSlotGroup" class="grid grid-cols-2 gap-3">
+                                <label class="slot-option border border-gray-300 rounded-xl p-3 text-center cursor-pointer transition hover:border-purple-400" onclick="selectSlot(this)">
+                                    <input type="radio" name="time_slot" value="Morning" class="hidden" required>
+                                    <div class="text-lg font-bold text-gray-700">☀️ Morning</div>
+                                    <div class="text-xs text-gray-400">9:00 AM – 12:00 PM</div>
+                                </label>
+                                <label class="slot-option border border-gray-300 rounded-xl p-3 text-center cursor-pointer transition hover:border-purple-400" onclick="selectSlot(this)">
+                                    <input type="radio" name="time_slot" value="Evening" class="hidden" required>
+                                    <div class="text-lg font-bold text-gray-700">🌙 Evening</div>
+                                    <div class="text-xs text-gray-400">6:00 PM – 9:00 PM</div>
+                                </label>
                             </div>
-
-                            <div>
-                                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">End Time</label>
-                                <input type="time" name="end_time"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                    required>
-                            </div>
+                            <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check slot availability.</p>
                         </div>
 
                         <div>
@@ -354,7 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div>
                             <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
                                 Method</label>
-                            <div class="grid grid-cols-4 gap-2">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 <?php foreach ($paymentMethods as $pm):
                                     $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
                                     $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
@@ -384,7 +421,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
                 </div>
 
+                <!-- Schedule Table -->
                 <div class="rounded-2xl border border-gray-200 p-3 bg-gray-50 shadow-sm">
+                    <h3 class="text-lg font-bold mb-3 text-gray-800">Schedule – <?= htmlspecialchars($venueName ?: 'Venue') ?></h3>
+                    <?php
+                    $scheduleData = [];
+                    if ($venueId > 0) {
+                        $stmt = $conn->prepare("
+                            SELECT b.event_date, b.time_slot, b.start_time, b.end_time,
+                                   t.name AS team_name, u.name AS user_name, b.status
+                            FROM bookings b
+                            LEFT JOIN teams t ON t.id = b.team_id
+                            LEFT JOIN users u ON u.id = b.user_id
+                            WHERE b.venue_id = ? AND b.status != 'Cancelled'
+                            ORDER BY b.event_date DESC, b.time_slot ASC
+                            LIMIT 20
+                        ");
+                        $stmt->bind_param("i", $venueId);
+                        $stmt->execute();
+                        $sr = $stmt->get_result();
+                        if ($sr) $scheduleData = $sr->fetch_all(MYSQLI_ASSOC);
+                        $stmt->close();
+                    }
+                    ?>
+                    <?php if (count($scheduleData) > 0): ?>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-300 text-gray-500 uppercase font-bold">
+                                    <th class="py-2 pr-2">Date</th>
+                                    <th class="py-2 pr-2">Slot</th>
+                                    <th class="py-2 pr-2">Time</th>
+                                    <th class="py-2 pr-2">Team</th>
+                                    <th class="py-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($scheduleData as $s): ?>
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-2 pr-2 font-medium text-gray-800"><?= htmlspecialchars($s['event_date'] ?? '') ?></td>
+                                    <td class="py-2 pr-2">
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold <?= ($s['time_slot'] ?? '') === 'Morning' ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700' ?>">
+                                            <?= htmlspecialchars($s['time_slot'] ?? '') ?>
+                                        </span>
+                                    </td>
+                                    <td class="py-2 pr-2 text-gray-600"><?= date('g:i A', strtotime($s['start_time'])) ?> – <?= date('g:i A', strtotime($s['end_time'])) ?></td>
+                                    <td class="py-2 pr-2 text-gray-700"><?= htmlspecialchars($s['team_name'] ?: '—') ?></td>
+                                    <td class="py-2">
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold <?= $s['status'] === 'Confirmed' ? 'bg-green-100 text-green-700' : ($s['status'] === 'Pending' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700') ?>">
+                                            <?= htmlspecialchars($s['status'] ?? '') ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php else: ?>
+                    <p class="text-xs text-gray-400 text-center py-4">No bookings yet for this venue.</p>
+                    <?php endif; ?>
+
+                    <hr class="border-gray-200 my-3">
+
                     <h3 class="text-lg font-bold mb-3 text-gray-800">Booking Summary</h3>
                     <div class="space-y-2">
                         <div class="flex justify-between text-sm text-gray-600"><span>Event</span> <span
@@ -448,6 +546,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('qrModal').classList.remove('open');
         }
 
+        function selectSlot(el) {
+            document.querySelectorAll('.slot-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input[type="radio"]').checked = true;
+        }
+
         function confirmBooking() {
             if (!document.getElementById('payment_method_id').value) {
                 Swal.fire({ icon: 'error', title: 'Payment required', text: 'Please select a payment method.', confirmButtonColor: '#7c3aed' });
@@ -483,19 +587,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            const bookedDates = <?= json_encode($bookedDates) ?>;
+            const bookedSlots = <?= json_encode($bookedSlots) ?>;
             const input = document.getElementById("eventDatePicker");
+            const slotRadios = document.querySelectorAll('input[name="time_slot"]');
+            const slotStatus = document.getElementById('slotStatus');
+
+            // Disable dates where BOTH slots are booked
+            const fullyBookedDates = Object.keys(bookedSlots).filter(d =>
+                bookedSlots[d].includes('Morning') && bookedSlots[d].includes('Evening')
+            );
+
+            function updateSlotAvailability(selectedDate) {
+                const taken = bookedSlots[selectedDate] || [];
+                slotRadios.forEach(r => {
+                    const label = r.closest('.slot-option');
+                    const isTaken = taken.includes(r.value);
+                    if (isTaken) {
+                        label.classList.add('opacity-40', 'pointer-events-none', 'border-red-300');
+                        label.classList.remove('hover:border-purple-400', 'selected');
+                        r.disabled = true;
+                    } else {
+                        label.classList.remove('opacity-40', 'pointer-events-none', 'border-red-300');
+                        label.classList.add('hover:border-purple-400');
+                        r.disabled = false;
+                    }
+                    if (r.checked && isTaken) r.checked = false;
+                });
+
+                const available = [...slotRadios].filter(r => !r.disabled);
+                if (available.length === 0) {
+                    slotStatus.textContent = 'Both slots are booked on this date.';
+                    slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
+                } else if (available.length === 1) {
+                    slotStatus.textContent = 'Only ' + available[0].value + ' slot is available.';
+                    slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
+                } else {
+                    slotStatus.textContent = 'Both slots are available.';
+                    slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
+                }
+            }
 
             flatpickr(input, {
                 minDate: "today",
                 dateFormat: "Y-m-d",
-                disable: bookedDates.map(d => d),
+                disable: fullyBookedDates,
+                onChange: function (selectedDates, dateStr) {
+                    if (dateStr) updateSlotAvailability(dateStr);
+                },
                 onDayCreate: function (dObj, dStr, fp, dayElem) {
                     const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
-                    if (bookedDates.includes(dateStr)) {
-                        dayElem.title = 'Already booked';
+                    const taken = bookedSlots[dateStr] || [];
+                    if (taken.length > 0) {
+                        const tips = taken.map(s => s + ' booked').join(', ');
+                        dayElem.title = tips;
+                        if (taken.includes('Morning')) dayElem.style.boxShadow = 'inset 0 -3px 0 #fbbf24';
+                        if (taken.includes('Evening')) dayElem.style.boxShadow = 'inset 0 -3px 0 #6366f1';
+                        if (taken.length === 2) dayElem.style.opacity = '0.4';
                     }
                 }
+            });
+
+            // Reset status when date field is cleared
+            slotRadios.forEach(r => {
+                r.addEventListener('change', function () {
+                    slotStatus.textContent = 'Slot selected: ' + this.value;
+                    slotStatus.className = 'text-xs mt-1 text-purple-600 font-semibold';
+                });
             });
         });
     </script>

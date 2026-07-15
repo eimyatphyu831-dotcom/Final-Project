@@ -148,7 +148,7 @@ foreach ($venues as $v) {
 
 <section class="max-w-7xl mx-auto px-6 py-12">
 
-    <div class="grid lg:grid-cols-2 gap-16 items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
         <!-- Image -->
         <div class="relative group">
@@ -278,7 +278,7 @@ foreach ($venues as $v) {
 <!-- Availble Venues -->
 <section class="max-w-7xl mx-auto px-6 pb-12">
     <h2 class="text-3xl font-bold text-purple-400 mb-8">Available Venues</h2>
-    <div id="venueGrid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+    <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         <?php foreach ($venues as $v): ?>
             <div onclick="showPackages('<?= htmlspecialchars($v['name']) ?>', this)"
                 class="venue-card cursor-pointer bg-white rounded-[1.5rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
@@ -320,7 +320,7 @@ foreach ($venues as $v) {
         Available Packages
     </h2>
 
-    <div class="grid lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <!-- Silver -->
         <div

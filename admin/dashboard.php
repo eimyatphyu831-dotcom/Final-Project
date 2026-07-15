@@ -197,7 +197,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
         <!-- Sidebar -->
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
             <!-- Header -->
             <?php include 'admin_header.php'; ?>
 

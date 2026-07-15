@@ -296,7 +296,7 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
     <div class="flex h-screen">
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
             <?php include 'admin_header.php'; ?>
 
             <main class="flex-1 p-6 space-y-6 overflow-y-auto">

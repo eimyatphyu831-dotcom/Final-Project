@@ -309,7 +309,10 @@ function activeMenu($page)
         }
 </style>
 
-<aside class="w-64 bg-sidebar text-gray-500 flex flex-col h-screen fixed left-0 top-0 z-10">
+<aside id="sidebar" class="w-64 bg-sidebar text-gray-500 flex flex-col h-screen fixed left-0 top-0 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+
+        <!-- OVERLAY for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
         <!-- TOP WRAPPER -->
         <div class="flex flex-col flex-1">
@@ -328,10 +331,13 @@ function activeMenu($page)
                         Admin Panel
                     </span>
                 </div>
+                <button onclick="toggleSidebar()" class="lg:hidden ml-auto text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
 
             <!-- NAVIGATION -->
-            <nav class="mt-4 px-3 space-y-0.5 flex-1 overflow-y-auto">
+            <nav class="mt-3 px-3 space-y-0.4 flex-1 overflow-y-auto">
 
                 <!-- Dashboard -->
                 <a href="dashboard.php"
@@ -366,6 +372,13 @@ function activeMenu($page)
                     class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('services.php') ?>">
                     <i class="fa-solid fa-concierge-bell w-5 text-purple-brand"></i>
                     Services
+                </a>
+
+                <!-- Teams -->
+                <a href="teams.php"
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('teams.php') ?>">
+                    <i class="fa-solid fa-users w-5 text-purple-brand"></i>
+                    Teams
                 </a>
 
                 <!-- Bookings -->
@@ -425,3 +438,22 @@ function activeMenu($page)
         </div>
 
     </aside>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            sidebar.classList.toggle('-translate-x-full', isOpen);
+            if (overlay) overlay.classList.toggle('hidden', isOpen);
+        }
+        // Close sidebar on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
+        });
+    </script>

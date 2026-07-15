@@ -71,6 +71,7 @@ $stmt->close();
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Customers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -117,7 +118,7 @@ $stmt->close();
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col lg:ml-64">
 
             <?php include 'admin_header.php'; ?>
 
@@ -235,7 +236,8 @@ $stmt->close();
                     </div>
                 <?php endif; ?>
 
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+                    <div class="overflow-x-auto">
 
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
@@ -299,7 +301,7 @@ $stmt->close();
 
                         </tbody>
                     </table>
-
+                    </div>
                 </div>
 
             </main>
