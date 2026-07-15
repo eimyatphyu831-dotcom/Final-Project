@@ -117,15 +117,15 @@ if (isset($_SESSION['success'])) {
 
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa] dark:bg-[#16213e]">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
 
         <!-- Center Title + Paragraph -->
         <div class="absolute left-1/2 -translate-x-1/2 text-center">
-            <h2 class="text-3xl font-bold text-brand-600">Featured Events</h2>
-            <p class="text-md text-slate-500 mt-2 max-w-xl mx-auto">
+            <h2 class="text-3xl font-bold text-brand-600 dark:text-[#b8a5d6]">Featured Events</h2>
+            <p class="text-md text-slate-500 dark:text-gray-400 mt-2 max-w-xl mx-auto">
                 Witness the excellence of our past projects and get inspired
                 for your next big occasion.
             </p>
@@ -133,7 +133,7 @@ if (isset($_SESSION['success'])) {
 
         <!-- Right Side View All -->
         <a href="viewevents.php"
-            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+            class="text-sm font-bold text-brand-900 dark:text-gray-200 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
             View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
     </div>
@@ -147,7 +147,7 @@ if (isset($_SESSION['success'])) {
             $label = ucfirst($etype ?: 'Event');
             ?>
             <div
-                class="bg-[#f7f5fa] p-4 rounded-[2rem] border border-slate-200/60 shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
+                class="bg-[#f7f5fa] dark:bg-[#1e2a45] p-4 rounded-[2rem] border border-slate-200/60 dark:border-[#2a3a5c] shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
                 <div>
                     <div class="relative w-full h-52 rounded-2xl overflow-hidden mb-5">
                         <img src="<?php echo $event['image'] ?>"
@@ -165,12 +165,12 @@ if (isset($_SESSION['success'])) {
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
                         <?php endif; ?> -->
-                        <p class="text-sm text-slate-500 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
+                        <p class="text-sm text-slate-500 dark:text-gray-400 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
                     </div>
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
+                        class="flex-1 block text-center bg-white dark:bg-[#1e2a45] hover:bg-brand-600 text-slate-900 dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
                         View Details
                     </a>
 
@@ -185,13 +185,13 @@ if (isset($_SESSION['success'])) {
 </section>
 
 <!-- CORE SERVICES / BENEFITS GRID -->
-<section id="services" class="w-full bg-[#f6f3fa] py-10 px-4 sm:px-6 lg:px-8">
+<section id="services" class="w-full bg-[#f6f3fa] dark:bg-[#16213e] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
         <!-- Centered Header Section matching image_cd171b.png -->
         <div class="text-center max-w-3xl mx-auto mb-16">
-            <h2 class="text-3xl font-bold text-brand-600 tracking-tight">Our Professional Services</h2>
-            <p class="text-md text-slate-500 mt-2 leading-relaxed">
+            <h2 class="text-3xl font-bold text-brand-600 dark:text-[#b8a5d6] tracking-tight">Our Professional Services</h2>
+            <p class="text-md text-slate-500 dark:text-gray-400 mt-2 leading-relaxed">
                 We provide end-to-end solutions to ensure every aspect of your event is handled with expert care and
                 creative flair.
             </p>
@@ -202,15 +202,15 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 1: Decoration -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
-                        class="w-10 h-10 bg-[#f6f3fa] text-brand-900 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
+                        class="w-10 h-10 bg-[#f6f3fa] dark:bg-[#16213e] text-brand-900 dark:text-gray-200 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
                         <i data-lucide="palette" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="font-bold text-brand-600 text-xl mb-3">Decoration</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">
+                    <h3 class="font-bold text-brand-600 dark:text-[#b8a5d6] text-xl mb-3">Decoration</h3>
+                    <p class="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                         Transforming spaces with bespoke floral arrangements, lighting, and thematic styling.
                     </p>
                 </div>
@@ -218,15 +218,15 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 2: Photography -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
-                        class="w-10 h-10 bg-[#f6f3fa] text-brand-900 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
+                        class="w-10 h-10 bg-[#f6f3fa] dark:bg-[#16213e] text-brand-900 dark:text-gray-200 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
                         <i data-lucide="camera" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="font-bold text-brand-600 text-xl mb-3">Photography</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">
+                    <h3 class="font-bold text-brand-600 dark:text-[#b8a5d6] text-xl mb-3">Photography</h3>
+                    <p class="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                         Capturing every candid moment and grand highlight with cinematic precision and artistry.
                     </p>
                 </div>
@@ -234,15 +234,15 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 3: Catering -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
-                        class="w-10 h-10 bg-[#f6f3fa] text-brand-900 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
+                        class="w-10 h-10 bg-[#f6f3fa] dark:bg-[#16213e] text-brand-900 dark:text-gray-200 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
                         <i data-lucide="utensils" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="font-bold text-brand-600 text-xl mb-3">Catering</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">
+                    <h3 class="font-bold text-brand-600 dark:text-[#b8a5d6] text-xl mb-3">Catering</h3>
+                    <p class="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                         Exquisite culinary experiences tailored to your taste, from gourmet galas to intimate buffets.
                     </p>
                 </div>
@@ -250,15 +250,15 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 4: Entertainment -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
-                        class="w-10 h-10 bg-[#f6f3fa] text-brand-900 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
+                        class="w-10 h-10 bg-[#f6f3fa] dark:bg-[#16213e] text-brand-900 dark:text-gray-200 rounded-xl flex items-center justify-center mb-6 hover:bg-brand-600">
                         <i data-lucide="clapperboard" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="font-bold text-brand-600 text-xl mb-3">Entertainment</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">
+                    <h3 class="font-bold text-brand-600 dark:text-[#b8a5d6] text-xl mb-3">Entertainment</h3>
+                    <p class="text-sm text-slate-500 dark:text-gray-400 leading-relaxed">
                         Curating world-class talent, live music, and immersive performances to captivate your guests.
                     </p>
                 </div>

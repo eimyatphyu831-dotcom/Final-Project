@@ -2,7 +2,7 @@
 <!-- =========================================================================
          8. GLOBAL FOOTER PLATFORM MAP
          ========================================================================= -->
-<footer class="bg-[#f6f3fa] border-t pt-10">
+<footer class="bg-[#f3f1f6] border-t pt-10">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
 
         <!-- Company -->

@@ -13,13 +13,17 @@ $sql .= " GROUP BY e.id ORDER BY e.id DESC";
 $result = $conn->query($sql);
 $allevents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
+// Fetch distinct event types from DB
+$evTypes = [];
+$tRes = $conn->query("SELECT DISTINCT LOWER(event_name) AS event_name FROM events ORDER BY event_name ASC");
+if ($tRes) $evTypes = $tRes->fetch_all(MYSQLI_ASSOC);
+
 // change color on event_type
 $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
     'birthday' => 'bg-yellow-500/60 text-white',
     'music' => 'bg-blue-500/60 text-white',
-    // 'entertainment' => 'bg-purple-500/60 text-white'
 ];
 ?>
 
@@ -57,26 +61,12 @@ include '../includes/header.php';
                 class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'all') ?>">
                 All
             </button>
-
-            <button onclick="filterEvents('corporate')"
-                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'corporate') ?>">
-                Corporate
+            <?php foreach ($evTypes as $ev): $ename = strtolower($ev['event_name']); ?>
+            <button onclick="filterEvents('<?= htmlspecialchars($ename) ?>')"
+                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, $ename) ?>">
+                <?= htmlspecialchars(ucfirst($ename)) ?>
             </button>
-
-            <button onclick="filterEvents('wedding')"
-                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'wedding') ?>">
-                Wedding
-            </button>
-
-            <button onclick="filterEvents('birthday')"
-                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'birthday') ?>">
-                Birthday
-            </button>
-
-            <button onclick="filterEvents('music')"
-                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'music') ?>">
-                Music
-            </button>
+            <?php endforeach; ?>
 
         </div>
 

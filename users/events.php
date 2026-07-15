@@ -16,15 +16,15 @@ $badges = [
 <?php include '../includes/header.php'; ?>
 
 <!-- FEATURED EVENTS / SERVICES GRID -->
-<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
+<section id="events" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa] dark:bg-[#16213e]">
 
     <!-- Section Header matching layout in image_cd005b.jpg -->
     <div class="relative flex justify-end items-start sm:items-end mb-12 min-h-[90px]">
 
         <!-- Center Title + Paragraph -->
         <div class="absolute left-1/2 -translate-x-1/2 text-center">
-            <h2 class="text-3xl font-bold text-brand-600">Featured Events</h2>
-            <p class="text-md text-slate-500 mt-2 max-w-xl mx-auto">
+            <h2 class="text-3xl font-bold text-brand-600 dark:text-[#b8a5d6]">Featured Events</h2>
+            <p class="text-md text-slate-500 dark:text-gray-400 mt-2 max-w-xl mx-auto">
                 Witness the excellence of our past projects and get inspired
                 for your next big occasion.
             </p>
@@ -32,7 +32,7 @@ $badges = [
 
         <!-- Right Side View All -->
         <a href="viewevents.php"
-            class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+            class="text-sm font-bold text-brand-900 dark:text-gray-200 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
             View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
     </div>
@@ -46,7 +46,7 @@ $badges = [
             $label = ucfirst($etype ?: 'Event');
             ?>
             <div
-                class="bg-[#f7f5fa] p-4 rounded-[2rem] border border-slate-200/60 shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
+                class="bg-[#f7f5fa] dark:bg-[#1e2a45] p-4 rounded-[2rem] border border-slate-200/60 dark:border-[#2a3a5c] shadow-md flex flex-col justify-between hover:shadow-2xl transition duration-300">
                 <div>
                     <div class="relative w-full h-52 rounded-2xl overflow-hidden mb-5">
                         <img src="<?php echo $event['image'] ?>"
@@ -64,12 +64,12 @@ $badges = [
                                 <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <?= htmlspecialchars($event['venue_name']) ?>
                             </p>
                         <?php endif; ?> -->
-                        <p class="text-sm text-slate-500 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
+                        <p class="text-sm text-slate-500 dark:text-gray-400 mb-6 leading-relaxed"><?php echo $event['description'] ?></p>
                     </div>
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
+                        class="flex-1 block text-center bg-white dark:bg-[#1e2a45] hover:bg-brand-600 text-slate-900 dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
                         View Details
                     </a>
 

@@ -241,6 +241,16 @@ $username = $_SESSION['user_name'] ?? '';
             ? 'hover:text-brand-600 transition border-b-2 border-brand-600 text-brand-600'
             : 'hover:text-brand-600 transition border-b-2 border-transparent hover:border-brand-600';
     }
+
+    $navEvents = [];
+    try {
+        if (isset($conn) && $conn instanceof mysqli) {
+            $evRes = $conn->query("SELECT DISTINCT LOWER(event_name) AS event_name FROM events ORDER BY event_name ASC");
+            if ($evRes) $navEvents = $evRes->fetch_all(MYSQLI_ASSOC);
+        }
+    } catch (Error $e) {
+        $navEvents = [];
+    }
     ?>
     
     <!-- HEADER & NAVIGATION SYSTEM  -->
@@ -271,23 +281,17 @@ $username = $_SESSION['user_name'] ?? '';
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </a>
-                        <div
-                            class="absolute left-0 mt-2 w-44 bg-white rounded-xl shadow-lg border border-slate-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                            <a href="../users/viewdetails.php?type=wedding"
-                                class="block px-4 py-2 text-sm text-brand-900 hover:bg-brand-50 transition">Wedding</a>
-                            <a href="../users/viewdetails.php?type=corporate"
-                                class="block px-4 py-2 text-sm text-brand-900 hover:bg-brand-50 transition">Corporate</a>
-                            <a href="../users/viewdetails.php?type=birthday"
-                                class="block px-4 py-2 text-sm text-brand-900 hover:bg-brand-50 transition">Birthday</a>
-                            <a href="../users/viewdetails.php?type=music"
-                                class="block px-4 py-2 text-sm text-brand-900 hover:bg-brand-50 transition">Music</a>
-                            <!-- <a href="../users/viewdetails.php?type=entertainment"
-                                class="block px-4 py-2 text-sm text-brand-900 hover:bg-brand-50 transition">Entertainment</a> -->
-                            <hr class="border-slate-100 my-1">
-                            <a href="../users/viewevents.php"
-                                class="block px-4 py-2 text-sm text-brand-600 font-semibold hover:bg-brand-50 transition">View
-                                All</a>
-                        </div>
+                            <div
+                                class="absolute left-0 mt-2 w-44 bg-white dark:bg-[#1e2a45] rounded-xl shadow-lg border border-slate-100 dark:border-[#2a3a5c] py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <?php foreach ($navEvents as $ev): $ename = htmlspecialchars(ucfirst($ev['event_name'])); ?>
+                                <a href="../users/viewdetails.php?type=<?= htmlspecialchars($ev['event_name']) ?>"
+                                    class="block px-4 py-2 text-sm text-brand-900 dark:text-gray-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition"><?= $ename ?></a>
+                                <?php endforeach; ?>
+                                <hr class="border-slate-100 dark:border-[#2a3a5c] my-1">
+                                <a href="../users/viewevents.php"
+                                    class="block px-4 py-2 text-sm text-brand-600 dark:text-[#b8a5d6] font-semibold hover:bg-brand-50 dark:hover:bg-[#16213e] transition">View
+                                    All</a>
+                            </div>
                     </div>
 
                     <a href="../users/services.php"
