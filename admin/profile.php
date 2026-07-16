@@ -161,7 +161,7 @@ $avatar = $admin['profile_image']
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
                 <!-- <div class="mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">My Profile</h2>

@@ -136,7 +136,7 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">

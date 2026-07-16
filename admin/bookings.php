@@ -41,7 +41,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 // Fetch from DB
 $bookings = [];
 $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
-                  b.time_slot,
+                  b.time_slot_id, ts.slot_name AS time_slot_name,
                   u.name AS customer_name, u.email,
                   e.event_name,
                   p.name AS package_name,
@@ -53,6 +53,7 @@ $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.pay
            JOIN events e ON b.event_id = e.id
            JOIN packages p ON b.package_id = p.id
            JOIN venues v ON b.venue_id = v.id
+           LEFT JOIN time_slots ts ON b.time_slot_id = ts.id
            LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
            LEFT JOIN teams t ON b.team_id = t.id
            ORDER BY b.created_at DESC";
@@ -64,7 +65,7 @@ if ($result && $result->num_rows > 0) {
 // Fallback if no data
 if (empty($bookings)) {
     $bookings = [
-        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "—", "created_at" => "", "payment_name" => "—", "time_slot" => "", "team_name" => ""]
+        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "—", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
     ];
 }
 ?>
@@ -127,7 +128,7 @@ if (empty($bookings)) {
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
@@ -159,121 +160,125 @@ if (empty($bookings)) {
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                     <div class="overflow-x-auto">
 
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 text-gray-600">
-                            <tr>
-                                <th class="p-3 text-left">Customer</th>
-                                <th class="p-3 text-left">Event</th>
-                                <th class="p-3 text-left">Package</th>
-                                <th class="p-3 text-left">Slot</th>
-                                <th class="p-3 text-left">Date</th>
-                                <th class="p-3 text-left">Payment</th>
-                                <th class="p-3 text-left">Receipt</th>
-                                <th class="p-3 text-center">Status</th>
-                                <th class="p-3 text-center">Actions</th>
-                            </tr>
-                        </thead>
+                        <table class="w-full text-sm rounded-2xl">
+                            <thead class="bg-gray-50 text-gray-600">
+                                <tr>
+                                    <th class="p-3 text-left">Customer</th>
+                                    <th class="p-3 text-left">Event</th>
+                                    <th class="p-3 text-left">Package</th>
+                                    <th class="p-3 text-left">Slot</th>
+                                    <th class="p-3 text-left">Date</th>
+                                    <th class="p-3 text-left">Payment</th>
+                                    <th class="p-3 text-left">Receipt</th>
+                                    <th class="p-3 text-center">Status</th>
+                                    <th class="p-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
 
-                        <tbody id="tableBody">
+                            <tbody id="tableBody">
 
-                            <?php foreach ($bookings as $b): ?>
+                                <?php foreach ($bookings as $b): ?>
 
-                                <?php if ($b['id'] === 0 || ($statusFilter != 'all' && $b['status'] != $statusFilter))
-                                    continue; ?>
+                                    <?php if ($b['id'] === 0 || ($statusFilter != 'all' && $b['status'] != $statusFilter))
+                                        continue; ?>
 
-                                <tr class="border-t hover:bg-gray-50">
+                                    <tr class="border-t hover:bg-gray-50">
 
-                                    <td class="p-3">
-                                        <div class="font-semibold"><?= htmlspecialchars($b['customer_name']) ?></div>
-                                        <div class="text-xs text-gray-500"><?= htmlspecialchars($b['email']) ?></div>
-                                    </td>
+                                        <td class="p-3">
+                                            <div class="font-semibold"><?= htmlspecialchars($b['customer_name']) ?></div>
+                                            <div class="text-xs text-gray-500"><?= htmlspecialchars($b['email']) ?></div>
+                                        </td>
 
-                                    <td class="p-3"><?= htmlspecialchars($b['event_name']) ?></td>
-                                    <td class="p-3">
-                                        <span
-                                            class="px-2 py-0.5 text-xs font-bold rounded-full 
+                                        <td class="p-3"><?= htmlspecialchars($b['event_name']) ?></td>
+                                        <td class="p-3">
+                                            <span
+                                                class="px-2 py-0.5 text-xs font-bold rounded-full 
                                     <?= $b['package_name'] === 'Silver' ? 'bg-gray-200 text-gray-700' : ($b['package_name'] === 'Gold' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700') ?>">
-                                            <?= htmlspecialchars($b['package_name']) ?>
-                                        </span>
-                                    </td>
-                                    <td class="p-3">
-                                        <?php if (!empty($b['time_slot'])): ?>
-                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full <?= $b['time_slot'] === 'Morning' ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700' ?>">
-                                                <?= htmlspecialchars($b['time_slot']) ?>
+                                                <?= htmlspecialchars($b['package_name']) ?>
                                             </span>
-                                            <?php if (!empty($b['team_name'])): ?>
-                                                <div class="text-[10px] text-gray-400 mt-0.5"><?= htmlspecialchars($b['team_name']) ?></div>
+                                        </td>
+                                        <td class="p-3">
+                                            <?php if (!empty($b['time_slot_name'])): ?>
+                                                <span
+                                                    class="px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700">
+                                                    <?= htmlspecialchars($b['time_slot_name']) ?>
+                                                </span>
+                                                <?php if (!empty($b['team_name'])): ?>
+                                                    <div class="text-[10px] text-gray-400 mt-0.5">
+                                                        <?= htmlspecialchars($b['team_name']) ?></div>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <span class="text-gray-400 text-xs">—</span>
                                             <?php endif; ?>
-                                        <?php else: ?>
-                                            <span class="text-gray-400 text-xs">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="p-3"><?= htmlspecialchars($b['event_date']) ?></td>
-                                    <td class="p-3">
-                                        <?php if (!empty($b['payment_name'])): ?>
-                                            <span
-                                                class="px-2 py-0.5 text-xs font-bold rounded-full
+                                        </td>
+                                        <td class="p-3"><?= htmlspecialchars($b['event_date']) ?></td>
+                                        <td class="p-3">
+                                            <?php if (!empty($b['payment_name'])): ?>
+                                                <span
+                                                    class="px-2 py-0.5 text-xs font-bold rounded-full
                                         <?= $b['payment_name'] === 'KBZPay' ? 'bg-green-100 text-green-700' : ($b['payment_name'] === 'WavePay' ? 'bg-blue-100 text-blue-700' : ($b['payment_name'] === 'CBPay' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700')) ?>">
-                                                <?= htmlspecialchars($b['payment_name']) ?>
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="text-gray-400 text-xs">—</span>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td class="p-3">
-                                        <?php if (!empty($b['receipt_image'])): ?>
-                                            <a href="javascript:void(0)"
-                                                onclick="openReceiptModal('../<?= htmlspecialchars($b['receipt_image']) ?>')"
-                                                class="text-purple-600 hover:text-purple-800 underline text-xs">View</a>
-                                        <?php else: ?>
-                                            <span class="text-gray-400 text-xs">—</span>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td class="p-3">
-                                        <?php if ($b['status'] === 'Pending'): ?>
-                                            <span
-                                                class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending</span>
-                                        <?php elseif ($b['status'] === 'Confirmed'): ?>
-                                            <span
-                                                class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Confirmed</span>
-                                        <?php else: ?>
-                                            <span
-                                                class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Cancelled</span>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td class="p-3">
-    <div class="flex justify-center items-center gap-2">
-        <?php if ($b['status'] === 'Pending'): ?>
-                                                <a href="?action=approve&id=<?= $b['id'] ?>"
-                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
-                                                    <i class="fa-solid fa-circle-check"></i>
-                                                    Confirm
-                                                </a>
+                                                    <?= htmlspecialchars($b['payment_name']) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-gray-400 text-xs">—</span>
                                             <?php endif; ?>
-                                    
-                                            <?php if ($b['status'] !== 'Cancelled'): ?>
-                                                <a href="?action=cancel&id=<?= $b['id'] ?>" onclick="return confirm('Cancel this booking?')"
-                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
-                                                    <i class="fa-solid fa-circle-xmark"></i>
-                                                    Cancel
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
-                                    </td>
+                                        </td>
 
+                                        <td class="p-3">
+                                            <?php if (!empty($b['receipt_image'])): ?>
+                                                <a href="javascript:void(0)"
+                                                    onclick="openReceiptModal('../<?= htmlspecialchars($b['receipt_image']) ?>')"
+                                                    class="text-purple-600 hover:text-purple-800 underline text-xs">View</a>
+                                            <?php else: ?>
+                                                <span class="text-gray-400 text-xs">—</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="p-3">
+                                            <?php if ($b['status'] === 'Pending'): ?>
+                                                <span
+                                                    class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                                            <?php elseif ($b['status'] === 'Confirmed'): ?>
+                                                <span
+                                                    class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Confirmed</span>
+                                            <?php else: ?>
+                                                <span
+                                                    class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Cancelled</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="p-3">
+                                            <div class="flex justify-center items-center gap-2">
+                                                <?php if ($b['status'] === 'Pending'): ?>
+                                                    <a href="?action=approve&id=<?= $b['id'] ?>"
+                                                        class="inline-flex items-center gap-1 px-1.5 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
+                                                        <i class="fa-solid fa-circle-check"></i>
+                                                        Confirm
+                                                    </a>
+                                                <?php endif; ?>
+
+                                                <?php if ($b['status'] !== 'Cancelled'): ?>
+                                                    <a href="?action=cancel&id=<?= $b['id'] ?>"
+                                                        onclick="return confirm('Cancel this booking?')"
+                                                        class="inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
+                                                        <i class="fa-solid fa-circle-xmark"></i>
+                                                        Cancel
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                <?php endforeach; ?>
+                                <tr class="no-results hidden">
+                                    <td colspan="9" class="p-6 text-center text-gray-400 text-sm">No bookings found
+                                        matching
+                                        your search.</td>
                                 </tr>
 
-                            <?php endforeach; ?>
-                            <tr class="no-results hidden">
-                                <td colspan="9" class="p-6 text-center text-gray-400 text-sm">No bookings found matching
-                                    your search.</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 

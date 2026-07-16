@@ -74,7 +74,7 @@ $stmt->close();
         <?php include 'sidebar.php'; ?>
         <div class="flex-1 flex flex-col lg:ml-64">
             <?php include 'admin_header.php'; ?>
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>

@@ -9,41 +9,72 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
 
-// --- Setup teams table and time_slot columns ---
-$conn->query("CREATE TABLE IF NOT EXISTS teams (
+// --- Setup time_slots, teams, and migrate columns ---
+$conn->query("CREATE TABLE IF NOT EXISTS time_slots (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    shift ENUM('Morning','Evening') NOT NULL DEFAULT 'Morning',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    slot_name VARCHAR(50) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL
 )");
 
-// Add shift column if missing
-$shiftCol = $conn->query("SHOW COLUMNS FROM teams LIKE 'shift'");
-if ($shiftCol && $shiftCol->num_rows === 0) {
-    $conn->query("ALTER TABLE teams ADD COLUMN shift ENUM('Morning','Evening') NOT NULL DEFAULT 'Morning' AFTER description");
+$r = $conn->query("SELECT COUNT(*) as cnt FROM time_slots");
+if ($r && $r->fetch_assoc()['cnt'] == 0) {
+    $conn->query("INSERT INTO time_slots (slot_name, start_time, end_time) VALUES
+        ('Slot 1', '09:00:00', '12:00:00'),
+        ('Slot 2', '12:00:00', '15:00:00'),
+        ('Slot 3', '15:00:00', '18:00:00'),
+        ('Slot 4', '18:00:00', '21:00:00')");
 }
 
+// Remove shift_id from teams if exists (teams are no longer shift-bound)
+$shiftIdColCheck = $conn->query("SHOW COLUMNS FROM teams LIKE 'shift_id'");
+if ($shiftIdColCheck && $shiftIdColCheck->num_rows > 0) {
+    $conn->query("ALTER TABLE teams DROP FOREIGN KEY teams_ibfk_1");
+    $conn->query("ALTER TABLE teams DROP COLUMN shift_id");
+}
+
+// Seed teams if empty
 $r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
 if ($r && $r->fetch_assoc()['cnt'] == 0) {
-    $conn->query("INSERT INTO teams (name, description, shift) VALUES
-        ('Team Alpha', 'Morning shift team', 'Morning'),
-        ('Team Beta',  'Evening shift team', 'Evening'),
-        ('Team Gamma', 'Morning shift team 2', 'Morning'),
-        ('Team Delta', 'Evening shift team 2', 'Evening')");
+    $conn->query("INSERT INTO teams (name, description) VALUES
+        ('Team A', 'Service Team A'),
+        ('Team B', 'Service Team B'),
+        ('Team C', 'Service Team C'),
+        ('Team D', 'Service Team D')");
 }
 
-$colCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
-if ($colCheck && $colCheck->num_rows === 0) {
-    $conn->query("ALTER TABLE bookings ADD COLUMN time_slot ENUM('Morning','Evening') AFTER venue_id");
-    $conn->query("ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot");
+// Migrate bookings.time_slot (ENUM) -> bookings.time_slot_id (INT FK)
+$slotEnumCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
+$slotIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot_id'");
+
+if ($slotEnumCol && $slotEnumCol->num_rows > 0 && !($slotIdCol && $slotIdCol->num_rows > 0)) {
+    // Old ENUM exists, new column doesn't: migrate
+    $conn->query("ALTER TABLE bookings ADD COLUMN time_slot_id INT AFTER venue_id");
+    $conn->query("UPDATE bookings b JOIN time_slots ts ON b.time_slot = ts.slot_name SET b.time_slot_id = ts.id");
+    $conn->query("ALTER TABLE bookings DROP COLUMN time_slot");
+} elseif (!($slotEnumCol && $slotEnumCol->num_rows > 0) && !($slotIdCol && $slotIdCol->num_rows > 0)) {
+    // Neither exists: fresh add
+    $conn->query("ALTER TABLE bookings ADD COLUMN time_slot_id INT NOT NULL DEFAULT 1 AFTER venue_id");
+}
+
+// team_id column
+$teamIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'team_id'");
+if ($teamIdCol && $teamIdCol->num_rows === 0) {
+    $conn->query("ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot_id");
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
 }
 
+// start_time / end_time
 $startTimeCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
 if ($startTimeCheck && $startTimeCheck->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD COLUMN start_time TIME AFTER team_id");
     $conn->query("ALTER TABLE bookings ADD COLUMN end_time TIME AFTER start_time");
+}
+
+// FK for time_slot_id
+$fkSlot = $conn->query("SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'time_slot_id' AND REFERENCED_TABLE_NAME = 'time_slots'");
+if ($fkSlot && $fkSlot->num_rows === 0) {
+    $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE RESTRICT ON UPDATE CASCADE");
 }
 
 $userName = $_SESSION['user_name'] ?? '';
@@ -86,44 +117,53 @@ if ($packageId > 0) {
         $packageName = $row['name'];
 }
 
+// Fetch time slots from DB
+$timeSlots = [];
+$r = $conn->query("SELECT * FROM time_slots ORDER BY id");
+if ($r) {
+    $timeSlots = $r->fetch_all(MYSQLI_ASSOC);
+}
+
+$timeSlotMap = [];
+$slotNames = [];
+foreach ($timeSlots as $ts) {
+    $timeSlotMap[$ts['id']] = [$ts['start_time'], $ts['end_time']];
+    $slotNames[$ts['id']] = $ts['slot_name'];
+}
+
 // Fetch booked slots for this specific venue (non-cancelled)
 $bookedSlots = [];
 if ($venueId > 0) {
-    $stmt = $conn->prepare("SELECT event_date, time_slot FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
+    $stmt = $conn->prepare("SELECT event_date, time_slot_id FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
     $stmt->bind_param("i", $venueId);
     $stmt->execute();
     $r = $stmt->get_result();
     if ($r) {
         while ($row = $r->fetch_assoc()) {
-            $bookedSlots[$row['event_date']][] = $row['time_slot'];
+            $bookedSlots[$row['event_date']][] = (int) $row['time_slot_id'];
         }
     }
     $stmt->close();
 }
 
-// Count teams per shift
-$teamCounts = ['Morning' => 0, 'Evening' => 0];
-$r = $conn->query("SELECT shift, COUNT(*) as cnt FROM teams GROUP BY shift");
+// Track which teams are already assigned per date+slot (across ALL venues)
+$assignedTeamsBySlot = [];
+$r = $conn->query("SELECT event_date, time_slot_id, team_id FROM bookings WHERE status != 'Cancelled' AND team_id IS NOT NULL");
 if ($r) {
     while ($row = $r->fetch_assoc()) {
-        $teamCounts[$row['shift']] = (int)$row['cnt'];
+        $assignedTeamsBySlot[$row['event_date']][(int) $row['time_slot_id']][] = (int) $row['team_id'];
     }
 }
 
-// Count bookings per shift per date (non-cancelled)
-$shiftBookings = [];
-if ($venueId > 0) {
-    $r = $conn->query("SELECT event_date, time_slot, COUNT(*) as cnt FROM bookings WHERE venue_id = $venueId AND status != 'Cancelled' GROUP BY event_date, time_slot");
-    if ($r) {
-        while ($row = $r->fetch_assoc()) {
-            $shiftBookings[$row['event_date']][$row['time_slot']] = (int)$row['cnt'];
-        }
-    }
-}
+// Total number of teams
+$totalTeams = 0;
+$r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
+if ($r && $row = $r->fetch_assoc())
+    $totalTeams = (int) $row['cnt'];
 
-// Fetch all teams for assignment
+// Fetch all teams for assignment (ordered A→B→C→D)
 $teams = [];
-$r = $conn->query("SELECT id, name, shift FROM teams ORDER BY shift, name");
+$r = $conn->query("SELECT id, name FROM teams ORDER BY name");
 if ($r)
     $teams = $r->fetch_all(MYSQLI_ASSOC);
 
@@ -159,23 +199,32 @@ $qrMap = [
     'AYAPay' => 'ayapay_qr.png',
 ];
 
-$timeSlotMap = [
-    'Morning' => ['09:00:00', '12:00:00'],
-    'Evening' => ['18:00:00', '21:00:00'],
+$accountMap = [
+    'KBZPay' => 'Daw Ei Myat Phyu',
+    'WavePay' => 'U Myat Maung',
+    'CBPay' => 'Ko Kyaw Kyaw',
+    'AYAPay' => 'Ma Hla Hla',
+];
+
+$phoneMap = [
+    'KBZPay' => '09-950305004',
+    'WavePay' => '09-662602024',
+    'CBPay' => '09-694407879',
+    'AYAPay' => '09-965707826',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'] ?? '';
-    $time_slot = $_POST['time_slot'] ?? '';
-    $address = $_POST['address'] ?? '';
+    $time_slot_id = (int) ($_POST['time_slot'] ?? 0);
     $eid = (int) ($_POST['event_id'] ?? 0);
     $vid = (int) ($_POST['venue_id'] ?? 0);
     $pid = (int) ($_POST['package_id'] ?? 0);
     $total = (float) ($_POST['total_cost'] ?? 0);
     $paymentMethodId = !empty($_POST['paymentmethods_id']) ? (int) $_POST['paymentmethods_id'] : 0;
 
-    if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $time_slot && isset($timeSlotMap[$time_slot])) {
-        [$start_time, $end_time] = $timeSlotMap[$time_slot];
+    if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $time_slot_id > 0 && isset($timeSlotMap[$time_slot_id])) {
+        [$start_time, $end_time] = $timeSlotMap[$time_slot_id];
+        $slotName = $slotNames[$time_slot_id];
 
         // Handle receipt upload
         $receiptPath = null;
@@ -191,31 +240,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Check if this specific slot is already booked
-        $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot = ? AND status != 'Cancelled'");
-        $stmt->bind_param("iss", $vid, $event_date, $time_slot);
+        // Step 1: Check whether the selected venue is already booked for the selected date and slot
+        $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot_id = ? AND status != 'Cancelled'");
+        $stmt->bind_param("iii", $vid, $event_date, $time_slot_id);
         $stmt->execute();
         $stmt->store_result();
         if ($stmt->num_rows > 0) {
             $stmt->close();
-            $message = "{$time_slot} slot on " . htmlspecialchars($event_date) . ' is already booked. Please choose another slot or date.';
+            $message = "This venue is already booked for the selected time.";
         } else {
             $stmt->close();
 
-            // Check if all teams for this shift are already assigned on this date
-            $totalTeamsForShift = $teamCounts[$time_slot] ?? 0;
-            $assignedForShift = $shiftBookings[$event_date][$time_slot] ?? 0;
-            if ($totalTeamsForShift > 0 && $assignedForShift >= $totalTeamsForShift) {
-                $message = "All {$time_slot} teams are fully booked on " . htmlspecialchars($event_date) . ". Please choose another slot or date.";
-            } else {
-                // Auto-assign a team from matching shift (fewest bookings)
-                $teamId = null;
-                $r = $conn->query("SELECT t.id, COUNT(b.id) as cnt FROM teams t LEFT JOIN bookings b ON b.team_id = t.id AND b.event_date = '$event_date' AND b.status != 'Cancelled' WHERE t.shift = '$time_slot' GROUP BY t.id ORDER BY cnt ASC LIMIT 1");
-                if ($r && $row = $r->fetch_assoc())
-                    $teamId = (int) $row['id'];
+            // Step 2: Find the first available team (FIFO order: A → B → C → D)
+            $assignedTeamIds = $assignedTeamsBySlot[$event_date][$time_slot_id] ?? [];
+            $teamId = null;
+            foreach ($teams as $t) {
+                if (!in_array((int) $t['id'], $assignedTeamIds)) {
+                    $teamId = (int) $t['id'];
+                    break;
+                }
+            }
 
-                $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-                $stmt->bind_param("iiiisissdsis", $userId, $eid, $vid, $pid, $time_slot, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
+            // Step 3: If no team is available, reject
+            if ($teamId === null) {
+                $message = "No service team is available for the selected time slot. Please choose another time.";
+            } else {
+                // Step 4: Both venue and team are available — assign team, save, continue to payment
+                $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+                $stmt->bind_param("iiiiissssdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
                 if ($stmt->execute()) {
                     $bookingId = $stmt->insert_id;
                     $stmt->close();
@@ -223,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $adminResult = $conn->query("SELECT id FROM admins");
                     if ($adminResult) {
                         while ($admin = $adminResult->fetch_assoc()) {
-                            createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$time_slot}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                            createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
                         }
                     }
                     header("Location: booking_success.php?booking_id=$bookingId");
@@ -319,12 +371,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <section class="max-w-4xl mx-auto px-2 sm:px-3 py-5">
+    <section class="max-w-5xl mx-auto px-2 sm:px-3 py-5">
         <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100 p-2 md:p-3">
 
             <div class="flex items-start justify-between mb-2 gap-2">
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <h2 class="text-2xl font-extrabold text-purple-600/60 text-center">Complete Your Booking</h2>
+                    <h2 class="text-2xl font-extrabold textt-purple-600/60 text-center">Complete Your Booking</h2>
                     <p class="text-gray-500 mt-1 text-center text-sm">Finalize your event request details.</p>
                 </div>
                 <a href="javascript:history.back()"
@@ -404,32 +456,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time
-                                    Slot</label>
-                                <div id="timeSlotGroup" class="grid grid-cols-2 gap-3">
-                                    <label
-                                        class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
-                                        onclick="selectSlot(this)">
-                                        <input type="radio" name="time_slot" value="Morning" class="hidden" required>
-                                        <div class="text-md font-bold text-gray-700">☀️ Morning</div>
-                                        <div class="text-xs text-gray-400">8:00 AM – 11:00 PM</div>
-                                    </label>
-                                    <label
-                                        class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
-                                        onclick="selectSlot(this)">
-                                        <input type="radio" name="time_slot" value="Evening" class="hidden" required>
-                                        <div class="text-md font-bold text-gray-700">🌙 Night</div>
-                                        <div class="text-xs text-gray-400">7:00 PM – 10:00 PM</div>
-                                    </label>
+                                    Schedule</label>
+                                <div id="timeSlotGroup" class="grid grid-cols-<?= count($timeSlots) ?> gap-3">
+                                    <?php foreach ($timeSlots as $ts): ?>
+                                        <label
+                                            class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
+                                            onclick="selectSlot(this)">
+                                            <input type="radio" name="time_slot" value="<?= $ts['id'] ?>" class="hidden"
+                                                required>
+
+                                            <div class="text-xs font-bold text-gray-700">
+                                                <?= date('g:i A', strtotime($ts['start_time'])) ?> –
+                                                <?= date('g:i A', strtotime($ts['end_time'])) ?>
+                                            </div>
+                                        </label>
+                                    <?php endforeach; ?>
                                 </div>
-                                <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check slot
+                                <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check
+                                    schedule
                                     availability.</p>
                             </div>
 
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
                                     Receipt</label>
-                                <input type="file" name="receipt" accept="image/*,.pdf" required
+                                <input type="file" name="receipt" id="receiptInput" accept="image/*,.pdf" required
+                                    onchange="previewReceipt(this)"
                                     class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition text-sm">
+                                <div id="receiptPreview" class="mt-2 hidden">
+                                    <img id="receiptPreviewImg" src=""
+                                        class="w-32 h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
+                                </div>
                             </div>
 
                             <div>
@@ -439,9 +496,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <?php foreach ($paymentMethods as $pm):
                                         $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
                                         $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
+                                        $account = $accountMap[$pm['payment_name']] ?? '';
+                                        $phone = $phoneMap[$pm['payment_name']] ?? '';
                                         ?>
                                         <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
                                             data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
+                                            data-account="<?= htmlspecialchars($account) ?>"
+                                            data-phone="<?= htmlspecialchars($phone) ?>"
                                             onclick="selectPayment(this)">
 
                                             <img src="<?= $base . $logo ?>"
@@ -457,11 +518,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-1">
-                                <button type="submit"
+                                
+                                <button type="button" onclick="window.history.back()"
+                                    class="bg-gray-200 text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-400 transition hover:text-white">Cancel</button>
+                                    <button type="submit"
                                     class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
                                     Booking</button>
-                                <button type="button" onclick="window.history.back()"
-                                    class="bg-white text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-50 transition">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -496,8 +558,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="text-center" id="summaryQrSection">
                             <p class="text-xs font-bold text-gray-500 uppercase mb-2">Pay with <span
                                     id="summaryPmName">KBZPay</span></p>
-                            <img id="summaryQr" src="<?= $base ?>kpayqr.jpg"
-                                class="w-40 h-40 mx-auto rounded-xl border border-gray-200 shadow-sm">
+                            <div id="summaryAccountInfo" class="text-sm text-gray-700 mb-2">
+                                <div class="font-medium" id="summaryAccountName">U Mya Maung</div>
+                                <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
+                                    <span id="summaryPhone">09-123456789</span>
+                                    <button onclick="copyPhone(this)" title="Copy phone number"
+                                        class="text-purple-500 hover:text-purple-700 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <img id="summaryQr" src="<?= $base ?>kpayqr.jpg" onclick="openQr()"
+                                class="w-40 h-40 mx-auto rounded-xl border border-gray-200 shadow-sm cursor-pointer">
                             <p class="text-[10px] text-gray-400 mt-2">Scan to pay</p>
                         </div>
                     </div>
@@ -512,6 +586,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3 class="text-lg font-extrabold text-gray-800 mb-1">Scan to Pay</h3>
             <p class="text-sm text-gray-500 mb-4">Use your <span id="pmName" class="font-bold text-purple-600"></span>
                 app to scan</p>
+            <div id="modalAccountInfo" class="text-sm text-gray-700 mb-3">
+                <div class="font-medium" id="modalAccountName">U Mya Maung</div>
+                <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
+                    <span id="modalPhone">09-123456789</span>
+                    <button onclick="copyPhone(this)" title="Copy phone number"
+                        class="text-purple-500 hover:text-purple-700 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <img id="qrImage" src="" alt="QR Code"
                 class="w-56 h-56 mx-auto rounded-xl border border-gray-200 shadow-sm">
             <p class="text-xs text-gray-400 mt-4">Open your mobile banking app and scan this QR code to complete
@@ -531,15 +617,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('payment_method_id').value = el.dataset.id;
             selectedPm = el;
 
-            // Update summary QR section
             const pmName = el.querySelector('span') ? el.querySelector('span').textContent.trim() : 'KBZPay';
             const qrSrc = el.dataset.qr || '<?= $base ?>kpayqr.jpg';
+            const account = el.dataset.account || '';
+            const phone = el.dataset.phone || '';
+
             document.getElementById('summaryPmName').textContent = pmName;
+            document.getElementById('summaryAccountName').textContent = account;
+            document.getElementById('summaryPhone').textContent = phone;
             document.getElementById('summaryQr').src = qrSrc;
+
+            document.getElementById('pmName').textContent = pmName;
+            document.getElementById('modalAccountName').textContent = account;
+            document.getElementById('modalPhone').textContent = phone;
+            document.getElementById('qrImage').src = qrSrc;
+        }
+
+        function copyPhone(btn) {
+            const phone = btn.closest('.flex').querySelector('span').textContent;
+            navigator.clipboard.writeText(phone).then(() => {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                setTimeout(() => btn.innerHTML = orig, 1500);
+            });
+        }
+
+        function openQr() {
+            document.getElementById('qrModal').classList.add('open');
         }
 
         function closeQr() {
             document.getElementById('qrModal').classList.remove('open');
+        }
+
+        function previewReceipt(input) {
+            const preview = document.getElementById('receiptPreview');
+            const img = document.getElementById('receiptPreviewImg');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.classList.add('hidden');
+                img.src = '';
+            }
         }
 
         function selectSlot(el) {
@@ -579,38 +703,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('payment_method_id').value = kpayCard.dataset.id;
                     selectedPm = kpayCard;
 
-                    // Update summary QR on load
                     const pmName = kpayCard.querySelector('span') ? kpayCard.querySelector('span').textContent.trim() : 'KBZPay';
+                    const qrSrc = kpayCard.dataset.qr || '<?= $base ?>kpayqr.jpg';
+                    const account = kpayCard.dataset.account || '';
+                    const phone = kpayCard.dataset.phone || '';
+
                     document.getElementById('summaryPmName').textContent = pmName;
-                    document.getElementById('summaryQr').src = kpayCard.dataset.qr || '<?= $base ?>kpayqr.jpg';
+                    document.getElementById('summaryAccountName').textContent = account;
+                    document.getElementById('summaryPhone').textContent = phone;
+                    document.getElementById('summaryQr').src = qrSrc;
+
+                    document.getElementById('pmName').textContent = pmName;
+                    document.getElementById('modalAccountName').textContent = account;
+                    document.getElementById('modalPhone').textContent = phone;
+                    document.getElementById('qrImage').src = qrSrc;
                 }
             }
 
             const bookedSlots = <?= json_encode($bookedSlots) ?>;
-            const teamCounts = <?= json_encode($teamCounts) ?>;
-            const shiftBookings = <?= json_encode($shiftBookings) ?>;
+            const assignedTeamsBySlot = <?= json_encode($assignedTeamsBySlot) ?>;
+            const totalTeams = <?= $totalTeams ?>;
+            const slotNames = <?= json_encode($slotNames) ?>;
             const input = document.getElementById("eventDatePicker");
             const slotRadios = document.querySelectorAll('input[name="time_slot"]');
             const slotStatus = document.getElementById('slotStatus');
 
-            // Disable dates where BOTH slots are fully booked (all teams assigned)
-            const fullyBookedDates = Object.keys(bookedSlots).filter(d => {
-                const morningBooked = shiftBookings[d]?.['Morning'] ?? 0;
-                const eveningBooked = shiftBookings[d]?.['Evening'] ?? 0;
-                const morningFull = teamCounts.Morning > 0 && morningBooked >= teamCounts.Morning;
-                const eveningFull = teamCounts.Evening > 0 && eveningBooked >= teamCounts.Evening;
-                return morningFull && eveningFull;
+            // Pick colors per slot ID for the calendar dots
+            const slotColors = ['#fbbf24', '#6366f1', '#10b981', '#f97316'];
+
+            const slotIds = [...slotRadios].map(r => parseInt(r.value));
+
+            // Disable dates where ALL slots are fully booked (all teams assigned globally or venue already booked)
+            function getAssignedCount(dateStr, slotId) {
+                return (assignedTeamsBySlot[dateStr]?.[slotId]?.length) ?? 0;
+            }
+            function isSlotGloballyFull(dateStr, slotId) {
+                return getAssignedCount(dateStr, slotId) >= totalTeams;
+            }
+            const allDatesWithData = new Set([
+                ...Object.keys(bookedSlots),
+                ...Object.keys(assignedTeamsBySlot)
+            ]);
+            const fullyBookedDates = [...allDatesWithData].filter(d => {
+                return slotIds.every(id => {
+                    const taken = (bookedSlots[d] || []).includes(id);
+                    return taken || isSlotGloballyFull(d, id);
+                });
             });
 
             function updateSlotAvailability(selectedDate) {
                 const taken = bookedSlots[selectedDate] || [];
-                const dateShiftBookings = shiftBookings[selectedDate] || {};
                 slotRadios.forEach(r => {
+                    const id = parseInt(r.value);
                     const label = r.closest('.slot-option');
-                    const isTaken = taken.includes(r.value);
-                    const shiftTotal = teamCounts[r.value] || 0;
-                    const shiftAssigned = dateShiftBookings[r.value] || 0;
-                    const allTeamsAssigned = shiftTotal > 0 && shiftAssigned >= shiftTotal;
+                    const isTaken = taken.includes(id);
+                    const allTeamsAssigned = isSlotGloballyFull(selectedDate, id);
                     const isUnavailable = isTaken || allTeamsAssigned;
                     if (isUnavailable) {
                         label.classList.add('opacity-40', 'pointer-events-none', 'border-red-300');
@@ -629,10 +776,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     slotStatus.textContent = 'All teams are fully booked on this date.';
                     slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
                 } else if (available.length === 1) {
-                    slotStatus.textContent = 'Only ' + available[0].value + ' slot has available teams.';
+                    const name = slotNames[parseInt(available[0].value)] || available[0].value;
+                    slotStatus.textContent = 'Only ' + name + ' slot has available teams.';
                     slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
                 } else {
-                    slotStatus.textContent = 'Both slots have available teams.';
+                    slotStatus.textContent = 'All slots have available teams.';
                     slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
                 }
             }
@@ -648,11 +796,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
                     const taken = bookedSlots[dateStr] || [];
                     if (taken.length > 0) {
-                        const tips = taken.map(s => s + ' booked').join(', ');
-                        dayElem.title = tips;
-                        if (taken.includes('Morning')) dayElem.style.boxShadow = 'inset 0 -3px 0 #fbbf24';
-                        if (taken.includes('Evening')) dayElem.style.boxShadow = 'inset 0 -3px 0 #6366f1';
-                        if (taken.length === 2) dayElem.style.opacity = '0.4';
+                        const names = taken.map(id => slotNames[id] || id).join(', ');
+                        dayElem.title = names + ' booked';
+                        taken.forEach((id, i) => {
+                            if (i === 0) dayElem.style.boxShadow = 'inset 0 -3px 0 ' + (slotColors[id % slotColors.length] || '#999');
+                        });
+                        if (taken.length === slotIds.length) dayElem.style.opacity = '0.4';
                     }
                 }
             });
@@ -660,7 +809,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Reset status when date field is cleared
             slotRadios.forEach(r => {
                 r.addEventListener('change', function () {
-                    slotStatus.textContent = 'Slot selected: ' + this.value;
+                    const name = slotNames[parseInt(this.value)] || this.value;
+                    slotStatus.textContent = 'Slot selected: ' + name;
                     slotStatus.className = 'text-xs mt-1 text-purple-600 font-semibold';
                 });
             });

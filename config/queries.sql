@@ -94,14 +94,29 @@ CREATE TABLE IF NOT EXISTS event_package_services (
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- Time Slots Table
+CREATE TABLE IF NOT EXISTS time_slots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slot_name VARCHAR(50) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL
+);
+
+INSERT INTO time_slots (slot_name, start_time, end_time) VALUES
+    ('Slot 1', '09:00:00', '12:00:00'),
+    ('Slot 2', '12:00:00', '15:00:00'),
+    ('Slot 3', '15:00:00', '18:00:00'),
+    ('Slot 4', '18:00:00', '21:00:00');
+
+
 -- Bookings Table
 CREATE TABLE IF NOT EXISTS bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     event_id INT NOT NULL,
-    team_id INT NOT NULL,
-    time_slot ENUM('Morning','Evening') NOT NULL,
     venue_id INT NOT NULL,
+    time_slot_id INT NOT NULL,
+    team_id INT NOT NULL,
     package_id INT NOT NULL,
     paymentmethods_id INT NOT NULL,
     event_date DATE NOT NULL,
@@ -119,13 +134,15 @@ CREATE TABLE IF NOT EXISTS bookings (
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (team_id) REFERENCES teams(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,    
     FOREIGN KEY (venue_id) REFERENCES venues(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (time_slot_id) REFERENCES time_slots(id)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (team_id) REFERENCES teams(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (package_id) REFERENCES packages(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-         FOREIGN KEY (paymentmethods_id) REFERENCES payment_methods(id)
+    FOREIGN KEY (paymentmethods_id) REFERENCES payment_methods(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -155,6 +172,12 @@ CREATE TABLE IF NOT EXISTS teams (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO teams (name, description) VALUES
+    ('Team A', 'Service Team A'),
+    ('Team B', 'Service Team B'),
+    ('Team C', 'Service Team C'),
+    ('Team D', 'Service Team D');
 
 
 

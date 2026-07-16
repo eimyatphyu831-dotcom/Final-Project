@@ -37,19 +37,16 @@ if ($action === 'edit' && $teamId > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $teamName = $_POST['team_name'];
     $description = $_POST['description'] ?? '';
-    $shift = $_POST['shift'] ?? 'Morning';
     $editId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
-    if (!in_array($shift, ['Morning', 'Evening'])) $shift = 'Morning';
-
     if ($editId > 0) {
-        $stmt = $conn->prepare("UPDATE teams SET name=?, description=?, shift=? WHERE id=?");
-        $stmt->bind_param("sssi", $teamName, $description, $shift, $editId);
+        $stmt = $conn->prepare("UPDATE teams SET name=?, description=? WHERE id=?");
+        $stmt->bind_param("ssi", $teamName, $description, $editId);
         $stmt->execute();
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("INSERT INTO teams (name, description, shift) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $teamName, $description, $shift);
+        $stmt = $conn->prepare("INSERT INTO teams (name, description) VALUES (?, ?)");
+        $stmt->bind_param("ss", $teamName, $description);
         $stmt->execute();
         $stmt->close();
     }
@@ -58,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-$teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYSQLI_ASSOC);
+$teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -136,7 +133,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYS
 
             <?php include 'admin_header.php'; ?>
 
-            <main class="flex-1 p-8 overflow-y-auto">
+            <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <div class="relative flex-1 max-w-sm">
@@ -159,7 +156,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYS
                                 <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">#</th> -->
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Team Name</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
-                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Shift</th>
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
@@ -169,11 +165,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYS
                                     <!-- <td class="px-6 py-4 text-gray-500"><?= $t['id'] ?></td> -->
                                     <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($t['name']) ?></td>
                                     <td class="px-6 py-4 text-gray-600"><?= htmlspecialchars($t['description'] ?? '—') ?></td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full <?= ($t['shift'] ?? 'Morning') === 'Morning' ? 'bg-yellow-100 text-yellow-700' : 'bg-indigo-100 text-indigo-700' ?>">
-                                            <?= ($t['shift'] ?? 'Morning') === 'Evening' ? 'Night' : htmlspecialchars($t['shift'] ?? 'Morning') ?>
-                                        </span>
-                                    </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <a href="teams.php?action=edit&id=<?= $t['id'] ?>"
@@ -222,7 +213,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYS
                                 <input type="text" name="team_name" required
                                     value="<?= $action === 'edit' && $editTeam ? htmlspecialchars($editTeam['name']) : '' ?>"
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50"
-                                    placeholder="e.g. Team Alpha">
+                                    placeholder="e.g. Team A">
                             </div>
 
                             <div>
@@ -230,15 +221,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY shift, name")->fetch_all(MYS
                                 <textarea name="description" rows="3"
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"
                                     placeholder="Team description..."><?= $action === 'edit' && $editTeam ? htmlspecialchars($editTeam['description'] ?? '') : '' ?></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Shift</label>
-                                <select name="shift"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
-                                    <option value="Morning" <?= ($action === 'edit' && $editTeam && ($editTeam['shift'] ?? '') === 'Morning') ? 'selected' : '' ?>>Morning</option>
-                                    <option value="Evening" <?= ($action === 'edit' && $editTeam && ($editTeam['shift'] ?? '') === 'Night') ? 'selected' : '' ?>>Night</option>
-                                </select>
                             </div>
 
                             <div class="flex items-center gap-4 pt-2">
