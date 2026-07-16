@@ -62,8 +62,8 @@
                     <!-- <i class="fa-solid fa-house text-brand-600 text-lg mt-2"></i> -->
                     <i data-lucide="map-pin" class="w-5 h-5 mt-2 shrink-0 text-brand-600"></i>
                     <p class="leading-8">
-                        No.67,Rose Road, Pyawbwe Township,
-                        Mandalay, Myanmar
+                        No.67,Pyay Road, Hlaing Township,
+                            Yangon, Myanmar
                     </p>
                 </div>
 

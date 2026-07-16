@@ -31,8 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message = "Email already registered!";
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users(name,email,phone,registration_reason,password) VALUES(?,?,?,?,?)");
-            $stmt->bind_param("sssss", $name, $email, $phone, $registration_reason, $hashedPassword);
+            $stmt = $conn->prepare("INSERT INTO users(name,email,phone,password) VALUES(?,?,?,?)");
+            $stmt->bind_param("ssss", $name, $email, $phone, $hashedPassword);
 
             if ($stmt->execute()) {
                 header("Location: login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));

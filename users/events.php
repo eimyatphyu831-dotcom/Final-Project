@@ -70,7 +70,7 @@ $badges = [
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white dark:bg-[#1e2a45] hover:bg-brand-600 text-slate-900 dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
+                        class="flex-1 block text-center bg-brand-600 dark:bg-[#1e2a45] hover:bg-brand-700 dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm text-white">
                         View Details
                     </a>
 

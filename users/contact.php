@@ -94,8 +94,8 @@ include '../includes/header.php';
                 <div class="space-y-4 text-sm text-slate-600">
                     <div class="flex items-start gap-3">
                         <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0 text-brand-600"></i>
-                        <span>No.67,Rose  Road, Pyawbwe Township,
-                        Mandalay, Myanmar</span>
+                        <span>No.67,Pyay Road, Hlaing Township,
+                            Yangon, Myanmar</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="phone" class="w-4 h-4 shrink-0 text-brand-600"></i>

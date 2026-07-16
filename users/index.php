@@ -95,7 +95,7 @@ if (isset($_SESSION['success'])) {
         <div class="hero-fade d3 flex flex-wrap justify-center gap-4">
 
             <a href="viewevents.php"
-                class="bg-brand-200 hover:bg-purple-400 text-white text-brand-900 px-8 py-3 rounded-full font-semibold transition border-brand-200">
+                class="bg-brand-600 hover:bg-brand-700 text-white text-brand-900 px-8 py-3 rounded-full font-semibold transition border-brand-200">
                 Explore Events
             </a>
 
@@ -103,7 +103,7 @@ if (isset($_SESSION['success'])) {
                 class="group relative inline-flex items-center justify-center overflow-hidden border-2 border-white text-white px-8 py-3 rounded-full transition">
 
                 <span
-                    class="absolute inset-0 bg-brand-200 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
+                    class="absolute inset-0 bg-brand-600 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
 
                 <span class="relative z-10">Book Now</span>
             </a>
@@ -171,7 +171,7 @@ if (isset($_SESSION['success'])) {
                 </div>
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white dark:bg-[#1e2a45] hover:bg-brand-600 text-slate-900 dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
+                        class="flex-1 block text-center bg-brand-600 dark:bg-[#1e2a45] hover:bg-brand-700  dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm text-white">
                         View Details
                     </a>
 
@@ -464,8 +464,8 @@ if (isset($_SESSION['success'])) {
                 <div class="space-y-4 text-sm text-slate-600">
                     <div class="flex items-start gap-3">
                         <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0 text-brand-600"></i>
-                        <span>No.67,Rose Road, Pyawbwe Township,
-                            Mandalay, Myanmar</span>
+                        <span>No.67,Pyay Road, Hlaing Township,
+                            Yangon, Myanmar</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="phone" class="w-4 h-4 shrink-0 text-brand-600"></i>

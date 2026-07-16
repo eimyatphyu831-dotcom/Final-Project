@@ -62,33 +62,6 @@ $stmt->close();
 $totalPhotos = $gallery->num_rows;
 
 
-//   Get Venues for This Event
-$venues = [];
-
-// 1) Venues assigned to this event (venues.event_id)
-$stmt = $conn->prepare("SELECT * FROM venues WHERE event_id = ? ORDER BY name ASC");
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$vResult = $stmt->get_result();
-if ($vResult && $vResult->num_rows > 0) {
-    while ($row = $vResult->fetch_assoc()) {
-        $venues[] = $row;
-    }
-}
-$stmt->close();
-
-// 2) Fallback: venue_id on events table
-if (empty($venues) && !empty($event['venue_id'])) {
-    $stmt = $conn->prepare("SELECT * FROM venues WHERE id=?");
-    $stmt->bind_param("i", $event['venue_id']);
-    $stmt->execute();
-    $vResult = $stmt->get_result();
-    if ($vResult && $vResult->num_rows > 0) {
-        $venues[] = $vResult->fetch_assoc();
-    }
-    $stmt->close();
-}
-
 
 ?>
 
@@ -223,44 +196,6 @@ if (empty($venues) && !empty($event['venue_id'])) {
 
 </section>
 
-<!-- Availble Venues -->
-<section class="max-w-7xl mx-auto px-6 pb-12">
-    <h2 class="text-3xl font-bold text-purple-400 mb-8">Available Venues</h2>
-    <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-        <?php foreach ($venues as $v): ?>
-            <div onclick="window.location.href='venue_packages.php?venue_id=<?= $v['id'] ?>&event_id=<?= $id ?>'"
-                class="venue-card cursor-pointer bg-white rounded-[1.5rem]  shadow-sm border border-slate-100 flex flex-col transition hover:shadow-lg hover:border-purple-200">
-                <div class="w-full h-[240px] relative rounded-t-[1.5rem] overflow-hidden">
-                    <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
-                        alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
-                </div>
-                <div class="p-4 flex-1 flex flex-col">
-    <h3 class="text-2xl font-extrabold text-slate-800 mb-2">
-        <?= htmlspecialchars($v['name']) ?>
-                    </h3>
-                
-                    <div class="mt-auto flex justify-between items-start text-sm text-slate-500">
-                        <!-- Address -->
-                        <div class="flex items-start gap-1 flex-1 pr-4">
-                            <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 shrink-0"></i>
-                            <span class="leading-5 break-words">
-                                <?= htmlspecialchars($v['address']) ?>
-                            </span>
-                        </div>
-                
-                        <!-- Capacity -->
-                        <div class="flex items-center gap-1 shrink-0 text-slate-500">
-                            <i data-lucide="users" class="w-4 h-4"></i>
-                            <span><?= number_format($v['capacity']) ?></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-
 
 
 
@@ -293,11 +228,13 @@ if (empty($venues) && !empty($event['venue_id'])) {
         const params = new URLSearchParams(url.split('?')[1] || '');
         if (!params.get('venue_id') || !params.get('package_id')) {
             Swal.fire({
-                title: 'Select Venue & Package',
-                text: 'Please select a venue and package before booking.',
+                title: 'Book This Event',
+                text: 'Please select a venue and package to continue.',
                 icon: 'info',
                 confirmButtonColor: '#9d84c7',
                 confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'select_venue.php?event_id=<?= $id ?>';
             });
             return;
         }

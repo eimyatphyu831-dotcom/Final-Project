@@ -116,7 +116,7 @@ include '../includes/header.php';
 
                 <div class="px-2 pb-2 flex gap-2">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-white hover:bg-brand-600 text-slate-900 border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm hover:text-white">
+                        class="flex-1 block text-center bg-brand-600 hover:bg-brand-700 text-white border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm">
                         View Details
                     </a>
 

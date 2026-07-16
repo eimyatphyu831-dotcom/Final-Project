@@ -200,6 +200,13 @@ $phoneMap = [
     'AYAPay' => '09-965707826',
 ];
 
+$colorMap = [
+    'KBZPay' => '#205fb0ff',
+    'WavePay' => '#d3bf25ff',
+    'CBPay' => '#0a1472ff',
+    'AYAPay' => '#540b0bff',
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'] ?? '';
     $time_slot_id = (int) ($_POST['time_slot'] ?? 0);
@@ -306,9 +313,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .pm-card.selected {
-            border-color: #7c3aed;
-            background: #f5f3ff;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+            border-color: var(--pm-color, #7c3aed);
+            border-width: 3px;
+            background: var(--pm-bg, #ede9fe);
+            box-shadow: 0 4px 16px var(--pm-shadow, rgba(124, 58, 237, 0.3));
+            transform: translateY(-2px) scale(1.03);
         }
 
         .modal-overlay {
@@ -363,7 +372,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-    <section class="max-w-5xl mx-auto px-2 sm:px-3 py-5">
+    <section class="max-w-4xl mx-auto px-2 sm:px-3 py-5">
         <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100 p-2 md:p-3">
 
             <div class="flex items-start justify-between mb-2 gap-2">
@@ -445,7 +454,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
                                 </div>
                             </div>
-
+                            <!-- Time schedule -->
                             <div id="timeScheduleSection" class="hidden">
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time
                                     Schedule</label>
@@ -472,13 +481,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
                                     Receipt</label>
+                                <label for="receiptInput" id="receiptUploadBox"
+                                    class="flex items-center justify-center gap-2 w-full bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg p-3 cursor-pointer hover:bg-purple-100 hover:border-purple-400 transition overflow-hidden">
+                                    <div id="receiptPlaceholder" class="flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        <span id="receiptLabel" class="text-sm font-medium text-purple-600">Upload File</span>
+                                    </div>
+                                    <img id="receiptPreviewImg" src="" class="hidden w-full h-40 object-contain rounded-lg">
+                                </label>
                                 <input type="file" name="receipt" id="receiptInput" accept="image/*,.pdf" required
-                                    onchange="previewReceipt(this)"
-                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition text-sm">
-                                <div id="receiptPreview" class="mt-2 hidden">
-                                    <img id="receiptPreviewImg" src=""
-                                        class="w-32 h-32 object-cover rounded-lg border border-gray-200 shadow-sm">
-                                </div>
+                                    onchange="previewReceipt(this)" class="hidden">
                             </div>
 
                             <div>
@@ -495,6 +509,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
                                             data-account="<?= htmlspecialchars($account) ?>"
                                             data-phone="<?= htmlspecialchars($phone) ?>"
+                                            data-color="<?= $colorMap[$pm['payment_name']] ?? '#7c3aed' ?>"
                                             onclick="selectPayment(this)">
 
                                             <img src="<?= $base . $logo ?>"
@@ -604,8 +619,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         let selectedPm = null;
 
         function selectPayment(el) {
-            document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.pm-card').forEach(c => {
+                c.classList.remove('selected');
+                c.style.removeProperty('--pm-color');
+                c.style.removeProperty('--pm-bg');
+                c.style.removeProperty('--pm-shadow');
+            });
             el.classList.add('selected');
+            const color = el.dataset.color || '#7c3aed';
+            const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+            el.style.setProperty('--pm-color', color);
+            el.style.setProperty('--pm-bg', `rgba(${r},${g},${b},0.2)`);
+            el.style.setProperty('--pm-shadow', `rgba(${r},${g},${b},0.35)`);
             document.getElementById('payment_method_id').value = el.dataset.id;
             selectedPm = el;
 
@@ -643,18 +668,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function previewReceipt(input) {
-            const preview = document.getElementById('receiptPreview');
+            const placeholder = document.getElementById('receiptPlaceholder');
             const img = document.getElementById('receiptPreviewImg');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     img.src = e.target.result;
-                    preview.classList.remove('hidden');
+                    img.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
                 };
                 reader.readAsDataURL(input.files[0]);
             } else {
-                preview.classList.add('hidden');
+                img.classList.add('hidden');
                 img.src = '';
+                placeholder.classList.remove('hidden');
             }
         }
 
