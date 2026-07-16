@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $adminResult = $conn->query("SELECT id FROM admins");
             if ($adminResult) {
                 while ($admin = $adminResult->fetch_assoc()) {
-                    createNotification($conn, $admin['id'], 'New Contact Message', "$name sent a message: " . substr($message_text, 0, 50) . (strlen($message_text) > 50 ? '...' : ''), '../admin/contact_messages.php');
+                    createNotification($conn, $admin['id'], 'New Contact Message', "$name sent a message: " . substr($message_text, 0, 50) . (strlen($message_text) > 50 ? '...' : ''), '../admin/contact_messages.php', 'admin');
                 }
             }
         } else {

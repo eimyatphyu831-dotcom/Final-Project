@@ -10,12 +10,12 @@ include "../config/db.php";
 $user_id = $_SESSION['user_id'];
 
 // Mark all as viewed on page load
-$conn->query("UPDATE notifications SET is_read = 1 WHERE user_id = $user_id AND is_read = 0");
+$conn->query("UPDATE notifications SET is_read = 1 WHERE user_id = $user_id AND user_role = 'user' AND is_read = 0");
 
 // Fetch all notifications
 $stmt = $conn->prepare(
     "SELECT id, title, message, link, is_read, created_at
-     FROM notifications WHERE user_id = ?
+     FROM notifications WHERE user_id = ? AND user_role = 'user'
      ORDER BY created_at DESC LIMIT 100"
 );
 $stmt->bind_param("i", $user_id);
@@ -32,7 +32,7 @@ include "../includes/header.php";
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h1 class="text-2xl font-bold text-brand-900">Notifications</h1>
+                <h1 class="text-2xl font-bold text-brand-600">Notifications</h1>
                 <p class="text-sm text-gray-500 mt-1">Stay updated on your bookings and events</p>
             </div>
             <button id="clearAllBtn"

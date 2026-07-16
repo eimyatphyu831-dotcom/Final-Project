@@ -37,7 +37,7 @@ switch ($action) {
                    is_read,
                    created_at
             FROM notifications
-            WHERE user_id = ?
+            WHERE user_id = ? AND user_role = 'admin'
             ORDER BY created_at DESC
             LIMIT ? OFFSET ?
         ");
@@ -61,11 +61,11 @@ switch ($action) {
 
         // Count notifications
         $countStmt = $conn->prepare("
-            SELECT 
+            SELECT
                 COUNT(*) AS total,
                 SUM(CASE WHEN is_read = 0 THEN 1 ELSE 0 END) AS unread
             FROM notifications
-            WHERE user_id = ?
+            WHERE user_id = ? AND user_role = 'admin'
         ");
 
 
@@ -105,6 +105,7 @@ switch ($action) {
             SELECT COUNT(*) AS unread
             FROM notifications
             WHERE user_id = ?
+            AND user_role = 'admin'
             AND is_read = 0
         ");
 
@@ -150,6 +151,7 @@ switch ($action) {
                 SET is_read = 1
                 WHERE id = ?
                 AND user_id = ?
+                AND user_role = 'admin'
             ");
 
 
@@ -183,6 +185,7 @@ switch ($action) {
         $stmt = $conn->prepare("
             DELETE FROM notifications
             WHERE user_id = ?
+            AND user_role = 'admin'
         ");
 
 
@@ -215,6 +218,7 @@ switch ($action) {
             UPDATE notifications
             SET is_read = 1
             WHERE user_id = ?
+            AND user_role = 'admin'
             AND is_read = 0
         ");
 

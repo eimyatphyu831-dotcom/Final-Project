@@ -10,12 +10,12 @@ include '../config/db.php';
 $admin_id = $_SESSION['user_id'];
 
 // Mark all as read on page load
-$conn->query("UPDATE notifications SET is_read = 1 WHERE user_id = $admin_id AND is_read = 0");
+$conn->query("UPDATE notifications SET is_read = 1 WHERE user_id = $admin_id AND user_role = 'admin' AND is_read = 0");
 
 // Fetch all notifications
 $stmt = $conn->prepare(
     "SELECT id, title, message, link, is_read, created_at
-     FROM notifications WHERE user_id = ?
+     FROM notifications WHERE user_id = ? AND user_role = 'admin'
      ORDER BY created_at DESC LIMIT 100"
 );
 $stmt->bind_param("i", $admin_id);

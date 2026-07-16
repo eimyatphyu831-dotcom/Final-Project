@@ -21,7 +21,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date, u.name AS customer_name FROM bookings b JOIN events e ON b.event_id = e.id JOIN users u ON b.user_id = u.id WHERE b.id = $id")->fetch_assoc();
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
-            createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php');
+            createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
         }
         $message = "Booking confirmed!";
     } elseif ($_GET['action'] === 'cancel') {
@@ -29,7 +29,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date, u.name AS customer_name FROM bookings b JOIN events e ON b.event_id = e.id JOIN users u ON b.user_id = u.id WHERE b.id = $id")->fetch_assoc();
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
-            createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../users/my_bookings.php');
+            createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../users/my_bookings.php', 'user');
         }
         $message = "Booking cancelled.";
     } elseif ($_GET['action'] === 'delete') {

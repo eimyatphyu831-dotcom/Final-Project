@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
     phone varchar(25) NOT NULL,
-    registration_reason TEXT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -102,13 +101,6 @@ CREATE TABLE IF NOT EXISTS time_slots (
     end_time TIME NOT NULL
 );
 
-INSERT INTO time_slots (slot_name, start_time, end_time) VALUES
-    ('Slot 1', '09:00:00', '12:00:00'),
-    ('Slot 2', '12:00:00', '15:00:00'),
-    ('Slot 3', '15:00:00', '18:00:00'),
-    ('Slot 4', '18:00:00', '21:00:00');
-
-
 -- Bookings Table
 CREATE TABLE IF NOT EXISTS bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -172,16 +164,16 @@ CREATE TABLE IF NOT EXISTS teams (
 
 
 -- Notifications Table
+-- Note: user_id stores both user and admin IDs, so no FK constraint
+-- user_role distinguishes between user and admin notifications to prevent cross-visibility
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    user_role ENUM('user','admin') DEFAULT 'user',
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     link VARCHAR(255) DEFAULT NULL,
     is_read TINYINT(1) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

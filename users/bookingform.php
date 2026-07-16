@@ -262,10 +262,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $bookingId = $stmt->insert_id;
                         $stmt->close();
                         $dateStr = date('M j, Y', strtotime($event_date));
+                        // Notify all admins
                         $adminResult = $conn->query("SELECT id FROM admins");
                         if ($adminResult) {
                             while ($admin = $adminResult->fetch_assoc()) {
-                                createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                                createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php', 'admin');
                             }
                         }
                         header("Location: booking_success.php?booking_id=$bookingId");

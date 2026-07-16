@@ -11,7 +11,7 @@ $user_id = $_SESSION['user_id'];
 $message = '';
 $error = '';
 
-$stmt = $conn->prepare("SELECT id, name, email, phone, registration_reason FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, name, email, phone FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
