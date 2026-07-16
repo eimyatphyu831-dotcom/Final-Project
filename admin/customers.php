@@ -37,7 +37,7 @@ if ($viewId) {
     $stmt->close();
 
     if ($viewUser) {
-        $stmt = $conn->prepare("SELECT b.id, b.event_date, b.start_time, b.end_time, b.total_cost, b.status, b.created_at,
+        $stmt = $conn->prepare("SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at,
                                        e.event_name, v.name AS venue_name, p.name AS package_name
                                 FROM bookings b
                                 JOIN events e ON b.event_id = e.id

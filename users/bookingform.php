@@ -26,21 +26,14 @@ if ($r && $r->fetch_assoc()['cnt'] == 0) {
         ('Slot 4', '18:00:00', '21:00:00')");
 }
 
-// Remove shift_id from teams if exists (teams are no longer shift-bound)
-$shiftIdColCheck = $conn->query("SHOW COLUMNS FROM teams LIKE 'shift_id'");
-if ($shiftIdColCheck && $shiftIdColCheck->num_rows > 0) {
-    $conn->query("ALTER TABLE teams DROP FOREIGN KEY teams_ibfk_1");
-    $conn->query("ALTER TABLE teams DROP COLUMN shift_id");
-}
-
 // Seed teams if empty
 $r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
 if ($r && $r->fetch_assoc()['cnt'] == 0) {
-    $conn->query("INSERT INTO teams (name, description) VALUES
-        ('Team A', 'Service Team A'),
-        ('Team B', 'Service Team B'),
-        ('Team C', 'Service Team C'),
-        ('Team D', 'Service Team D')");
+    $conn->query("INSERT INTO teams (name) VALUES
+        ('Team A'),
+        ('Team B'),
+        ('Team C'),
+        ('Team D')");
 }
 
 // Migrate bookings.time_slot (ENUM) -> bookings.time_slot_id (INT FK)
@@ -64,12 +57,6 @@ if ($teamIdCol && $teamIdCol->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
 }
 
-// start_time / end_time
-$startTimeCheck = $conn->query("SHOW COLUMNS FROM bookings LIKE 'start_time'");
-if ($startTimeCheck && $startTimeCheck->num_rows === 0) {
-    $conn->query("ALTER TABLE bookings ADD COLUMN start_time TIME AFTER team_id");
-    $conn->query("ALTER TABLE bookings ADD COLUMN end_time TIME AFTER start_time");
-}
 
 // FK for time_slot_id
 $fkSlot = $conn->query("SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'time_slot_id' AND REFERENCED_TABLE_NAME = 'time_slots'");
@@ -131,7 +118,16 @@ foreach ($timeSlots as $ts) {
     $slotNames[$ts['id']] = $ts['slot_name'];
 }
 
-// Fetch booked slots for this specific venue (non-cancelled)
+// Track which teams are already assigned per date (across ALL venues and slots)
+$assignedTeamsByDate = [];
+$r = $conn->query("SELECT event_date, team_id FROM bookings WHERE status != 'Cancelled' AND team_id IS NOT NULL");
+if ($r) {
+    while ($row = $r->fetch_assoc()) {
+        $assignedTeamsByDate[$row['event_date']][] = (int) $row['team_id'];
+    }
+}
+
+// Fetch booked slots for this specific venue
 $bookedSlots = [];
 if ($venueId > 0) {
     $stmt = $conn->prepare("SELECT event_date, time_slot_id FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
@@ -144,15 +140,6 @@ if ($venueId > 0) {
         }
     }
     $stmt->close();
-}
-
-// Track which teams are already assigned per date+slot (across ALL venues)
-$assignedTeamsBySlot = [];
-$r = $conn->query("SELECT event_date, time_slot_id, team_id FROM bookings WHERE status != 'Cancelled' AND team_id IS NOT NULL");
-if ($r) {
-    while ($row = $r->fetch_assoc()) {
-        $assignedTeamsBySlot[$row['event_date']][(int) $row['time_slot_id']][] = (int) $row['team_id'];
-    }
 }
 
 // Total number of teams
@@ -223,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paymentMethodId = !empty($_POST['paymentmethods_id']) ? (int) $_POST['paymentmethods_id'] : 0;
 
     if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $time_slot_id > 0 && isset($timeSlotMap[$time_slot_id])) {
-        [$start_time, $end_time] = $timeSlotMap[$time_slot_id];
         $slotName = $slotNames[$time_slot_id];
 
         // Handle receipt upload
@@ -240,49 +226,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Step 1: Check whether the selected venue is already booked for the selected date and slot
+        // Step 1: Check if this venue is already booked for this date and time slot
         $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot_id = ? AND status != 'Cancelled'");
-        $stmt->bind_param("iii", $vid, $event_date, $time_slot_id);
+        $stmt->bind_param("isi", $vid, $event_date, $time_slot_id);
         $stmt->execute();
         $stmt->store_result();
         if ($stmt->num_rows > 0) {
             $stmt->close();
-            $message = "This venue is already booked for the selected time.";
+            $message = "This time slot is already booked at this venue.";
         } else {
             $stmt->close();
 
-            // Step 2: Find the first available team (FIFO order: A → B → C → D)
-            $assignedTeamIds = $assignedTeamsBySlot[$event_date][$time_slot_id] ?? [];
-            $teamId = null;
-            foreach ($teams as $t) {
-                if (!in_array((int) $t['id'], $assignedTeamIds)) {
-                    $teamId = (int) $t['id'];
-                    break;
-                }
-            }
-
-            // Step 3: If no team is available, reject
-            if ($teamId === null) {
-                $message = "No service team is available for the selected time slot. Please choose another time.";
+            // Step 2: Check if all teams are already assigned on this date
+            $assignedTeamIds = $assignedTeamsByDate[$event_date] ?? [];
+            if (count($assignedTeamIds) >= $totalTeams) {
+                $message = "All teams are fully booked on this date. Please choose another date.";
             } else {
-                // Step 4: Both venue and team are available — assign team, save, continue to payment
-                $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, start_time, end_time, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-                $stmt->bind_param("iiiiissssdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $start_time, $end_time, $total, $paymentMethodId, $receiptPath);
-                if ($stmt->execute()) {
-                    $bookingId = $stmt->insert_id;
-                    $stmt->close();
-                    $dateStr = date('M j, Y', strtotime($event_date));
-                    $adminResult = $conn->query("SELECT id FROM admins");
-                    if ($adminResult) {
-                        while ($admin = $adminResult->fetch_assoc()) {
-                            createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
-                        }
+                // Step 3: Find the first available team (FIFO order: A → B → C → D)
+                $teamId = null;
+                foreach ($teams as $t) {
+                    if (!in_array((int) $t['id'], $assignedTeamIds)) {
+                        $teamId = (int) $t['id'];
+                        break;
                     }
-                    header("Location: booking_success.php?booking_id=$bookingId");
-                    exit();
                 }
-                $stmt->close();
-                $message = 'Failed to create booking. Please try again.';
+
+                // Step 4: If no team is available, reject
+                if ($teamId === null) {
+                    $message = "No service team is available on this date. Please choose another date.";
+                } else {
+                    // Step 5: Venue slot and team are available — assign team, save
+                    $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+                    $stmt->bind_param("iiiiiisdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $total, $paymentMethodId, $receiptPath);
+                    if ($stmt->execute()) {
+                        $bookingId = $stmt->insert_id;
+                        $stmt->close();
+                        $dateStr = date('M j, Y', strtotime($event_date));
+                        $adminResult = $conn->query("SELECT id FROM admins");
+                        if ($adminResult) {
+                            while ($admin = $adminResult->fetch_assoc()) {
+                                createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php');
+                            }
+                        }
+                        header("Location: booking_success.php?booking_id=$bookingId");
+                        exit();
+                    }
+                    $stmt->close();
+                    $message = 'Failed to create booking. Please try again.';
+                }
             }
         }
     } else {
@@ -359,7 +350,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .slot-option.selected {
             border-color: #7c3aed !important;
-            background: #f5f3ff;
+            background: #9274c6ff;
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
         }
     </style>
@@ -454,20 +445,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
 
-                            <div>
+                            <div id="timeScheduleSection" class="hidden">
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2">Time
                                     Schedule</label>
                                 <div id="timeSlotGroup" class="grid grid-cols-<?= count($timeSlots) ?> gap-3">
                                     <?php foreach ($timeSlots as $ts): ?>
                                         <label
-                                            class="slot-option border border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
+                                            class="slot-option border  border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
                                             onclick="selectSlot(this)">
                                             <input type="radio" name="time_slot" value="<?= $ts['id'] ?>" class="hidden"
                                                 required>
 
                                             <div class="text-xs font-bold text-gray-700">
-                                                <?= date('g:i A', strtotime($ts['start_time'])) ?> –
-                                                <?= date('g:i A', strtotime($ts['end_time'])) ?>
+                                                <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> – <?= date('g:i A', strtotime($ts['end_time'])) ?></span>
+                                                <span class="slot-unavailable text-red-500 hidden"> – Unavailable</span>
                                             </div>
                                         </label>
                                     <?php endforeach; ?>
@@ -721,49 +712,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             const bookedSlots = <?= json_encode($bookedSlots) ?>;
-            const assignedTeamsBySlot = <?= json_encode($assignedTeamsBySlot) ?>;
+            const assignedTeamsByDate = <?= json_encode($assignedTeamsByDate) ?>;
             const totalTeams = <?= $totalTeams ?>;
             const slotNames = <?= json_encode($slotNames) ?>;
             const input = document.getElementById("eventDatePicker");
             const slotRadios = document.querySelectorAll('input[name="time_slot"]');
             const slotStatus = document.getElementById('slotStatus');
 
-            // Pick colors per slot ID for the calendar dots
-            const slotColors = ['#fbbf24', '#6366f1', '#10b981', '#f97316'];
-
-            const slotIds = [...slotRadios].map(r => parseInt(r.value));
-
-            // Disable dates where ALL slots are fully booked (all teams assigned globally or venue already booked)
-            function getAssignedCount(dateStr, slotId) {
-                return (assignedTeamsBySlot[dateStr]?.[slotId]?.length) ?? 0;
-            }
-            function isSlotGloballyFull(dateStr, slotId) {
-                return getAssignedCount(dateStr, slotId) >= totalTeams;
-            }
-            const allDatesWithData = new Set([
-                ...Object.keys(bookedSlots),
-                ...Object.keys(assignedTeamsBySlot)
-            ]);
-            const fullyBookedDates = [...allDatesWithData].filter(d => {
-                return slotIds.every(id => {
-                    const taken = (bookedSlots[d] || []).includes(id);
-                    return taken || isSlotGloballyFull(d, id);
-                });
+            // Disable dates where all teams are fully booked
+            const fullyBookedDates = Object.keys(assignedTeamsByDate).filter(d => {
+                return assignedTeamsByDate[d].length >= totalTeams;
             });
 
             function updateSlotAvailability(selectedDate) {
-                const taken = bookedSlots[selectedDate] || [];
+                const venueTaken = bookedSlots[selectedDate] || [];
+                const teamsAssigned = assignedTeamsByDate[selectedDate] || [];
+                const isDateFull = teamsAssigned.length >= totalTeams;
                 slotRadios.forEach(r => {
                     const id = parseInt(r.value);
                     const label = r.closest('.slot-option');
-                    const isTaken = taken.includes(id);
-                    const allTeamsAssigned = isSlotGloballyFull(selectedDate, id);
-                    const isUnavailable = isTaken || allTeamsAssigned;
+                    const unavailSpan = label.querySelector('.slot-unavailable');
+                    const isVenueBooked = venueTaken.includes(id);
+                    const isUnavailable = isVenueBooked || isDateFull;
                     if (isUnavailable) {
+                        unavailSpan.classList.remove('hidden');
                         label.classList.add('opacity-40', 'pointer-events-none', 'border-red-300');
                         label.classList.remove('hover:border-purple-400', 'selected');
                         r.disabled = true;
                     } else {
+                        unavailSpan.classList.add('hidden');
                         label.classList.remove('opacity-40', 'pointer-events-none', 'border-red-300');
                         label.classList.add('hover:border-purple-400');
                         r.disabled = false;
@@ -771,37 +748,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (r.checked && isUnavailable) r.checked = false;
                 });
 
-                const available = [...slotRadios].filter(r => !r.disabled);
-                if (available.length === 0) {
+                if (isDateFull) {
                     slotStatus.textContent = 'All teams are fully booked on this date.';
                     slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
-                } else if (available.length === 1) {
-                    const name = slotNames[parseInt(available[0].value)] || available[0].value;
-                    slotStatus.textContent = 'Only ' + name + ' slot has available teams.';
-                    slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
                 } else {
-                    slotStatus.textContent = 'All slots have available teams.';
-                    slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
+                    const available = [...slotRadios].filter(r => !r.disabled);
+                    if (available.length === 0) {
+                        slotStatus.textContent = 'All time slots are booked at this venue.';
+                        slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
+                    } else if (available.length < slotRadios.length) {
+                        slotStatus.textContent = 'Some time slots are booked at this venue.';
+                        slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
+                    } else {
+                        slotStatus.textContent = 'All teams are available on this date.';
+                        slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
+                    }
                 }
             }
 
             flatpickr(input, {
                 minDate: "today",
                 dateFormat: "Y-m-d",
-                disable: fullyBookedDates,
                 onChange: function (selectedDates, dateStr) {
-                    if (dateStr) updateSlotAvailability(dateStr);
+                    const section = document.getElementById('timeScheduleSection');
+                    if (dateStr) {
+                        section.classList.remove('hidden');
+                        updateSlotAvailability(dateStr);
+                    } else {
+                        section.classList.add('hidden');
+                    }
                 },
                 onDayCreate: function (dObj, dStr, fp, dayElem) {
                     const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
-                    const taken = bookedSlots[dateStr] || [];
-                    if (taken.length > 0) {
-                        const names = taken.map(id => slotNames[id] || id).join(', ');
-                        dayElem.title = names + ' booked';
-                        taken.forEach((id, i) => {
-                            if (i === 0) dayElem.style.boxShadow = 'inset 0 -3px 0 ' + (slotColors[id % slotColors.length] || '#999');
-                        });
-                        if (taken.length === slotIds.length) dayElem.style.opacity = '0.4';
+                    const teams = assignedTeamsByDate[dateStr] || [];
+                    if (teams.length > 0 && teams.length < totalTeams) {
+                        dayElem.style.boxShadow = 'inset 0 -3px 0 #7c3aed';
                     }
                 }
             });

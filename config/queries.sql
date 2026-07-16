@@ -120,8 +120,6 @@ CREATE TABLE IF NOT EXISTS bookings (
     package_id INT NOT NULL,
     paymentmethods_id INT NOT NULL,
     event_date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
     total_cost DECIMAL(12,2) NOT NULL,
     receipt_image varchar(200) NOT NULL,
 
@@ -169,16 +167,8 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 CREATE TABLE IF NOT EXISTS teams (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO teams (name, description) VALUES
-    ('Team A', 'Service Team A'),
-    ('Team B', 'Service Team B'),
-    ('Team C', 'Service Team C'),
-    ('Team D', 'Service Team D');
-
 
 
 -- Notifications Table

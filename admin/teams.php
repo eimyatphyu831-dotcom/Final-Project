@@ -36,17 +36,16 @@ if ($action === 'edit' && $teamId > 0) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $teamName = $_POST['team_name'];
-    $description = $_POST['description'] ?? '';
     $editId = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
     if ($editId > 0) {
-        $stmt = $conn->prepare("UPDATE teams SET name=?, description=? WHERE id=?");
-        $stmt->bind_param("ssi", $teamName, $description, $editId);
+        $stmt = $conn->prepare("UPDATE teams SET name=? WHERE id=?");
+        $stmt->bind_param("si", $teamName, $editId);
         $stmt->execute();
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("INSERT INTO teams (name, description) VALUES (?, ?)");
-        $stmt->bind_param("ss", $teamName, $description);
+        $stmt = $conn->prepare("INSERT INTO teams (name) VALUES (?)");
+        $stmt->bind_param("s", $teamName);
         $stmt->execute();
         $stmt->close();
     }
@@ -155,7 +154,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                             <tr>
                                 <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">#</th> -->
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Team Name</th>
-                                <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
@@ -164,7 +162,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                                 <tr class="hover:bg-gray-50 transition">
                                     <!-- <td class="px-6 py-4 text-gray-500"><?= $t['id'] ?></td> -->
                                     <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($t['name']) ?></td>
-                                    <td class="px-6 py-4 text-gray-600"><?= htmlspecialchars($t['description'] ?? '—') ?></td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
                                             <a href="teams.php?action=edit&id=<?= $t['id'] ?>"
@@ -214,13 +211,6 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                                     value="<?= $action === 'edit' && $editTeam ? htmlspecialchars($editTeam['name']) : '' ?>"
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50"
                                     placeholder="e.g. Team A">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                <textarea name="description" rows="3"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"
-                                    placeholder="Team description..."><?= $action === 'edit' && $editTeam ? htmlspecialchars($editTeam['description'] ?? '') : '' ?></textarea>
                             </div>
 
                             <div class="flex items-center gap-4 pt-2">
