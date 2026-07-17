@@ -116,6 +116,7 @@ $conn->close();
                                         </svg>
                                         <span><?= htmlspecialchars($booking['payment_name'] ?? '—') ?></span>
                                     </div>
+                            
                                 </div>
                             </div>
                             <div class="text-right">

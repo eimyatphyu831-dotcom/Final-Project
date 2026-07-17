@@ -97,8 +97,8 @@ $conn->close();
 
 <div class="min-h-screen bg-slate-50">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-brand-900">My Profile</h1>
+        <div class="mb-8 text-center">
+            <h1 class="text-2xl font-bold text-brand-600/60">My Profile</h1>
             <p class="text-sm text-gray-500 mt-1">Manage your personal information and password</p>
         </div>
 

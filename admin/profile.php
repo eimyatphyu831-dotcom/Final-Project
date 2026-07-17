@@ -193,7 +193,7 @@ $avatar = $admin['profile_image']
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <div class="flex flex-col items-center gap-1.5">
+                            <div class="flex flex-col items-center gap-3">
                                 <form method="POST" enctype="multipart/form-data" id="imageForm">
                                     <label
                                         class="px-3 py-1.5 bg-purple-600 text-white rounded-xl text-xs hover:bg-purple-700 cursor-pointer transition-all inline-block">
@@ -211,13 +211,13 @@ $avatar = $admin['profile_image']
                                         </button>
                                     </form>
                                 <?php endif; ?>
-                                <p class="text-[10px] text-gray-400">JPG, PNG, GIF, WEBP. Max 2MB.</p>
+                                <!-- <p class="text-[10px] text-gray-400">JPG, PNG, GIF, WEBP.</p> -->
                             </div>
                         </div>
 
                         <div class="p-4">
                             <h3 class="text-sm font-semibold text-gray-800 mb-1">Account Details</h3>
-                            <form method="POST" class="space-y-1.5">
+                            <form method="POST" class="space-y-2">
                                 <div>
                                     <label class="block text-[10px] font-medium text-gray-700">Full Name</label>
                                     <input type="text" name="name" value="<?= htmlspecialchars($admin['name']) ?>"

@@ -57,13 +57,13 @@ include '../includes/header.php';
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-slate-600">Venue</span>
                     <span class="font-bold text-slate-800"><?= htmlspecialchars($booking['venue_name']) ?></span>
-                </div>
+            </div>
                 <div class="flex justify-between items-center text-sm">
                     <span class="text-slate-600">Payment</span>
                     <span class="font-bold text-slate-800"><?= htmlspecialchars($booking['payment_name'] ?? '—') ?></span>
                 </div>
                 <div class="flex justify-between items-center text-sm">
-                    <span class="text-slate-600">Date</span>
+                    <span class="text-slate-600">Event Date</span>
                     <span class="font-bold text-slate-800"><?= htmlspecialchars($booking['event_date']) ?></span>
                 </div>
                 <div class="flex justify-between items-center text-sm">

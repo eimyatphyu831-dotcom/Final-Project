@@ -378,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="flex items-start justify-between mb-2 gap-2">
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <h2 class="text-2xl font-extrabold textt-purple-600/60 text-center">Complete Your Booking</h2>
+                    <h2 class="text-2xl font-extrabold text-brand-600/60 text-center">Complete Your Booking</h2>
                     <p class="text-gray-500 mt-1 text-center text-sm">Finalize your event request details.</p>
                 </div>
                 <a href="javascript:history.back()"
@@ -409,35 +409,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
                             <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Full
-                                        Name</label>
-                                    <input type="text" name="full_name" value="<?= htmlspecialchars($userName) ?>"
-                                        placeholder="Jane Doe"
-                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                        required>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Email
-                                        Address</label>
-                                    <input type="email" name="email" value="<?= htmlspecialchars($userEmail) ?>"
-                                        placeholder="jane@example.com"
-                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                        required>
-                                </div>
-                            </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Phone
-                                        Number</label>
-                                    <input type="tel" name="phone" value="<?= htmlspecialchars($userPhone) ?>"
-                                        placeholder="+959..."
-                                        class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none transition"
-                                        required>
-                                </div>
-
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">
                                         Event Date
@@ -484,20 +457,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Upload
                                     Receipt</label>
                                 <label for="receiptInput" id="receiptUploadBox"
-                                    class="flex items-center justify-center gap-2 w-full bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg p-3 cursor-pointer hover:bg-purple-100 hover:border-purple-400 transition overflow-hidden">
-                                    <div id="receiptPlaceholder" class="flex items-center justify-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-500"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                        </svg>
-                                        <span id="receiptLabel" class="text-sm font-medium text-purple-600">Upload
-                                            File</span>
+                                    class="relative flex flex-col items-center justify-center w-full border-2 border-dashed border-purple-200 rounded-xl p-6 cursor-pointer transition-all duration-300 overflow-hidden group"
+                                    style="background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 50%, #fdf2f8 100%);">
+                                    <div id="receiptPlaceholder" class="flex flex-col items-center gap-2">
+                                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <div class="text-center">
+                                            <span id="receiptLabel" class="text-sm font-semibold text-purple-700">Upload Receipt Image</span>
+                                            <p class="text-[10px] text-gray-400 mt-0.5">PNG, JPG or WEBP</p>
+                                        </div>
+                                        <!-- <span class="mt-1 px-4 py-1.5 text-xs font-bold text-white bg-purple-500 rounded-full group-hover:bg-purple-600 transition-colors shadow-sm shadow-purple-200">Choose Image</span> -->
                                     </div>
                                     <img id="receiptPreviewImg" src=""
-                                        class="hidden w-full h-40 object-contain rounded-lg">
+                                        class="hidden w-full h-48 object-contain rounded-lg">
                                 </label>
-                                <input type="file" name="receipt" id="receiptInput" accept="image/*,.pdf" required
+                                <input type="file" name="receipt" id="receiptInput" accept="image/*" capture="environment" required
                                     onchange="previewReceipt(this)" class="hidden">
                             </div>
 
@@ -530,6 +507,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                             </div>
 
+                            <!-- Payment QR Scan -->
+                            <div class="bg-purple-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center" id="summaryQrSection">
+                                <p class="text-xs font-bold text-gray-500 uppercase mb-2">Scan to Pay with <span
+                                        id="summaryPmName">KBZPay</span></p>
+                                <div id="summaryAccountInfo" class="text-sm text-gray-700 mb-3 space-y-1">
+                                    <div class="font-semibold text-gray-800" id="summaryAccountName">U Mya Maung</div>
+                                    <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
+                                        <span id="summaryPhone">09-123456789</span>
+                                        <button onclick="copyPhone(this)" title="Copy"
+                                            class="text-purple-500 hover:text-purple-700 transition">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <img id="summaryQr" src="<?= $base ?>kpayqr.jpg" onclick="openQr()"
+                                    class="w-28 h-28 mx-auto rounded-xl border border-gray-200 shadow-sm cursor-pointer">
+                                <p class="text-[10px] text-gray-400 mt-2">Open your mobile banking app and scan to pay</p>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-3 pt-1">
 
                                 <button type="button" onclick="window.history.back()"
@@ -544,49 +542,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Booking Summary -->
                 <div class="lg:col-span-1">
-                    <div class="rounded-2xl border border-gray-200 p-4 bg-white shadow-sm  top-4">
-                        <h3 class="text-lg font-bold mb-3 text-gray-800">Booking Summary</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>Event</span>
-                                <span class="font-semibold text-gray-900"><?= htmlspecialchars($eventName) ?></span>
-                            </div>
-                            <div class="flex justify-between text-sm text-gray-600">
-                                <span>Package</span>
-                                <span class="font-semibold text-gray-900"><?= htmlspecialchars($packageName) ?></span>
-                            </div>
-                            <div class="flex justify-between items-start text-sm text-gray-600">
-                                <span class="shrink-0">Venue</span>
-                                <span class="font-semibold text-gray-900 text-right max-w-[65%] break-words">
-                                    <?= htmlspecialchars($venueName ?? '') ?>
-                                </span>
-                            </div>
-                            <hr class="border-gray-200">
-                            <div class="flex justify-between text-lg font-bold">
-                                <span>Total</span>
-                                <span class="text-purple-600/60"><?= number_format($totalCost) ?> MMK</span>
-                            </div>
+                    <div class="rounded-2xl border border-gray-200 p-4 bg-white shadow-sm top-4 space-y-3">
+
+                        <!-- Event Photo -->
+                        <div class="w-full h-36 rounded-xl overflow-hidden border border-gray-200">
+                            <img src="<?= htmlspecialchars($eventImage) ?>" alt="<?= htmlspecialchars($eventName) ?>"
+                                class="w-full h-full object-cover">
                         </div>
-                        <hr class="border-gray-200 my-3">
-                        <div class="text-center" id="summaryQrSection">
-                            <p class="text-xs font-bold text-gray-500 uppercase mb-2">Pay with <span
-                                    id="summaryPmName">KBZPay</span></p>
-                            <div id="summaryAccountInfo" class="text-sm text-gray-700 mb-2">
-                                <div class="font-medium" id="summaryAccountName">U Mya Maung</div>
-                                <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
-                                    <span id="summaryPhone">09-123456789</span>
-                                    <button onclick="copyPhone(this)" title="Copy phone number"
-                                        class="text-purple-500 hover:text-purple-700 transition">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                    </button>
+
+                        <!-- User Details -->
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-1.5 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Your Details
+                            </h4>
+                            <div class="bg-purple-50 rounded-xl p-2.5 space-y-1 text-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Name</span>
+                                    <span
+                                        class="font-medium text-gray-800 truncate"><?= htmlspecialchars($userName) ?></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Email</span>
+                                    <span
+                                        class="font-medium text-gray-800 truncate"><?= htmlspecialchars($userEmail) ?></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Phone</span>
+                                    <span class="font-medium text-gray-800"><?= htmlspecialchars($userPhone) ?></span>
                                 </div>
                             </div>
-                            <img id="summaryQr" src="<?= $base ?>kpayqr.jpg" onclick="openQr()"
-                                class="w-40 h-40 mx-auto rounded-xl border border-gray-200 shadow-sm cursor-pointer">
-                            <p class="text-[10px] text-gray-400 mt-2">Scan to pay</p>
+                        </div>
+
+                        <!-- Booking Schedule -->
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-1.5 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Schedule
+                            </h4>
+                            <div class="bg-gray-50 rounded-xl p-2.5 space-y-1 text-sm" id="summarySchedule">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Date</span>
+                                    <span class="font-medium text-gray-800" id="summaryDate">Not selected</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Time</span>
+                                    <span class="font-medium text-gray-800" id="summaryTimeSlot">—</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Venue</span>
+                                    <span
+                                        class="font-medium text-gray-800 truncate"><?= htmlspecialchars($venueName ?? '') ?></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Package</span>
+                                    <span class="font-medium text-gray-800"><?= htmlspecialchars($packageName) ?></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total -->
+                        <hr class="border-gray-200">
+                        <div class="flex justify-between text-lg font-bold">
+                            <span>Total</span>
+                            <span class="text-purple-600/60"><?= number_format($totalCost) ?> MMK</span>
                         </div>
                     </div>
                 </div>
@@ -697,6 +722,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.querySelectorAll('.slot-option').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
             el.querySelector('input[type="radio"]').checked = true;
+            const timeText = el.querySelector('.slot-time') ? el.querySelector('.slot-time').textContent.trim() : '—';
+            document.getElementById('summaryTimeSlot').textContent = timeText;
         }
 
         function confirmBooking() {
@@ -784,6 +811,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (r.checked && isUnavailable) r.checked = false;
                 });
 
+                const anySelected = [...slotRadios].some(r => r.checked);
+                if (!anySelected) {
+                    document.getElementById('summaryTimeSlot').textContent = '—';
+                }
+
                 if (isDateFull) {
                     slotStatus.textContent = 'All teams are fully booked on this date.';
                     slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
@@ -802,6 +834,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            function formatDateDisplay(dateStr) {
+                if (!dateStr) return 'Not selected';
+                const d = new Date(dateStr + 'T00:00:00');
+                return d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            }
+
+            document.getElementById('calendarBtn').addEventListener('click', function () {
+                input.focus();
+            });
+
             flatpickr(input, {
                 minDate: "today",
                 dateFormat: "Y-m-d",
@@ -810,8 +852,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (dateStr) {
                         section.classList.remove('hidden');
                         updateSlotAvailability(dateStr);
+                        document.getElementById('summaryDate').textContent = formatDateDisplay(dateStr);
+                        document.getElementById('summaryTimeSlot').textContent = '—';
                     } else {
                         section.classList.add('hidden');
+                        document.getElementById('summaryDate').textContent = 'Not selected';
+                        document.getElementById('summaryTimeSlot').textContent = '—';
                     }
                 },
                 onDayCreate: function (dObj, dStr, fp, dayElem) {
@@ -829,6 +875,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const name = slotNames[parseInt(this.value)] || this.value;
                     slotStatus.textContent = 'Slot selected: ' + name;
                     slotStatus.className = 'text-xs mt-1 text-purple-600 font-semibold';
+                    const label = this.closest('.slot-option');
+                    const timeText = label ? label.querySelector('.slot-time').textContent.trim() : '—';
+                    document.getElementById('summaryTimeSlot').textContent = timeText;
                 });
             });
         });
