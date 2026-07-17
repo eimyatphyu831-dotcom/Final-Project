@@ -84,14 +84,17 @@ $venueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
 $packageId = isset($_GET['package_id']) ? (int) $_GET['package_id'] : 0;
 $totalCost = isset($_GET['total']) ? (float) $_GET['total'] : 0;
 
+$eventImage = '../assets/images/slide1.png';
 $eventName = '—';
 $venueName = '—';
 $packageName = '—';
 
 if ($eventId > 0) {
-    $r = $conn->query("SELECT event_name FROM events WHERE id=$eventId");
-    if ($r && $row = $r->fetch_assoc())
+    $r = $conn->query("SELECT event_name, image FROM events WHERE id=$eventId");
+    if ($r && $row = $r->fetch_assoc()) {
         $eventName = $row['event_name'];
+        $eventImage = $row['image'] ?: '../assets/images/slide1.png';
+    }
 }
 if ($venueId > 0) {
     $r = $conn->query("SELECT name FROM venues WHERE id=$venueId");
@@ -313,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .pm-card.selected {
-            border-color: var(--pm-color, #7c3aed);
+            border-color: var(--pm-color, #205fb0ff);
             border-width: 3px;
             background: var(--pm-bg, #ede9fe);
             box-shadow: 0 4px 16px var(--pm-shadow, rgba(124, 58, 237, 0.3));
@@ -366,13 +369,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 
-<body>
+<body class="bg-purple-50">
 
     <?php include '../includes/header.php'; ?>
 
-
-
-    <section class="max-w-4xl mx-auto px-2 sm:px-3 py-5">
+    <section class="max-w-5xl mx-auto px-2 sm:px-3 py-5">
         <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-gray-100 p-2 md:p-3">
 
             <div class="flex items-start justify-between mb-2 gap-2">
@@ -467,7 +468,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 required>
 
                                             <div class="text-xs font-bold text-gray-700">
-                                                <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> – <?= date('g:i A', strtotime($ts['end_time'])) ?></span>
+                                                <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> –
+                                                    <?= date('g:i A', strtotime($ts['end_time'])) ?></span>
                                                 <span class="slot-unavailable text-red-500 hidden"> – Unavailable</span>
                                             </div>
                                         </label>
@@ -484,12 +486,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label for="receiptInput" id="receiptUploadBox"
                                     class="flex items-center justify-center gap-2 w-full bg-purple-50 border-2 border-dashed border-purple-300 rounded-lg p-3 cursor-pointer hover:bg-purple-100 hover:border-purple-400 transition overflow-hidden">
                                     <div id="receiptPlaceholder" class="flex items-center justify-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-purple-500"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                         </svg>
-                                        <span id="receiptLabel" class="text-sm font-medium text-purple-600">Upload File</span>
+                                        <span id="receiptLabel" class="text-sm font-medium text-purple-600">Upload
+                                            File</span>
                                     </div>
-                                    <img id="receiptPreviewImg" src="" class="hidden w-full h-40 object-contain rounded-lg">
+                                    <img id="receiptPreviewImg" src=""
+                                        class="hidden w-full h-40 object-contain rounded-lg">
                                 </label>
                                 <input type="file" name="receipt" id="receiptInput" accept="image/*,.pdf" required
                                     onchange="previewReceipt(this)" class="hidden">
@@ -525,10 +531,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-1">
-                                
+
                                 <button type="button" onclick="window.history.back()"
                                     class="bg-gray-200 text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-400 transition hover:text-white">Cancel</button>
-                                    <button type="submit"
+                                <button type="submit"
                                     class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
                                     Booking</button>
                             </div>
@@ -572,7 +578,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button onclick="copyPhone(this)" title="Copy phone number"
                                         class="text-purple-500 hover:text-purple-700 transition">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
                                     </button>
                                 </div>
@@ -600,7 +607,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button onclick="copyPhone(this)" title="Copy phone number"
                         class="text-purple-500 hover:text-purple-700 transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                     </button>
                 </div>
@@ -627,7 +635,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
             el.classList.add('selected');
             const color = el.dataset.color || '#7c3aed';
-            const r = parseInt(color.slice(1,3),16), g = parseInt(color.slice(3,5),16), b = parseInt(color.slice(5,7),16);
+            const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
             el.style.setProperty('--pm-color', color);
             el.style.setProperty('--pm-bg', `rgba(${r},${g},${b},0.2)`);
             el.style.setProperty('--pm-shadow', `rgba(${r},${g},${b},0.35)`);

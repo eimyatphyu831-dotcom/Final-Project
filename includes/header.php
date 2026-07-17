@@ -265,7 +265,7 @@ $username = $_SESSION['user_name'] ?? '';
     </style>
 </head>
 
-<body>
+<body class="bg-[#f3f1f6]">
     <?php
     $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 

@@ -1,81 +1,68 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-<!-- =========================================================================
-         8. GLOBAL FOOTER PLATFORM MAP
-         ========================================================================= -->
-<footer class="bg-[#f3f1f6] border-t pt-10">
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+ 
+<!-- GLOBAL FOOTER PLATFORM MAP -->
+
+ <div class="h-3 bg-brand-200 rounded-t-[50px]"></div>
+
+<footer class="bg-[#f3f1f6]">
+
+    <!-- Footer Content -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-5">
 
         <!-- Company -->
         <div>
-            <h3 class="text-2xl font-bold text-brand-600 mb-4">
+            <h3 class="text-2xl font-bold text-brand-600 mb-3">
                 EventPro
             </h3>
 
-            <p class="text-gray-500 text-sm mb-8">
-                We create unforgettable event celebrations and
-                luxury experiences with professional planning
-                and exceptional service.
+            <p class="text-sm text-gray-500 leading-6 mb-4">
+                We create unforgettable event celebrations and luxury experiences.
             </p>
 
             <a href="contact.php"
-                class="inline-flex items-center justify-center px-12 py-2 rounded-xl border-2 border-brand-600 text-brand-600 font-semibold hover:bg-brand-600 hover:text-white transition">
+                class="inline-flex items-center px-6 py-2 rounded-lg border border-brand-600 text-brand-600 text-sm font-semibold hover:bg-brand-600 hover:text-white transition">
                 CONTACT US
-                <i class="fa-solid fa-envelope ml-3"></i>
+                <i class="fa-solid fa-envelope ml-2"></i>
             </a>
         </div>
 
-        <!-- Useful Links -->
-        
-        <div class="ml-14">
-            <h3 class="text-lg font-bold text-brand-600 mb-4">
+        <!-- Links -->
+        <div class="md:ml-6">
+            <h3 class="text-xl font-bold text-brand-600 mb-3">
                 USEFUL LINKS
             </h3>
 
-            <ul class="space-y-5 text-gray-500 text-sm">
-                <li>
-                    <a href="index.php" class="hover:text-brand-600">Home</a>
-                </li>
-
-                <li>
-                    <a href="about.php" class="hover:text-brand-600">About</a>
-                </li>
-
-                <li>
-                    <a href="events.php" class="hover:text-brand-600">Events</a>
-                </li>
-
-                <li>
-                    <a href="contact.php" class="hover:text-brand-600">Contact</a>
-                </li>
+            <ul class="space-y-3 text-sm text-gray-500">
+                <li><a href="index.php" class="hover:text-brand-600">Home</a></li>
+                <li><a href="about.php" class="hover:text-brand-600">About</a></li>
+                <li><a href="events.php" class="hover:text-brand-600">Events</a></li>
+                <li><a href="contact.php" class="hover:text-brand-600">Contact</a></li>
             </ul>
         </div>
 
         <!-- Contact -->
-        <div>
-            <h3 class="text-lg font-bold text-brand-600 mb-4">
+        <div class="md:ml-8">
+            <h3 class="text-xl font-bold text-brand-600 mb-3">
                 CONTACT
             </h3>
 
-            <div class="space-y-6 text-gray-500 text-sm">
+            <div class="space-y-3 text-sm text-gray-500">
 
                 <div class="flex gap-2">
-                    <!-- <i class="fa-solid fa-house text-brand-600 text-lg mt-2"></i> -->
-                    <i data-lucide="map-pin" class="w-5 h-5 mt-2 shrink-0 text-brand-600"></i>
-                    <p class="leading-8">
-                        No.67,Pyay Road, Hlaing Township,
-                            Yangon, Myanmar
+                    <i data-lucide="map-pin" class="w-5 h-5 mt-1 shrink-0 text-brand-600"></i>
+                    <p class="leading-6">
+                        No.67, Pyay Road,<br>
+                        Hlaing Township, Yangon
                     </p>
                 </div>
 
-                <div class="flex gap-2">
-                    <!-- <i class="fa-solid fa-envelope text-brand-600 text-lg mt-1"></i> -->
-                    <i data-lucide="mail" class="w-5 h-5  shrink-0 text-brand-600"></i>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="mail" class="w-5 h-5 text-brand-600"></i>
                     <p>eventpro@gmail.com</p>
                 </div>
 
-                <div class="flex gap-2">
-                    <!-- <i class="fa-solid fa-phone text-brand-600 text-lg mt-1"></i> -->
-                    <i data-lucide="phone" class="w-5 h-5  shrink-0 text-brand-600"></i>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="phone" class="w-5 h-5 text-brand-600"></i>
                     <p>+95 9 950 305004</p>
                 </div>
 
@@ -85,13 +72,12 @@
     </div>
 
     <!-- Copyright -->
-    <div class="border-t mt-8 py-6">
-        <p class="text-center text-gray-500 text-sm">
-            &copy; 2026
-            <span class="text-brand-600 font-bold text-md">EventPro</span>.
-            All rights reserved.
+    <div class="border-t py-3">
+        <p class="text-center text-sm text-gray-500">
+            © 2026 <span class="font-semibold text-brand-600">EventPro</span>. All rights reserved.
         </p>
     </div>
+
 </footer>
 
 <script>

@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 </style>
 
-<div class="flex-grow w-full flex items-center justify-center p-4">
+<div class="flex-grow w-full flex items-center justify-center py-12">
 
     <div
         class="w-full max-w-2xl bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-200/60 flex flex-col md:flex-row min-h-[440px] md:min-h-[420px]">
