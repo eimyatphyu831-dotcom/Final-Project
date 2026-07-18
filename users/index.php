@@ -22,6 +22,13 @@ $rResult = $conn->query("SELECT r.rating, r.review_text, r.created_at, u.name AS
     LIMIT 6");
 if ($rResult) $reviews = $rResult->fetch_all(MYSQLI_ASSOC);
 
+$totalEvents = 0;
+$eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
+if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
+
+$startYear = 2010;
+$yearsExp = date('Y') - $startYear;
+
 $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
@@ -369,11 +376,11 @@ if (isset($_SESSION['success'])) {
             <!-- Statistical Analytics Layout -->
             <div class="flex gap-12 mt-8">
                 <div>
-                    <span class="text-3xl font-serif font-bold text-brand-900">500+</span>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($totalEvents) ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Events Managed</p>
                 </div>
                 <div>
-                    <span class="text-3xl font-serif font-bold text-brand-900">15+</span>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= $yearsExp ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Years Experience</p>
                 </div>
             </div>
@@ -427,7 +434,7 @@ if (isset($_SESSION['success'])) {
 <?php if (count($reviews) > 0): ?>
 <section class="scroll-animate animate-scale max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
     <div class="text-center max-w-2xl mx-auto mb-14">
-        <span class="inline-block px-4 py-1 rounded-full bg-brand-200/60 text-brand-900 text-xs font-semibold mb-4">Testimonials</span>
+        <!-- <span class="inline-block px-4 py-1 rounded-full bg-brand-200/60 text-brand-900 text-xs font-semibold mb-4">Testimonials</span> -->
         <h2 class="text-3xl md:text-4xl font-bold text-brand-600 tracking-tight">What Our Customers Say</h2>
         <p class="text-md text-slate-500 mt-3">Real feedback from the events we've had the privilege to organize.</p>
     </div>

@@ -29,8 +29,8 @@ $allReviews = array_merge($reviews, $reviews);
 
     <section class="scroll-animate animate-scale max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 bg-[#f6f3fa]">
         <div class="text-center max-w-2xl mx-auto mb-14">
-            <span
-                class="inline-block px-4 py-1 rounded-full bg-brand-200/60 text-brand-900 text-xs font-semibold mb-4">Testimonials</span>
+            <!-- <span
+                class="inline-block px-4 py-1 rounded-full bg-brand-200/60 text-brand-900 text-xs font-semibold mb-4">Testimonials</span> -->
             <h2 class="text-3xl md:text-4xl font-bold text-brand-600 tracking-tight">What Our Customers Say</h2>
             <p class="text-md text-slate-500 mt-3">Real feedback from the events we've had the privilege to organize.</p>
         </div>

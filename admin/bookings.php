@@ -8,12 +8,52 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
+require_once '../includes/auto_complete_bookings.php';
 $statusFilter = $_GET['status'] ?? 'all';
 $message = '';
 
-// Insert sample data
+// AJAX handler for confirm/cancel (no page reload)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
+    header('Content-Type: application/json');
+    $action = $_POST['ajax_action'] ?? '';
+    $id = (int) ($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        echo json_encode(['success' => false, 'error' => 'Invalid ID']);
+        exit;
+    }
+    if ($action === 'approve') {
+        $conn->query("UPDATE bookings SET status='Confirmed' WHERE id=$id");
+        if ($conn->affected_rows > 0) {
+            $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.id = $id")->fetch_assoc();
+            if ($bk) {
+                $dateStr = date('M j, Y', strtotime($bk['event_date']));
+                createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
+            }
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'No rows affected']);
+        }
+    } elseif ($action === 'cancel') {
+        $reason = trim($_POST['reason'] ?? '');
+        $reasonText = $reason ?: 'No reason provided';
+        $conn->query("UPDATE bookings SET status='Cancelled' WHERE id=$id");
+        if ($conn->affected_rows > 0) {
+            $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.id = $id")->fetch_assoc();
+            if ($bk) {
+                $dateStr = date('M j, Y', strtotime($bk['event_date']));
+                createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled. Reason: {$reasonText}", '../users/my_bookings.php', 'user');
+            }
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'No rows affected']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Invalid action']);
+    }
+    exit;
+}
 
-// Cancel with reason via POST
+// Cancel with reason via POST (non-AJAX fallback)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
     $id = (int) $_POST['booking_id'];
     $reason = trim($_POST['cancel_reason'] ?? '');
@@ -25,12 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
         createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled. Reason: {$reasonText}", '../users/my_bookings.php', 'user');
     }
     $message = "Booking cancelled with reason.";
-    // Redirect to avoid resubmission
     header("Location: bookings.php?status=" . urlencode($statusFilter));
     exit();
 }
 
-// Approve / Cancel / Delete actions
+// Approve / Cancel / Delete actions via GET (fallback for non-JS)
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = (int) $_GET['id'];
     if ($_GET['action'] === 'approve') {
@@ -169,6 +208,8 @@ if (empty($bookings)) {
                                 </option>
                                 <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled
                                 </option>
+                                <option value="Completed" <?= $statusFilter == 'Completed' ? 'selected' : '' ?>>
+                                    Completed</option>
                             </select>
                         </form>
                     </div>
@@ -254,34 +295,37 @@ if (empty($bookings)) {
                                         <td class="p-3">
                                             <?php if ($b['status'] === 'Pending'): ?>
                                                 <span
-                                                    class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                                                    class="status-badge px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending</span>
                                             <?php elseif ($b['status'] === 'Confirmed'): ?>
                                                 <span
-                                                    class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Confirmed</span>
+                                                    class="status-badge px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Confirmed</span>
+                                            <?php elseif ($b['status'] === 'Completed'): ?>
+                                                <span
+                                                    class="status-badge px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">Completed</span>
                                             <?php else: ?>
                                                 <span
-                                                    class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Cancelled</span>
+                                                    class="status-badge px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Cancelled</span>
                                             <?php endif; ?>
                                         </td>
 
                                         <td class="p-3">
                                             <div class="flex justify-center items-center gap-2">
-                                                <?php if ($b['status'] === 'Pending'): ?>
-                                                    <a href="?action=approve&id=<?= $b['id'] ?>"
-                                                        class="inline-flex items-center gap-1 px-1.5 py-1 bg-green-100 text-green-600 rounded-lg text-xs hover:bg-green-300 transition">
-                                                        <i class="fa-solid fa-circle-check"></i>
-                                                        Confirm
-                                                    </a>
-                                                <?php endif; ?>
-
-                                                <?php if ($b['status'] !== 'Cancelled'): ?>
-                                                    <button type="button"
-                                                        onclick="openCancelModal(<?= $b['id'] ?>)"
-                                                        class="inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
-                                                        <i class="fa-solid fa-circle-xmark"></i>
-                                                        Cancel
-                                                    </button>
-                                                <?php endif; ?>
+                                                <?php $isCompleted = $b['status'] === 'Completed'; ?>
+                                                <button type="button"
+                                                    onclick="confirmBooking(<?= $b['id'] ?>, this)"
+                                                    class="confirm-btn inline-flex items-center gap-1 px-1.5 py-1 bg-green-100 text-green-600 rounded-lg text-xs transition <?= $isCompleted ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-green-300' ?>"
+                                                    <?= $isCompleted ? 'disabled' : '' ?>>
+                                                    <i class="fa-solid fa-circle-check"></i>
+                                                    Confirm
+                                                </button>
+                                                <button type="button"
+                                                    onclick="openCancelModal(<?= $b['id'] ?>)"
+                                                    data-id="<?= $b['id'] ?>"
+                                                    class="cancel-btn inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs transition <?= $isCompleted ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-red-300' ?>"
+                                                    <?= $isCompleted ? 'disabled' : '' ?>>
+                                                    <i class="fa-solid fa-circle-xmark"></i>
+                                                    Cancel
+                                                </button>
                                             </div>
                                         </td>
 
@@ -378,13 +422,83 @@ if (empty($bookings)) {
             modal.classList.remove('flex');
             document.getElementById('receiptModalImg').src = '';
         }
-        // Close on backdrop click
         document.getElementById('receiptModal').addEventListener('click', function (e) {
             if (e.target === this) closeReceiptModal();
         });
-        // Close on Escape key
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') { closeReceiptModal(); closeCancelModal(); }
+        });
+
+        function disableActions(row) {
+            row.querySelectorAll('.confirm-btn, .cancel-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                btn.classList.remove('hover:bg-green-300', 'hover:bg-red-300');
+            });
+        }
+
+        function updateStatusBadge(row, status) {
+            let badge = row.querySelector('.status-badge');
+            if (!badge) {
+                const td = row.cells[7];
+                badge = td.querySelector('span');
+            }
+            if (status === 'Confirmed') {
+                badge.className = 'px-3 py-1 text-xs rounded-full bg-green-100 text-green-700';
+                badge.textContent = 'Confirmed';
+            } else if (status === 'Cancelled') {
+                badge.className = 'px-3 py-1 text-xs rounded-full bg-red-100 text-red-700';
+                badge.textContent = 'Cancelled';
+            } else if (status === 'Completed') {
+                badge.className = 'px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700';
+                badge.textContent = 'Completed';
+            }
+        }
+
+        function confirmBooking(id, btn) {
+            const row = btn.closest('tr');
+            disableActions(row);
+            fetch('bookings.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'ajax_action=approve&id=' + id
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    updateStatusBadge(row, 'Confirmed');
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(() => location.reload());
+        }
+
+        function cancelBookingAJAX(id, reason) {
+            const row = document.querySelector('.cancel-btn[data-id="' + id + '"]')?.closest('tr');
+            if (row) disableActions(row);
+            fetch('bookings.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'ajax_action=cancel&id=' + id + '&reason=' + encodeURIComponent(reason)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    if (row) updateStatusBadge(row, 'Cancelled');
+                    closeCancelModal();
+                } else {
+                    location.reload();
+                }
+            })
+            .catch(() => location.reload());
+        }
+
+        document.querySelector('#cancelModal form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('cancelBookingId').value;
+            const reason = this.querySelector('textarea').value;
+            cancelBookingAJAX(id, reason);
         });
     </script>
 

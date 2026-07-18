@@ -279,13 +279,13 @@ $stmt->close();
                                                 View
                                             </a>
 
-                                            <?php if (!$m['is_read']): ?>
+                                            <!-- <?php if (!$m['is_read']): ?>
                                                 <a href="contact_messages.php?read=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
                                                     class="inline-flex items-center gap-0.5 px-1 py-1 bg-green-200 text-green-600 rounded-lg text-xs hover:bg-green-400 transition">
                                                     <i class="fa-solid fa-envelope-open"></i>
                                                     Read
                                                 </a>
-                                            <?php endif; ?>
+                                            <?php endif; ?> -->
 
                                             <a href="contact_messages.php?delete=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
                                                 onclick="return confirm('Delete this message?')"

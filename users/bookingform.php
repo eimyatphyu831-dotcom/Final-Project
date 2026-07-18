@@ -414,8 +414,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Booking Form -->
                 <div class="lg:col-span-2">
                     <div class="rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
-                        <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3"
-                            onsubmit="return confirmBooking()">
+                        <form id="bookingForm" method="POST" enctype="multipart/form-data" class="space-y-3">
 
                             <input type="hidden" name="event_id" value="<?= $eventId ?>">
                             <input type="hidden" name="venue_id" value="<?= $venueId ?>">
@@ -451,8 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <label
                                             class="slot-option border  border-gray-300 rounded-xl p-2 text-center cursor-pointer transition hover:border-purple-400"
                                             onclick="selectSlot(this)">
-                                            <input type="radio" name="time_slot" value="<?= $ts['id'] ?>" class="hidden"
-                                                required>
+                                            <input type="radio" name="time_slot" value="<?= $ts['id'] ?>" class="sr-only" required>
 
                                             <div class="text-xs font-bold text-gray-700">
                                                 <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> –
@@ -474,13 +472,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     class="relative flex flex-col items-center justify-center w-full border-2 border-dashed border-purple-200 rounded-xl p-6 cursor-pointer transition-all duration-300 overflow-hidden group"
                                     style="background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 50%, #fdf2f8 100%);">
                                     <div id="receiptPlaceholder" class="flex flex-col items-center gap-2">
-                                        <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <div
+                                            class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-purple-500"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                                stroke-width="1.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                         <div class="text-center">
-                                            <span id="receiptLabel" class="text-sm font-semibold text-purple-700">Upload Receipt Image</span>
+                                            <span id="receiptLabel" class="text-sm font-semibold text-purple-700">Upload
+                                                Receipt Image</span>
                                             <p class="text-[10px] text-gray-400 mt-0.5">PNG, JPG or WEBP</p>
                                         </div>
                                         <!-- <span class="mt-1 px-4 py-1.5 text-xs font-bold text-white bg-purple-500 rounded-full group-hover:bg-purple-600 transition-colors shadow-sm shadow-purple-200">Choose Image</span> -->
@@ -488,8 +491,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <img id="receiptPreviewImg" src=""
                                         class="hidden w-full h-48 object-contain rounded-lg">
                                 </label>
-                                <input type="file" name="receipt" id="receiptInput" accept="image/*" capture="environment" required
-                                    onchange="previewReceipt(this)" class="hidden">
+                                <input type="file" name="receipt" id="receiptInput" accept="image/*"
+                                    capture="environment" required onchange="previewReceipt(this)" class="absolute w-px h-px opacity-0 overflow-hidden">
                             </div>
 
                             <div>
@@ -522,7 +525,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <!-- Payment QR Scan -->
-                            <div class="bg-purple-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center" id="summaryQrSection">
+                            <div class="bg-purple-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center"
+                                id="summaryQrSection">
                                 <p class="text-xs font-bold text-gray-500 uppercase mb-2">Scan to Pay with <span
                                         id="summaryPmName">KBZPay</span></p>
                                 <div id="summaryAccountInfo" class="text-sm text-gray-700 mb-3 space-y-1">
@@ -532,21 +536,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <button onclick="copyPhone(this)" title="Copy"
                                             class="text-purple-500 hover:text-purple-700 transition">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                             </svg>
                                         </button>
                                     </div>
                                 </div>
                                 <img id="summaryQr" src="<?= $base ?>kpayqr.jpg" onclick="openQr()"
                                     class="w-28 h-28 mx-auto rounded-xl border border-gray-200 shadow-sm cursor-pointer">
-                                <p class="text-[10px] text-gray-400 mt-2">Open your mobile banking app and scan to pay</p>
+                                <p class="text-[10px] text-gray-400 mt-2">Open your mobile banking app and scan to pay
+                                </p>
                             </div>
 
                             <div class="grid grid-cols-2 gap-3 pt-1">
 
                                 <button type="button" onclick="window.history.back()"
                                     class="bg-gray-200 text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-400 transition hover:text-white">Cancel</button>
-                                <button type="submit"
+                                <button type="button" onclick="openConfirmModal()"
                                     class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
                                     Booking</button>
                             </div>
@@ -602,6 +608,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </h4>
                             <div class="bg-gray-50 rounded-xl p-2.5 space-y-1 text-sm" id="summarySchedule">
                                 <div class="flex items-center gap-2">
+                                    <span class="text-gray-500 w-16 text-xs">Event</span>
+                                    <span class="font-medium text-gray-800"><?= htmlspecialchars($eventName) ?></span>
+                                </div>
+                                <div class="flex items-center gap-2">
                                     <span class="text-gray-500 w-16 text-xs">Date</span>
                                     <span class="font-medium text-gray-800" id="summaryDate">Not selected</span>
                                 </div>
@@ -612,7 +622,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-500 w-16 text-xs">Venue</span>
                                     <span
-                                        class="font-medium text-gray-800 truncate"><?= htmlspecialchars($venueName ?? '') ?></span>
+                                        class="font-medium text-gray-800"><?= htmlspecialchars($venueName ?? '') ?></span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-500 w-16 text-xs">Package</span>
@@ -659,6 +669,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button onclick="closeQr()"
                 class="mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-xl text-sm transition">Close</button>
         </div>
+    </div>
+
+    <!-- Confirm Booking Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 mx-4 text-center">
+
+            <div class="mx-auto w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                <i data-lucide="calendar-check" class="w-8 h-8 text-purple-600"></i>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mt-5">
+                Confirm Booking?
+            </h2>
+
+            <p class="text-gray-500 mt-3">
+                You are about to finalize your event request.
+            </p>
+
+            <div class="flex justify-center gap-4 mt-8">
+
+                <button type="button" onclick="closeConfirmModal()"
+                    class="px-6 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
+                    Cancel
+                </button>
+
+
+                <button type="button" onclick="submitBooking()"
+                    class="px-6 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition">
+                    Yes, Confirm
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
     <?php include '../includes/footer.php'; ?>
 
@@ -740,26 +786,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('summaryTimeSlot').textContent = timeText;
         }
 
-        function confirmBooking() {
+        function openConfirmModal() {
+
+            const form = document.getElementById('bookingForm');
+
+            if (!form.reportValidity()) return;
+
             if (!document.getElementById('payment_method_id').value) {
-                Swal.fire({ icon: 'error', title: 'Payment required', text: 'Please select a payment method.', confirmButtonColor: '#7c3aed' });
-                return false;
+                document.getElementById('payment_method_id').setCustomValidity('Please select a payment method.');
+                form.reportValidity();
+                document.getElementById('payment_method_id').setCustomValidity('');
+                return;
             }
-            Swal.fire({
-                title: 'Confirm booking?',
-                text: 'You are about to finalize your event request.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#7c3aed',
-                cancelButtonColor: '#d1d5db',
-                confirmButtonText: 'Yes, Confirm'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('bookingForm').submit();
-                }
-            });
-            return false;
+
+            document.getElementById('confirmModal').classList.remove('hidden');
+            document.getElementById('confirmModal').classList.add('flex');
         }
+
+
+
+        function submitBooking() {
+
+            document.getElementById('bookingForm').submit();
+
+        }
+
+
+
+        function closeConfirmModal() {
+
+            document.getElementById('confirmModal')
+                .classList.remove('flex');
+
+            document.getElementById('confirmModal')
+                .classList.add('hidden');
+
+        }
+
+
+
+
 
         document.addEventListener('DOMContentLoaded', function () {
             const kpayId = <?= $kpayId ?>;

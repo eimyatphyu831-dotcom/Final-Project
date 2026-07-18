@@ -61,6 +61,14 @@ $stmt->close();
 //   Count Photos
 $totalPhotos = $gallery->num_rows;
 
+//   Get max capacity from venues for this event
+$capResult = $conn->query("SELECT MAX(capacity) AS max_cap FROM venues WHERE event_id = $id");
+$maxCapacity = $capResult ? (int) $capResult->fetch_assoc()['max_cap'] : 0;
+
+//   Get average rating from reviews for this event
+$ratResult = $conn->query("SELECT ROUND(AVG(rating), 1) AS avg_rating FROM reviews WHERE event_id = $id");
+$avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
+
 
 
 ?>
@@ -133,13 +141,13 @@ $totalPhotos = $gallery->num_rows;
             <div class="grid grid-cols-3 gap-5 mt-12">
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
-                    <h3 class="text-3xl font-bold text-purple-500">500+</h3>
-                    <p class="text-gray-500 text-sm mt-2">Guests</p>
+                    <h3 class="text-3xl font-bold text-purple-500"><?= $maxCapacity ? number_format($maxCapacity) . '+' : 'N/A' ?></h3>
+                    <p class="text-gray-500 text-sm mt-2">Max Guests</p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
-                    <h3 class="text-3xl font-bold text-purple-500">★★★★★</h3>
-                    <p class="text-gray-500 text-sm mt-2">Top Rated</p>
+                    <h3 class="text-3xl font-bold text-purple-500"><?= $avgRating ? str_repeat('★', floor($avgRating)) . ($avgRating - floor($avgRating) >= 0.5 ? '½' : '') : '☆☆☆☆☆' ?></h3>
+                    <p class="text-gray-500 text-sm mt-2"><?= $avgRating ? number_format($avgRating, 1) . ' / 5' : 'No ratings' ?></p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
@@ -196,6 +204,43 @@ $totalPhotos = $gallery->num_rows;
 
 </section>
 
+<!-- Custom Alert Modal -->
+<div id="alertModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-md mx-4 rounded-3xl shadow-2xl p-8 text-center">
+
+        <!-- Icon -->
+        <div id="modalIcon" class="w-16 h-16 mx-auto rounded-full bg-purple-100 flex items-center justify-center">
+            <i data-lucide="info" class="w-8 h-8 text-purple-600"></i>
+        </div>
+
+
+        <h2 id="modalTitle" class="text-2xl font-bold text-slate-800 mt-5">
+        </h2>
+
+
+        <p id="modalText" class="text-slate-500 mt-3">
+        </p>
+
+
+        <div class="flex justify-center gap-4 mt-8">
+
+            <button id="modalCancel" onclick="closeModal()"
+                class="px-6 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100">
+                Cancel
+            </button>
+
+
+            <button id="modalConfirm" class="px-6 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700">
+                Continue
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
 
 
 
@@ -203,42 +248,133 @@ $totalPhotos = $gallery->num_rows;
 
 <script>
     const isLoggedIn = <?= $isLoggedIn ? 'true' : 'false' ?>;
+
+
+    let confirmAction = null;
+
+
+    function showModal(title, message, confirmText, callback, showCancel = true) {
+
+        document.getElementById('modalTitle').innerText = title;
+
+        document.getElementById('modalText').innerText = message;
+
+        document.getElementById('modalConfirm').innerText = confirmText;
+
+
+        document.getElementById('alertModal')
+            .classList.remove('hidden');
+
+        document.getElementById('alertModal')
+            .classList.add('flex');
+
+
+        document.getElementById('modalCancel').style.display =
+            showCancel ? 'block' : 'none';
+
+
+        confirmAction = callback;
+    }
+
+
+
+    document.getElementById('modalConfirm')
+        .addEventListener('click', () => {
+
+            if (confirmAction) {
+                confirmAction();
+            }
+
+            closeModal();
+
+        });
+
+
+
+    function closeModal() {
+
+        document.getElementById('alertModal')
+            .classList.remove('flex');
+
+        document.getElementById('alertModal')
+            .classList.add('hidden');
+
+    }
+
+
+
     function handleBooking(url) {
+
+
         if (!isLoggedIn) {
-            const params = new URLSearchParams(url.split('?')[1] || '');
-            const hasPackage = params.get('venue_id') && params.get('package_id');
-            const redirectUrl = hasPackage ? url : window.location.href;
-            const bookingUrl = encodeURIComponent(redirectUrl);
-            Swal.fire({
-                title: 'Login Required',
-                text: 'Please register or login to book this event.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#9d84c7',
-                cancelButtonColor: '#d1d5db',
-                confirmButtonText: 'Login Now',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
-                }
-            });
+
+            const params =
+                new URLSearchParams(url.split('?')[1] || '');
+
+            const hasPackage =
+                params.get('venue_id') &&
+                params.get('package_id');
+
+
+            const redirectUrl =
+                hasPackage ? url : window.location.href;
+
+
+            const bookingUrl =
+                encodeURIComponent(redirectUrl);
+
+
+
+            showModal(
+                'Login Required',
+                'Please register or login to book this event.',
+                'Login Now',
+                function () {
+
+                    window.location.href =
+                        '../auth/login.php?redirect=' + bookingUrl;
+
+                },
+                true
+            );
+
+
             return;
+
         }
-        const params = new URLSearchParams(url.split('?')[1] || '');
+
+
+
+        const params =
+            new URLSearchParams(url.split('?')[1] || '');
+
+
+
         if (!params.get('venue_id') || !params.get('package_id')) {
-            Swal.fire({
-                title: 'Book This Event',
-                text: 'Please select a venue and package to continue.',
-                icon: 'info',
-                confirmButtonColor: '#9d84c7',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.href = 'select_venue.php?event_id=<?= $id ?>';
-            });
+
+
+            showModal(
+                'Book This Event',
+                'Please select a venue and package to continue.',
+                'Select Venue',
+                function () {
+
+                    window.location.href =
+                        'select_venue.php?event_id=<?= $id ?>';
+
+                },
+                true
+            );
+
+
             return;
+
         }
+
+
+
         window.location.href = url;
+
     }
 </script>
 
@@ -261,6 +397,4 @@ $totalPhotos = $gallery->num_rows;
             transform: translateX(-50%);
         }
     }
-
-
 </style>

@@ -26,7 +26,7 @@ $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
 
                 <!-- Right View All -->
                 <a href="viewvenues.php"
-                    class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+                    class="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
                     View All
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </a>

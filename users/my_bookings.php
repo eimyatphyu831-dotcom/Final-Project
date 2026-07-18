@@ -6,6 +6,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 include "../config/db.php";
+include "../includes/auto_complete_bookings.php";
 
 $user_id = $_SESSION['user_id'];
 
@@ -75,6 +76,7 @@ $conn->close();
                                             'Confirmed' => 'bg-green-100 text-green-700',
                                             'Cancelled' => 'bg-red-100 text-red-700',
                                             'Pending' => 'bg-yellow-100 text-yellow-700',
+                                            'Completed' => 'bg-blue-100 text-blue-700',
                                             default => 'bg-gray-100 text-gray-600'
                                         } ?>">
                                         <?= htmlspecialchars($booking['status']) ?>

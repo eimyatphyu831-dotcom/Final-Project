@@ -1,4 +1,13 @@
 <?php
+session_start();
+require_once '../config/db.php';
+
+$totalEvents = 0;
+$eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
+if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
+
+$startYear = 2010;
+$yearsExp = date('Y') - $startYear;
 include '../includes/header.php';
 ?>
 
@@ -20,11 +29,11 @@ include '../includes/header.php';
             <!-- Statistical Analytics Layout -->
             <div class="flex gap-12 mt-8">
                 <div>
-                    <span class="text-3xl font-serif font-bold text-brand-900">500+</span>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($totalEvents) ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Events Managed</p>
                 </div>
                 <div>
-                    <span class="text-3xl font-serif font-bold text-brand-900">15+</span>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= $yearsExp ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Years Experience</p>
                 </div>
             </div>

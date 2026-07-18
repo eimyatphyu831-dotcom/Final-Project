@@ -417,11 +417,11 @@ function activeMenu($page)
                 </a>
 
                 <!-- Notifications -->
-                <a href="notifications.php"
+                <!-- <a href="notifications.php"
                     class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all <?= activeMenu('notifications.php') ?>">
                     <i class="fa-solid fa-bell w-5 text-purple-400"></i>
                     Notifications
-                </a> 
+                </a>  -->
 
                 <!-- Profile -->
                 <!-- <a href="profile.php"

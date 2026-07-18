@@ -36,6 +36,8 @@ include '../includes/header.php';
     
     <div class="bg-purple-50 px-6 py-10 shadow-sm  text-center">
 
+        
+
         <!-- Title -->
         <h2 class="text-3xl font-bold text-brand-600">
             Explore Events
@@ -45,33 +47,42 @@ include '../includes/header.php';
             Browse and filter events by name
         </p>
 
-        <!-- Filter Buttons -->
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <div class="relative mt-8">
 
-            <?php
-            function btnClass($filterType, $type)
-            {
-                return $filterType === $type
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-white border border-purple-200 text-slate-700 hover:bg-purple-100';
-            }
-            ?>
+    <!-- Center Filter Buttons -->
+    <div class="flex flex-wrap justify-center gap-3">
 
-            <button onclick="filterEvents('all')"
-                class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'all') ?>">
-                All
-            </button>
-            <?php foreach ($evTypes as $ev): $ename = strtolower($ev['event_name']); ?>
+        <?php
+        function btnClass($filterType, $type)
+        {
+            return $filterType === $type
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'bg-white border border-purple-200 text-slate-700 hover:bg-purple-100';
+        }
+        ?>
+
+        <button onclick="filterEvents('all')"
+            class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, 'all') ?>">
+            All
+        </button>
+
+        <?php foreach ($evTypes as $ev): $ename = strtolower($ev['event_name']); ?>
             <button onclick="filterEvents('<?= htmlspecialchars($ename) ?>')"
                 class="px-4 py-2 text-sm rounded-full transition <?= btnClass($filterType, $ename) ?>">
                 <?= htmlspecialchars(ucfirst($ename)) ?>
             </button>
-            <?php endforeach; ?>
-
-        </div>
+        <?php endforeach; ?>
 
     </div>
 
+    <!-- Back Button -->
+    <a href="javascript:history.back()"
+        class="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700 font-bold">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Back
+    </a>
+
+</div>
 </section>
 
 <!-- EVENT GRID -->

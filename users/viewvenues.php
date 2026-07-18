@@ -74,7 +74,8 @@ if ($venueId > 0 && $eventId > 0) {
 <!-- Explore Venues -->
 <section id="venues" class="w-full bg-purple-50 py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
-        <div class="mb-10 text-center">
+        <div class="mb-6 text-center">
+
             <h2 class="text-3xl font-extrabold text-brand-600 tracking-tight">
                 Explore Venues
             </h2>
@@ -83,14 +84,26 @@ if ($venueId > 0 && $eventId > 0) {
             </p>
         </div>
 
-        <form class="mb-8 flex justify-center" onsubmit="event.preventDefault(); filterVenues();">
-            <div class="w-full sm:max-w-md rounded-full border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-purple-400 flex items-center px-4 py-2">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
-                <input type="text" id="venueSearch" placeholder="Enter venue name" oninput="filterVenues()"
-                    class="w-full bg-transparent text-sm text-slate-700 outline-none">
-            </div>
-        </form>
+        <div class="relative mb-8">
 
+            <!-- Search Bar (Center) -->
+            <form class="flex justify-center" onsubmit="event.preventDefault(); filterVenues();">
+                <div
+                    class="w-full sm:max-w-md rounded-full border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-purple-400 flex items-center px-4 py-2">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+                    <input type="text" id="venueSearch" placeholder="Enter venue name" oninput="filterVenues()"
+                        class="w-full bg-transparent text-sm text-slate-700 outline-none">
+                </div>
+            </form>
+
+            <!-- Back Button (Right) -->
+            <a href="javascript:history.back()"
+                class="absolute right-0 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700 font-bold">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back
+            </a>
+
+        </div>
         <p id="noVenueMessage" class="hidden mb-6 text-sm text-slate-500">No venues found for your search.</p>
 
         <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -105,7 +118,8 @@ if ($venueId > 0 && $eventId > 0) {
                         <h3 class="text-xl font-extrabold text-brand-900 mb-1"><?= htmlspecialchars($v['name']) ?></h3>
                         <?php if (!empty($v['event_name'])): ?>
                             <div class="flex py-1 w-full">
-                                <span class="block w-max px-3 py-1 text-[10px] text-center font-semibold rounded-lg bg-purple-400 text-white">
+                                <span
+                                    class="block w-max px-3 py-1 text-[10px] text-center font-semibold rounded-lg bg-purple-400 text-white">
                                     <?= htmlspecialchars($v['event_name']) ?>
                                 </span>
                             </div>
@@ -130,134 +144,149 @@ if ($venueId > 0 && $eventId > 0) {
 </section>
 
 <?php if ($selectedVenue && !empty($packages)): ?>
-<!-- Packages Section -->
-<section id="packagesSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 bg-purple-50">
-    <div class="text-center mb-8">
-        <h2 class="text-2xl font-extrabold text-brand-600">Choose Your Package</h2>
-        <p class="text-slate-500 mt-1">Select the perfect package for <span class="font-semibold"><?= htmlspecialchars($selectedVenue['name']) ?></span></p>
-    </div>
-    <div class="max-w-4xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <!-- Silver -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                        <i data-lucide="medal" class="w-4 h-4 text-gray-400"></i>
+    <!-- Packages Section -->
+    <section id="packagesSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 bg-purple-50">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-extrabold text-brand-600">Choose Your Package</h2>
+            <p class="text-slate-500 mt-1">Select the perfect package for <span
+                    class="font-semibold"><?= htmlspecialchars($selectedVenue['name']) ?></span></p>
+        </div>
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Silver -->
+                <div
+                    class="bg-white rounded-2xl shadow-md border border-gray-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                            <i data-lucide="medal" class="w-4 h-4 text-gray-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-700">Silver</h3>
+                            <p class="text-[10px] text-gray-400">Basic Package</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-base font-bold text-gray-700">Silver</h3>
-                        <p class="text-[10px] text-gray-400">Basic Package</p>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">
+                        <?= $packages[0]['price_formatted'] ?>
+                        <?php if ($packages[0]['price'] > 0): ?>
+                            <span class="text-xs text-gray-400 font-normal">/event</span>
+                        <?php endif; ?>
+                    </h4>
+                    <div class="border-t pt-3 flex-grow">
+                        <p class="text-[10px] font-semibold text-gray-500 mb-2">Included Services</p>
+                        <ul class="space-y-1 text-xs text-gray-600">
+                            <?php if (!empty($packages[0]['services'])): ?>
+                                <?php foreach ($packages[0]['services'] as $svc): ?>
+                                    <li>✓ <?= htmlspecialchars($svc) ?></li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="text-gray-400 italic">No services listed</li>
+                            <?php endif; ?>
+                        </ul>
                     </div>
-                </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-3">
-                    <?= $packages[0]['price_formatted'] ?>
                     <?php if ($packages[0]['price'] > 0): ?>
-                        <span class="text-xs text-gray-400 font-normal">/event</span>
+                        <button type="button"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[0]['id'] ?>&total=<?= $packages[0]['price'] ?>')"
+                            class="mt-4 w-full py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-semibold text-xs hover:bg-gray-700 hover:text-white transition">
+                            Select Package
+                        </button>
+                    <?php else: ?>
+                        <p
+                            class="mt-4 w-full py-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 font-semibold text-xs text-center">
+                            Not Available</p>
                     <?php endif; ?>
-                </h4>
-                <div class="border-t pt-3 flex-grow">
-                    <p class="text-[10px] font-semibold text-gray-500 mb-2">Included Services</p>
-                    <ul class="space-y-1 text-xs text-gray-600">
-                        <?php if (!empty($packages[0]['services'])): ?>
-                            <?php foreach ($packages[0]['services'] as $svc): ?>
-                                <li>✓ <?= htmlspecialchars($svc) ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="text-gray-400 italic">No services listed</li>
-                        <?php endif; ?>
-                    </ul>
                 </div>
-                <?php if ($packages[0]['price'] > 0): ?>
-                    <button type="button" onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[0]['id'] ?>&total=<?= $packages[0]['price'] ?>')"
-                        class="mt-4 w-full py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-semibold text-xs hover:bg-gray-700 hover:text-white transition">
-                        Select Package
-                    </button>
-                <?php else: ?>
-                    <p class="mt-4 w-full py-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 font-semibold text-xs text-center">Not Available</p>
-                <?php endif; ?>
-            </div>
 
-            <!-- Gold -->
-            <div class="bg-white rounded-2xl shadow-md border border-orange-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                <div class="absolute top-3 right-3 bg-orange-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">POPULAR</div>
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                        <i data-lucide="crown" class="w-4 h-4 text-orange-400"></i>
+                <!-- Gold -->
+                <div
+                    class="bg-white rounded-2xl shadow-md border border-orange-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <div
+                        class="absolute top-3 right-3 bg-orange-400 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        POPULAR</div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                            <i data-lucide="crown" class="w-4 h-4 text-orange-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-orange-700">Gold</h3>
+                            <p class="text-[10px] text-orange-400">Premium Package</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-base font-bold text-orange-700">Gold</h3>
-                        <p class="text-[10px] text-orange-400">Premium Package</p>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">
+                        <?= $packages[1]['price_formatted'] ?>
+                        <?php if ($packages[1]['price'] > 0): ?>
+                            <span class="text-xs text-gray-400 font-normal">/event</span>
+                        <?php endif; ?>
+                    </h4>
+                    <div class="border-t pt-3 flex-grow">
+                        <p class="text-[10px] font-semibold text-orange-500 mb-2">Included Services</p>
+                        <ul class="space-y-1 text-xs text-orange-500">
+                            <?php if (!empty($packages[1]['services'])): ?>
+                                <?php foreach ($packages[1]['services'] as $svc): ?>
+                                    <li>✓ <?= htmlspecialchars($svc) ?></li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="text-orange-300 italic">No services listed</li>
+                            <?php endif; ?>
+                        </ul>
                     </div>
-                </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-3">
-                    <?= $packages[1]['price_formatted'] ?>
                     <?php if ($packages[1]['price'] > 0): ?>
-                        <span class="text-xs text-gray-400 font-normal">/event</span>
+                        <button type="button"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[1]['id'] ?>&total=<?= $packages[1]['price'] ?>')"
+                            class="mt-4 w-full py-2 rounded-xl bg-orange-400 text-white font-semibold text-xs hover:bg-orange-500 hover:shadow-md transition">
+                            Select Package
+                        </button>
+                    <?php else: ?>
+                        <p
+                            class="mt-4 w-full py-2 rounded-xl border border-orange-200 bg-orange-50 text-orange-300 font-semibold text-xs text-center">
+                            Not Available</p>
                     <?php endif; ?>
-                </h4>
-                <div class="border-t pt-3 flex-grow">
-                    <p class="text-[10px] font-semibold text-orange-500 mb-2">Included Services</p>
-                    <ul class="space-y-1 text-xs text-orange-500">
-                        <?php if (!empty($packages[1]['services'])): ?>
-                            <?php foreach ($packages[1]['services'] as $svc): ?>
-                                <li>✓ <?= htmlspecialchars($svc) ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="text-orange-300 italic">No services listed</li>
-                        <?php endif; ?>
-                    </ul>
                 </div>
-                <?php if ($packages[1]['price'] > 0): ?>
-                    <button type="button" onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[1]['id'] ?>&total=<?= $packages[1]['price'] ?>')"
-                        class="mt-4 w-full py-2 rounded-xl bg-orange-400 text-white font-semibold text-xs hover:bg-orange-500 hover:shadow-md transition">
-                        Select Package
-                    </button>
-                <?php else: ?>
-                    <p class="mt-4 w-full py-2 rounded-xl border border-orange-200 bg-orange-50 text-orange-300 font-semibold text-xs text-center">Not Available</p>
-                <?php endif; ?>
-            </div>
 
-            <!-- Diamond -->
-            <div class="bg-white rounded-2xl shadow-md border border-blue-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <i data-lucide="gem" class="w-4 h-4 text-blue-400"></i>
+                <!-- Diamond -->
+                <div
+                    class="bg-white rounded-2xl shadow-md border border-blue-400 p-4 relative flex flex-col hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i data-lucide="gem" class="w-4 h-4 text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-blue-700">Diamond</h3>
+                            <p class="text-[10px] text-blue-400">Luxury Package</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-base font-bold text-blue-700">Diamond</h3>
-                        <p class="text-[10px] text-blue-400">Luxury Package</p>
-                    </div>
-                </div>
-                <h4 class="text-xl font-bold text-gray-900 mb-3">
-                    <?= $packages[2]['price_formatted'] ?>
-                    <?php if ($packages[2]['price'] > 0): ?>
-                        <span class="text-xs text-gray-400 font-normal">/event</span>
-                    <?php endif; ?>
-                </h4>
-                <div class="border-t pt-3 flex-grow">
-                    <p class="text-[10px] font-semibold text-blue-500 mb-2">Included Services</p>
-                    <ul class="space-y-1 text-xs text-blue-400">
-                        <?php if (!empty($packages[2]['services'])): ?>
-                            <?php foreach ($packages[2]['services'] as $svc): ?>
-                                <li>✓ <?= htmlspecialchars($svc) ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li class="text-blue-300 italic">No services listed</li>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">
+                        <?= $packages[2]['price_formatted'] ?>
+                        <?php if ($packages[2]['price'] > 0): ?>
+                            <span class="text-xs text-gray-400 font-normal">/event</span>
                         <?php endif; ?>
-                    </ul>
+                    </h4>
+                    <div class="border-t pt-3 flex-grow">
+                        <p class="text-[10px] font-semibold text-blue-500 mb-2">Included Services</p>
+                        <ul class="space-y-1 text-xs text-blue-400">
+                            <?php if (!empty($packages[2]['services'])): ?>
+                                <?php foreach ($packages[2]['services'] as $svc): ?>
+                                    <li>✓ <?= htmlspecialchars($svc) ?></li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="text-blue-300 italic">No services listed</li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                    <?php if ($packages[2]['price'] > 0): ?>
+                        <button type="button"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[2]['id'] ?>&total=<?= $packages[2]['price'] ?>')"
+                            class="mt-4 w-full py-2 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 font-semibold text-xs hover:bg-blue-500 hover:text-white transition">
+                            Select Package
+                        </button>
+                    <?php else: ?>
+                        <p
+                            class="mt-4 w-full py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-300 font-semibold text-xs text-center">
+                            Not Available</p>
+                    <?php endif; ?>
                 </div>
-                <?php if ($packages[2]['price'] > 0): ?>
-                    <button type="button" onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[2]['id'] ?>&total=<?= $packages[2]['price'] ?>')"
-                        class="mt-4 w-full py-2 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 font-semibold text-xs hover:bg-blue-500 hover:text-white transition">
-                        Select Package
-                    </button>
-                <?php else: ?>
-                    <p class="mt-4 w-full py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-300 font-semibold text-xs text-center">Not Available</p>
-                <?php endif; ?>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <?php endif; ?>
 
 <?php include '../includes/footer.php'; ?>
@@ -306,13 +335,13 @@ if ($venueId > 0 && $eventId > 0) {
     }
 
     <?php if ($selectedVenueId > 0): ?>
-    document.addEventListener('DOMContentLoaded', function() {
-        const section = document.getElementById('packagesSection');
-        if (section) {
-            setTimeout(() => {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 300);
-        }
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            const section = document.getElementById('packagesSection');
+            if (section) {
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
+        });
     <?php endif; ?>
 </script>
