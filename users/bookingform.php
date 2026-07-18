@@ -58,6 +58,20 @@ if ($teamIdCol && $teamIdCol->num_rows === 0) {
 }
 
 
+// Create reviews table
+$conn->query("CREATE TABLE IF NOT EXISTS reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT NOT NULL,
+    user_id INT NOT NULL,
+    event_id INT NOT NULL,
+    rating TINYINT NOT NULL,
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE
+)");
+
 // FK for time_slot_id
 $fkSlot = $conn->query("SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'time_slot_id' AND REFERENCED_TABLE_NAME = 'time_slots'");
 if ($fkSlot && $fkSlot->num_rows === 0) {

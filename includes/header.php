@@ -272,6 +272,7 @@ $username = $_SESSION['user_name'] ?? '';
     $navGroups = [
         'index.php' => ['index.php'],
         'events.php' => ['events.php', 'viewevents.php', 'viewdetails.php'],
+        'reviews.php' => ['reviews.php'],
         'services.php' => ['services.php'],
         'venues.php' => ['venues.php', 'viewvenues.php'],
         'about.php' => ['about.php'],
@@ -356,8 +357,11 @@ $username = $_SESSION['user_name'] ?? '';
                     <a href="../users/venues.php"
                         class="<?= navLinkClass('venues.php', $currentPage, $navGroups) ?>">Venues</a>
 
-                    <a href="../users/about.php"
+                     <a href="../users/about.php"
                         class="<?= navLinkClass('about.php', $currentPage, $navGroups) ?>">About</a>
+
+                    <a href="../users/reviews.php"
+                        class="<?= navLinkClass('reviews.php', $currentPage, $navGroups) ?>">Reviews</a>
 
                     <a href="../users/contact.php"
                         class="<?= navLinkClass('contact.php', $currentPage, $navGroups) ?>">Contact</a>
@@ -374,6 +378,12 @@ $username = $_SESSION['user_name'] ?? '';
             <?php
             if (session_status() == PHP_SESSION_NONE) {
                 session_start();
+            }
+            $userProfileImage = '';
+            if (isset($_SESSION['user_id'])) {
+                include_once __DIR__ . '/../config/db.php';
+                $q = $conn->query("SELECT image FROM users WHERE id = {$_SESSION['user_id']}");
+                if ($q && $row = $q->fetch_assoc()) $userProfileImage = $row['image'];
             }
             ?>
 
@@ -429,12 +439,16 @@ $username = $_SESSION['user_name'] ?? '';
                     <div class="relative" id="userDropdown">
                         <button id="dropdownToggle"
                             class="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-brand-50 transition">
-                            <div class="w-9 h-9 rounded-full bg-brand-200 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
+                            <div class="w-9 h-9 rounded-full bg-brand-200 flex items-center justify-center overflow-hidden">
+                                <?php if ($userProfileImage): ?>
+                                    <img src="../uploads/profiles/<?= htmlspecialchars($userProfileImage) ?>?t=<?= time() ?>" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                <?php endif; ?>
                             </div>
                             <span class="font-semibold text-brand-900 text-sm">
                                 <?= htmlspecialchars($_SESSION['user_name']) ?>
@@ -474,6 +488,15 @@ $username = $_SESSION['user_name'] ?? '';
                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 My Bookings
+                            </a>
+                            <a href="../users/my_reviews.php"
+                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                </svg>
+                                My Reviews
                             </a>
                             <hr class="border-slate-100 my-1">
                             <a href="../auth/logout.php"
@@ -527,6 +550,10 @@ $username = $_SESSION['user_name'] ?? '';
                     <a href="../users/profile.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
                         <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         My Profile
+                    </a>
+                    <a href="../users/reviews.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                        My Reviews
                     </a>
                     <a href="../auth/logout.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-[#2a1020] transition">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>

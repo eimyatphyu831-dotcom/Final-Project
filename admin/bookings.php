@@ -13,6 +13,23 @@ $message = '';
 
 // Insert sample data
 
+// Cancel with reason via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
+    $id = (int) $_POST['booking_id'];
+    $reason = trim($_POST['cancel_reason'] ?? '');
+    $reasonText = $reason ?: 'No reason provided';
+    $conn->query("UPDATE bookings SET status='Cancelled' WHERE id=$id");
+    $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date, u.name AS customer_name FROM bookings b JOIN events e ON b.event_id = e.id JOIN users u ON b.user_id = u.id WHERE b.id = $id")->fetch_assoc();
+    if ($bk) {
+        $dateStr = date('M j, Y', strtotime($bk['event_date']));
+        createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled. Reason: {$reasonText}", '../users/my_bookings.php', 'user');
+    }
+    $message = "Booking cancelled with reason.";
+    // Redirect to avoid resubmission
+    header("Location: bookings.php?status=" . urlencode($statusFilter));
+    exit();
+}
+
 // Approve / Cancel / Delete actions
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = (int) $_GET['id'];
@@ -258,12 +275,12 @@ if (empty($bookings)) {
                                                 <?php endif; ?>
 
                                                 <?php if ($b['status'] !== 'Cancelled'): ?>
-                                                    <a href="?action=cancel&id=<?= $b['id'] ?>"
-                                                        onclick="return confirm('Cancel this booking?')"
+                                                    <button type="button"
+                                                        onclick="openCancelModal(<?= $b['id'] ?>)"
                                                         class="inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs hover:bg-red-300 transition">
                                                         <i class="fa-solid fa-circle-xmark"></i>
                                                         Cancel
-                                                    </a>
+                                                    </button>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -286,6 +303,27 @@ if (empty($bookings)) {
 
         </div>
 
+    </div>
+
+    <!-- Cancel Reason Modal -->
+    <div id="cancelModal" class="fixed inset-0 z-50 hidden items-center justify-center"
+        style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Cancel Booking</h3>
+            <p class="text-sm text-gray-500 mb-4">Please provide a reason for cancelling this booking.</p>
+            <form method="POST">
+                <input type="hidden" name="booking_id" id="cancelBookingId" value="">
+                <textarea name="cancel_reason" rows="3"
+                    class="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-red-400 resize-none"
+                    placeholder="Enter cancellation reason..."></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="closeCancelModal()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-xl text-sm transition">Keep</button>
+                    <button type="submit" name="cancel_booking"
+                        class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-xl text-sm transition">Cancel Booking</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Receipt Image Modal -->
@@ -315,6 +353,19 @@ if (empty($bookings)) {
             document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
         });
 
+        function openCancelModal(id) {
+            document.getElementById('cancelBookingId').value = id;
+            document.getElementById('cancelModal').classList.remove('hidden');
+            document.getElementById('cancelModal').classList.add('flex');
+        }
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.add('hidden');
+            document.getElementById('cancelModal').classList.remove('flex');
+        }
+        document.getElementById('cancelModal')?.addEventListener('click', function (e) {
+            if (e.target === this) closeCancelModal();
+        });
+
         function openReceiptModal(src) {
             const modal = document.getElementById('receiptModal');
             document.getElementById('receiptModalImg').src = src;
@@ -333,7 +384,7 @@ if (empty($bookings)) {
         });
         // Close on Escape key
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeReceiptModal();
+            if (e.key === 'Escape') { closeReceiptModal(); closeCancelModal(); }
         });
     </script>
 

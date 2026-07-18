@@ -1,5 +1,7 @@
 <?php
 $pendingCount = $conn->query("SELECT COUNT(*) c FROM bookings WHERE status='Pending'")->fetch_assoc()['c'] ?? 0;
+$reviewCount = $conn->query("SELECT COUNT(*) c FROM reviews")->fetch_assoc()['c'] ?? 0;
+$recentReviewCount = $conn->query("SELECT COUNT(*) c FROM reviews WHERE created_at >= NOW() - INTERVAL 7 DAY")->fetch_assoc()['c'] ?? 0;
 
 $stmt = $conn->prepare("SELECT profile_image FROM admins WHERE id=?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -16,6 +18,7 @@ $pageTitles = [
     'services.php'  => ['title' => 'Services', 'subtitle' => 'Manage your available services.'],
     'teams.php'     => ['title' => 'Teams', 'subtitle' => 'Manage your event teams and assignments.'],
     'bookings.php'  => ['title' => 'Bookings', 'subtitle' => 'View and manage all bookings.'],
+    'reviews.php'  => ['title' => 'Reviews', 'subtitle' => "View all customer reviews ($reviewCount total)."],
     'customers.php' => ['title' => 'Customers', 'subtitle' => 'View and manage your customers.'],
     'contact_messages.php' => ['title' => 'Messages', 'subtitle' => 'View contact messages from customers.'],
     'profile.php'   => ['title' => 'Profile', 'subtitle' => 'Manage your profile.'],

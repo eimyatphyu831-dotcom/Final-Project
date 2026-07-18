@@ -388,6 +388,13 @@ function activeMenu($page)
                     Bookings
                 </a>
 
+                <!-- Reviews -->
+                <a href="reviews.php"
+                    class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('reviews.php') ?>">
+                    <i class="fa-solid fa-star w-5 text-purple-brand"></i>
+                    Reviews
+                </a>
+
                 <!-- Customers -->
                 <a href="customers.php"
                     class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('customers.php') ?>">
