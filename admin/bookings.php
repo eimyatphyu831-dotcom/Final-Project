@@ -121,7 +121,7 @@ if ($result && $result->num_rows > 0) {
 // Fallback if no data
 if (empty($bookings)) {
     $bookings = [
-        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "—", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
+        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
     ];
 }
 ?>
@@ -224,7 +224,7 @@ if (empty($bookings)) {
                                     <th class="p-3 text-left">Customer</th>
                                     <th class="p-3 text-left">Event</th>
                                     <th class="p-3 text-left">Package</th>
-                                    <th class="p-3 text-left">Slot</th>
+                                    <th class="p-3 text-left">Time</th>
                                     <th class="p-3 text-left">Date</th>
                                     <th class="p-3 text-left">Payment</th>
                                     <th class="p-3 text-left">Receipt</th>
@@ -302,9 +302,11 @@ if (empty($bookings)) {
                                             <?php elseif ($b['status'] === 'Completed'): ?>
                                                 <span
                                                     class="status-badge px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700">Completed</span>
-                                            <?php else: ?>
+                                            <?php elseif ($b['status'] === 'Cancelled'): ?>
                                                 <span
                                                     class="status-badge px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">Cancelled</span>
+                                            <?php else: ?>
+                                                <span class="text-gray-400 text-xs">—</span>
                                             <?php endif; ?>
                                         </td>
 

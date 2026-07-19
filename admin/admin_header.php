@@ -18,7 +18,7 @@ $pageTitles = [
     'services.php'  => ['title' => 'Services', 'subtitle' => 'Manage your available services.'],
     'teams.php'     => ['title' => 'Teams', 'subtitle' => 'Manage your event teams and assignments.'],
     'bookings.php'  => ['title' => 'Bookings', 'subtitle' => 'View and manage all bookings.'],
-    'reviews.php'  => ['title' => 'Reviews', 'subtitle' => "View all customer reviews ($reviewCount total)."],
+    'reviews.php'  => ['title' => 'Reviews', 'subtitle' => "View all customer reviews."],
     'customers.php' => ['title' => 'Customers', 'subtitle' => 'View and manage your customers.'],
     'contact_messages.php' => ['title' => 'Messages', 'subtitle' => 'View contact messages from customers.'],
     'profile.php'   => ['title' => 'Profile', 'subtitle' => 'Manage your profile.'],

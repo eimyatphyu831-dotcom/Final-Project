@@ -157,6 +157,53 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
 
     $xlsx->output('Revenue_Report_' . $startDate . '_to_' . $endDate . '.xlsx');
 }
+
+// --- Booking Status Breakdown ---
+$bookingStatusData = $conn->query("SELECT status, COUNT(*) cnt FROM bookings GROUP BY status ORDER BY cnt DESC")->fetch_all(MYSQLI_ASSOC);
+
+// --- Venue Performance ---
+$venuePerformance = $conn->query("
+    SELECT v.name, COUNT(b.id) total_bookings, COALESCE(SUM(b.total_cost),0) total_revenue,
+           COUNT(CASE WHEN b.status='Confirmed' THEN 1 END) confirmed_bookings
+    FROM venues v
+    LEFT JOIN bookings b ON b.venue_id = v.id
+    GROUP BY v.id, v.name
+    ORDER BY total_bookings DESC
+")->fetch_all(MYSQLI_ASSOC);
+
+// --- Package Popularity ---
+$packagePopularity = $conn->query("
+    SELECT p.name, COUNT(b.id) total_bookings, COALESCE(SUM(b.total_cost),0) total_revenue
+    FROM packages p
+    LEFT JOIN bookings b ON b.package_id = p.id
+    GROUP BY p.id, p.name
+    ORDER BY total_bookings DESC
+")->fetch_all(MYSQLI_ASSOC);
+
+// --- Approved & Paid Bookings Export ---
+if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
+    require_once 'XlsxWriter.php';
+
+    $xlsx = new XlsxWriter();
+    $xlsx->addSheet('Approved Payments');
+
+    $xlsx->writeRow(['Approved & Paid Bookings - ' . $startDate . ' to ' . $endDate], ['section' => true]);
+    $xlsx->writeRow([]);
+    $xlsx->writeRow(['Date', 'Customer Name', 'Event', 'Package', 'Amount (MMK)'], ['header' => true]);
+    foreach ($approvedBookings as $ab) {
+        $xlsx->writeRow([
+            date('Y-m-d', strtotime($ab['created_at'])),
+            $ab['customer_name'],
+            $ab['event_name'],
+            $ab['package_name'],
+            (float) $ab['total_cost'],
+        ], ['bordered' => true]);
+    }
+    $xlsx->writeRow([]);
+    $xlsx->writeRow(['', '', '', 'Total', array_sum(array_column($approvedBookings, 'total_cost'))], ['total' => true]);
+
+    $xlsx->output('Approved_Payments_' . $startDate . '_to_' . $endDate . '.xlsx');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -323,31 +370,92 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'forecast' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-magnifying-glass-chart mr-1"></i> Event Forecast
                     </a>
+
+                    <a href="?report=venue_performance"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'venue_performance' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                        <i class="fa-solid fa-building mr-1"></i> Venue Performance
+                    </a>
+                    <a href="?report=package_popularity"
+                        class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'package_popularity' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                        <i class="fa-solid fa-box mr-1"></i> Package Popularity
+                    </a>
                 </div>
 
                 <!-- ===================== REVENUE REPORT ===================== -->
                 <?php if ($reportType === 'revenue'): ?>
-                    <!-- Period + Filters -->
-                    <div class="flex flex-wrap items-center gap-3">
-                        <form method="GET" class="flex items-center gap-2">
+                    <!-- Period Quick Filters -->
+                    <?php
+                        $periods = [
+                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
+                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
+                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
+                        ];
+                        $currentPeriod = '';
+                        foreach ($periods as $key => $p) {
+                            if ($startDate === $p['start'] && $endDate === $p['end']) {
+                                $currentPeriod = $key;
+                                break;
+                            }
+                        }
+                    ?>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <?php foreach ($periods as $key => $p): ?>
+                            <a href="?report=revenue&start_date=<?= $p['start'] ?>&end_date=<?= $p['end'] ?>"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $currentPeriod === $key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                                <?= $p['label'] ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDates()">
                             <input type="hidden" name="report" value="revenue">
                             <label class="text-xs font-medium text-gray-500">From</label>
-                            <input type="date" name="start_date" value="<?= $startDate ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <input type="date" name="start_date" id="startDate" value="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate').min=this.value">
                             <label class="text-xs font-medium text-gray-500">To</label>
-                            <input type="date" name="end_date" value="<?= $endDate ?>"
+                            <input type="date" name="end_date" id="endDate" value="<?= $endDate ?>"
+                                min="<?= $startDate ?>"
                                 class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
                             <button type="submit"
                                 class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
                         </form>
+                        <script>
+                            function validateDates() {
+                                const from = document.getElementById('startDate').value;
+                                const to = document.getElementById('endDate').value;
+                                if (from && to && to < from) {
+                                    alert('"To" date must be later than or equal to "From" date.');
+                                    return false;
+                                }
+                                return true;
+                            }
+                        </script>
                     </div>
 
-                    <!-- Revenue Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
-                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-gray-400 font-medium mb-1">Total Revenue (<?= $startDate ?> to <?= $endDate ?>)</p>
-                            <p class="text-2xl font-bold text-gray-800"><?= number_format($totalRev) ?> <span
-                                    class="text-sm font-normal text-gray-400">MMK</span></p>
+                    <?php
+                        $totalBookingsPeriod = 0;
+                        $tbResult = $conn->query("SELECT COUNT(*) c FROM bookings WHERE status='Confirmed' AND DATE(created_at) >= '{$conn->real_escape_string($startDate)}' AND DATE(created_at) <= '{$conn->real_escape_string($endDate)}'");
+                        if ($tbResult) $totalBookingsPeriod = (int) $tbResult->fetch_assoc()['c'];
+                    ?>
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-money-bill-wave text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Revenue (<?= $startDate ?> to <?= $endDate ?>)</p>
+                                <p class="text-xl font-bold text-gray-800"><?= number_format($totalRev) ?> <span
+                                        class="text-sm font-normal text-gray-400">MMK</span></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-calendar-check text-emerald-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Bookings (<?= $startDate ?> to <?= $endDate ?>)</p>
+                                <p class="text-xl font-bold text-gray-800"><?= number_format($totalBookingsPeriod) ?></p>
+                            </div>
                         </div>
                     </div>
 
@@ -405,10 +513,16 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
                         <div class="print-title">Approved & Paid Bookings Report</div>
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base font-bold text-gray-800">Approved & Paid Bookings</h3>
-                            <button onclick="window.print()"
-                                class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1.5 print-hide">
-                                <i class="fa-solid fa-print"></i> Print
-                            </button>
+                            <div class="flex items-center gap-2 print-hide">
+                                <a href="?report=revenue&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>&export_approved=1"
+                                    class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-excel"></i> Export Excel
+                                </a>
+                                <button onclick="window.print()"
+                                    class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-print"></i> Print
+                                </button>
+                            </div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -456,27 +570,89 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
                     </div>
 
                     <!-- ===================== EVENT POPULARITY FORECAST ===================== -->
-                <?php else: ?>
+                <?php elseif ($reportType === 'forecast'): ?>
+                    <!-- Period Quick Filters -->
+                    <?php
+                        $periods = [
+                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
+                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
+                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
+                        ];
+                        $currentPeriod = '';
+                        foreach ($periods as $key => $p) {
+                            if ($startDate === $p['start'] && $endDate === $p['end']) {
+                                $currentPeriod = $key;
+                                break;
+                            }
+                        }
+                    ?>
+                    <div class="flex flex-wrap items-center gap-2 mb-6">
+                        <?php foreach ($periods as $key => $p): ?>
+                            <a href="?report=forecast&start_date=<?= $p['start'] ?>&end_date=<?= $p['end'] ?>"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $currentPeriod === $key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                                <?= $p['label'] ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDates_fc()">
+                            <input type="hidden" name="report" value="forecast">
+                            <label class="text-xs font-medium text-gray-500">From</label>
+                            <input type="date" name="start_date" id="startDate_fc" value="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_fc').min=this.value">
+                            <label class="text-xs font-medium text-gray-500">To</label>
+                            <input type="date" name="end_date" id="endDate_fc" value="<?= $endDate ?>"
+                                min="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <button type="submit"
+                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
+                        </form>
+                        <script>
+                            function validateDates_fc() {
+                                const from = document.getElementById('startDate_fc').value;
+                                const to = document.getElementById('endDate_fc').value;
+                                if (from && to && to < from) {
+                                    alert('"To" date must be later than or equal to "From" date.');
+                                    return false;
+                                }
+                                return true;
+                            }
+                        </script>
+                    </div>
                     <!-- Forecast Summary -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-gray-400 font-medium mb-1">Total Events</p>
-                            <p class="text-2xl font-bold text-gray-800"><?= count($eventPopularity) ?></p>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-calendar-days text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Events</p>
+                                <p class="text-xl font-bold text-gray-800"><?= count($eventPopularity) ?></p>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-gray-400 font-medium mb-1">Most Popular Event</p>
-                            <p class="text-2xl font-bold text-gray-800">
-                                <?= !empty($eventPopularity) ? htmlspecialchars($eventPopularity[0]['event_name']) : 'N/A' ?>
-                            </p>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-star text-amber-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Most Popular Event</p>
+                                <p class="text-xl font-bold text-gray-800">
+                                    <?= !empty($eventPopularity) ? htmlspecialchars($eventPopularity[0]['event_name']) : 'N/A' ?>
+                                </p>
+                            </div>
                         </div>
-                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                            <p class="text-xs text-gray-400 font-medium mb-1">Upcoming Bookings</p>
-                            <?php
-                            $totalUpcoming = 0;
-                            foreach ($eventPopularity as $ep)
-                                $totalUpcoming += (int) $ep['upcoming_bookings'];
-                            ?>
-                            <p class="text-2xl font-bold text-gray-800"><?= $totalUpcoming ?></p>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Upcoming Bookings</p>
+                                <?php
+                                $totalUpcoming = 0;
+                                foreach ($eventPopularity as $ep)
+                                    $totalUpcoming += (int) $ep['upcoming_bookings'];
+                                ?>
+                                <p class="text-xl font-bold text-gray-800"><?= $totalUpcoming ?></p>
+                            </div>
                         </div>
                     </div>
 
@@ -586,6 +762,243 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
                             <?php endif; ?>
                         </div>
                     </div>
+                <!-- ===================== VENUE PERFORMANCE ===================== -->
+                <?php elseif ($reportType === 'venue_performance'): ?>
+                    <!-- Period Quick Filters -->
+                    <?php
+                        $periods = [
+                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
+                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
+                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
+                        ];
+                        $currentPeriod = '';
+                        foreach ($periods as $key => $p) {
+                            if ($startDate === $p['start'] && $endDate === $p['end']) {
+                                $currentPeriod = $key;
+                                break;
+                            }
+                        }
+                    ?>
+                    <div class="flex flex-wrap items-center gap-2 mb-6">
+                        <?php foreach ($periods as $key => $p): ?>
+                            <a href="?report=venue_performance&start_date=<?= $p['start'] ?>&end_date=<?= $p['end'] ?>"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $currentPeriod === $key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                                <?= $p['label'] ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDates_vp()">
+                            <input type="hidden" name="report" value="venue_performance">
+                            <label class="text-xs font-medium text-gray-500">From</label>
+                            <input type="date" name="start_date" id="startDate_vp" value="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_vp').min=this.value">
+                            <label class="text-xs font-medium text-gray-500">To</label>
+                            <input type="date" name="end_date" id="endDate_vp" value="<?= $endDate ?>"
+                                min="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <button type="submit"
+                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
+                        </form>
+                        <script>
+                            function validateDates_vp() {
+                                const from = document.getElementById('startDate_vp').value;
+                                const to = document.getElementById('endDate_vp').value;
+                                if (from && to && to < from) {
+                                    alert('"To" date must be later than or equal to "From" date.');
+                                    return false;
+                                }
+                                return true;
+                            }
+                        </script>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-building text-cyan-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Venues</p>
+                                <p class="text-xl font-bold text-gray-800"><?= count($venuePerformance) ?></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-trophy text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Top Venue</p>
+                                <p class="text-lg font-bold text-gray-800"><?= !empty($venuePerformance) ? htmlspecialchars($venuePerformance[0]['name']) : 'N/A' ?></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-money-bill-wave text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Revenue</p>
+                                <p class="text-xl font-bold text-gray-800"><?= number_format(array_sum(array_column($venuePerformance, 'total_revenue'))) ?> <span class="text-sm font-normal text-gray-400">MMK</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Venue Performance Chart</h3>
+                        <div class="h-80">
+                            <canvas id="venueChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Venue Breakdown</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
+                                        <th class="pb-3 font-medium">Venue</th>
+                                        <th class="pb-3 font-medium text-right">Total Bookings</th>
+                                        <th class="pb-3 font-medium text-right">Confirmed</th>
+                                        <th class="pb-3 font-medium text-right">Revenue (MMK)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+                                    <?php foreach ($venuePerformance as $vp): ?>
+                                        <tr class="hover:bg-gray-50/50">
+                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($vp['name']) ?></td>
+                                            <td class="py-3 text-right text-gray-600"><?= $vp['total_bookings'] ?></td>
+                                            <td class="py-3 text-right text-emerald-600 font-medium"><?= $vp['confirmed_bookings'] ?></td>
+                                            <td class="py-3 text-right text-gray-800 font-medium"><?= number_format($vp['total_revenue']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($venuePerformance)): ?>
+                                        <tr><td colspan="4" class="py-4 text-center text-gray-400 text-sm">No venue data available</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                <!-- ===================== PACKAGE POPULARITY ===================== -->
+                <?php elseif ($reportType === 'package_popularity'): ?>
+                    <!-- Period Quick Filters -->
+                    <?php
+                        $periods = [
+                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
+                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
+                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
+                        ];
+                        $currentPeriod = '';
+                        foreach ($periods as $key => $p) {
+                            if ($startDate === $p['start'] && $endDate === $p['end']) {
+                                $currentPeriod = $key;
+                                break;
+                            }
+                        }
+                    ?>
+                    <div class="flex flex-wrap items-center gap-2 mb-6">
+                        <?php foreach ($periods as $key => $p): ?>
+                            <a href="?report=package_popularity&start_date=<?= $p['start'] ?>&end_date=<?= $p['end'] ?>"
+                                class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $currentPeriod === $key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
+                                <?= $p['label'] ?>
+                            </a>
+                        <?php endforeach; ?>
+                        <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDates_pp()">
+                            <input type="hidden" name="report" value="package_popularity">
+                            <label class="text-xs font-medium text-gray-500">From</label>
+                            <input type="date" name="start_date" id="startDate_pp" value="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_pp').min=this.value">
+                            <label class="text-xs font-medium text-gray-500">To</label>
+                            <input type="date" name="end_date" id="endDate_pp" value="<?= $endDate ?>"
+                                min="<?= $startDate ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                            <button type="submit"
+                                class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
+                        </form>
+                        <script>
+                            function validateDates_pp() {
+                                const from = document.getElementById('startDate_pp').value;
+                                const to = document.getElementById('endDate_pp').value;
+                                if (from && to && to < from) {
+                                    alert('"To" date must be later than or equal to "From" date.');
+                                    return false;
+                                }
+                                return true;
+                            }
+                        </script>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-box text-orange-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Packages</p>
+                                <p class="text-xl font-bold text-gray-800"><?= count($packagePopularity) ?></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-star text-rose-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Most Popular Package</p>
+                                <p class="text-xl font-bold text-gray-800"><?= !empty($packagePopularity) ? htmlspecialchars($packagePopularity[0]['name']) : 'N/A' ?></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-money-bill-wave text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 font-medium">Total Revenue</p>
+                                <p class="text-xl font-bold text-gray-800"><?= number_format(array_sum(array_column($packagePopularity, 'total_revenue'))) ?> <span class="text-sm font-normal text-gray-400">MMK</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Package Popularity Chart</h3>
+                        <div class="h-48">
+                            <canvas id="packageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Package Breakdown</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
+                                        <th class="pb-3 font-medium">Package</th>
+                                        <th class="pb-3 font-medium text-right">Total Bookings</th>
+                                        <th class="pb-3 font-medium text-right">Revenue (MMK)</th>
+                                        <th class="pb-3 font-medium text-right">Popularity</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
+                                    <?php
+                                        $maxPkg = !empty($packagePopularity) ? max(array_column($packagePopularity, 'total_bookings')) : 1;
+                                        foreach ($packagePopularity as $pp):
+                                            $pct = $maxPkg > 0 ? round($pp['total_bookings'] / $maxPkg * 100) : 0;
+                                    ?>
+                                        <tr class="hover:bg-gray-50/50">
+                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($pp['name']) ?></td>
+                                            <td class="py-3 text-right text-gray-600"><?= $pp['total_bookings'] ?></td>
+                                            <td class="py-3 text-right text-gray-800 font-medium"><?= number_format($pp['total_revenue']) ?></td>
+                                            <td class="py-3 text-right">
+                                                <div class="flex items-center gap-2 justify-end">
+                                                    <div class="w-24 bg-gray-100 rounded-full h-2">
+                                                        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full" style="width: <?= $pct ?>%"></div>
+                                                    </div>
+                                                    <span class="text-xs text-gray-500 w-8 text-right"><?= $pct ?>%</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <?php if (empty($packagePopularity)): ?>
+                                        <tr><td colspan="4" class="py-4 text-center text-gray-400 text-sm">No package data available</td></tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 <?php endif; ?>
 
             </main>
@@ -627,6 +1040,72 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
                                 callback: v => v >= 1000000 ? (v / 1000000).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'K' : v
                             }
                         },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        <?php elseif ($reportType === 'venue_performance'): ?>
+            new Chart(document.getElementById('venueChart'), {
+                type: 'bar',
+                data: {
+                    labels: <?= json_encode(array_column($venuePerformance, 'name')) ?>,
+                    datasets: [
+                        {
+                            label: 'Total Bookings',
+                            data: <?= json_encode(array_column($venuePerformance, 'total_bookings')) ?>,
+                            backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                            borderColor: '#8b5cf6',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Confirmed',
+                            data: <?= json_encode(array_column($venuePerformance, 'confirmed_bookings')) ?>,
+                            backgroundColor: 'rgba(52, 211, 153, 0.7)',
+                            borderColor: '#34d399',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1, precision: 0 } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        <?php elseif ($reportType === 'package_popularity'): ?>
+            new Chart(document.getElementById('packageChart'), {
+                type: 'bar',
+                data: {
+                    labels: <?= json_encode(array_column($packagePopularity, 'name')) ?>,
+                    datasets: [{
+                        label: 'Total Bookings',
+                        data: <?= json_encode(array_column($packagePopularity, 'total_bookings')) ?>,
+                        backgroundColor: ['#8b5cf6', '#34d399', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6', '#f97316'],
+                        borderWidth: 0,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ctx.parsed.y + ' bookings'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1, precision: 0 } },
                         x: { grid: { display: false } }
                     }
                 }

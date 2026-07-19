@@ -1,24 +1,28 @@
 <?php
 session_start();
 require_once '../config/db.php';
+require_once '../includes/auto_complete_bookings.php';
 
 $bookingId = isset($_GET['booking_id']) ? (int) $_GET['booking_id'] : 0;
 $booking = null;
 
 if ($bookingId > 0) {
     $r = $conn->query("SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at,
-                              u.name AS customer_name,
-                              e.event_name,
-                              p.name AS package_name,
-                              v.name AS venue_name,
-                              pm.payment_name
-                       FROM bookings b
-                       JOIN users u ON b.user_id = u.id
-                       JOIN events e ON b.event_id = e.id
-                       JOIN packages p ON b.package_id = p.id
-                       JOIN venues v ON b.venue_id = v.id
-                       LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
-                       WHERE b.id = $bookingId");
+                               u.name AS customer_name,
+                               e.event_name,
+                               p.name AS package_name,
+                               v.name AS venue_name,
+                               pm.payment_name,
+                               ts.start_time,
+                               ts.end_time
+                        FROM bookings b
+                        JOIN users u ON b.user_id = u.id
+                        JOIN events e ON b.event_id = e.id
+                        JOIN packages p ON b.package_id = p.id
+                        JOIN venues v ON b.venue_id = v.id
+                        LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
+                        LEFT JOIN time_slots ts ON b.time_slot_id = ts.id
+                        WHERE b.id = $bookingId");
     if ($r)
         $booking = $r->fetch_assoc();
 }
@@ -42,7 +46,7 @@ include '../includes/header.php';
             shortly.
         </p>
 
-        <div class="bg-slate-50 rounded-2xl p-5 mb-8 text-left space-y-1">
+        <div class="bg-slate-50 rounded-2xl p-5 mb-3 text-left space-y-1">
             <h2 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Booking Summary</h2>
 
             <?php if ($booking): ?>
@@ -67,6 +71,10 @@ include '../includes/header.php';
                     <span class="font-bold text-slate-800"><?= htmlspecialchars($booking['event_date']) ?></span>
                 </div>
                 <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-600">Time</span>
+                    <span class="font-bold text-slate-800"><?= date('g:i A', strtotime($booking['start_time'])) ?> – <?= date('g:i A', strtotime($booking['end_time'])) ?></span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
                     <span class="text-slate-600">Total</span>
                     <span class="font-bold text-slate-800"><?= number_format($booking['total_cost']) ?> MMK</span>
                 </div>
@@ -84,11 +92,11 @@ include '../includes/header.php';
 
         <div class="grid grid-cols-2 gap-3">
             <a href="my_bookings.php"
-                class="bg-[#2a1b40] text-white py-3 rounded-xl text-sm font-semibold hover:bg-opacity-90 transition shadow-md">
+                class="bg-brand-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-700 transition shadow-md">
                 View My Bookings
             </a>
             <a href="index.php"
-                class="bg-white text-slate-700 py-3 rounded-xl text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition">
+                class="bg-white text-slate-700 py-3 rounded-xl text-sm font-semibold border border-slate-400 hover:bg-slate-50 transition">
                 Return Home
             </a>
         </div>

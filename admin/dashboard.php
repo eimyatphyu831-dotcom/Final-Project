@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 }
 
 require_once '../config/db.php';
+require_once '../includes/auto_complete_bookings.php';
 
 $stmt = $conn->prepare("SELECT profile_image FROM admins WHERE id=?");
 $stmt->bind_param("i", $_SESSION['user_id']);
@@ -24,15 +25,15 @@ $dateTo = $_GET['date_to'] ?? '';
 $dateCond = '';
 $dateLabel = '';
 if ($period === 'this_week') {
-    $start = date('Y-m-d', strtotime('monday this week'));
-    $end = date('Y-m-d', strtotime('sunday this week'));
-    $dateCond = "AND b.created_at >= '$start' AND b.created_at <= '$end 23:59:59'";
-    $dateLabel = date('M j', strtotime($start)) . ' - ' . date('M j, Y', strtotime($end));
+    $dateFrom = date('Y-m-d', strtotime('monday this week'));
+    $dateTo = date('Y-m-d', strtotime('sunday this week'));
+    $dateCond = "AND b.created_at >= '$dateFrom' AND b.created_at <= '$dateTo 23:59:59'";
+    $dateLabel = date('M j', strtotime($dateFrom)) . ' - ' . date('M j, Y', strtotime($dateTo));
 } elseif ($period === 'last_week') {
-    $start = date('Y-m-d', strtotime('monday last week'));
-    $end = date('Y-m-d', strtotime('sunday last week'));
-    $dateCond = "AND b.created_at >= '$start' AND b.created_at <= '$end 23:59:59'";
-    $dateLabel = date('M j', strtotime($start)) . ' - ' . date('M j, Y', strtotime($end));
+    $dateFrom = date('Y-m-d', strtotime('monday last week'));
+    $dateTo = date('Y-m-d', strtotime('sunday last week'));
+    $dateCond = "AND b.created_at >= '$dateFrom' AND b.created_at <= '$dateTo 23:59:59'";
+    $dateLabel = date('M j', strtotime($dateFrom)) . ' - ' . date('M j, Y', strtotime($dateTo));
 } elseif ($dateFrom && $dateTo) {
     $dateCond = "AND DATE(b.created_at) >= '$dateFrom' AND DATE(b.created_at) <= '$dateTo'";
     $dateLabel = date('M j, Y', strtotime($dateFrom)) . ' - ' . date('M j, Y', strtotime($dateTo));
@@ -62,6 +63,7 @@ $bookingStatuses = $conn->query("SELECT b.status, COUNT(*) cnt $bkJoin $bkWhere 
 $pending = 0;
 $confirmed = 0;
 $cancelled = 0;
+$completed = 0;
 foreach ($bookingStatuses as $bs) {
     if ($bs['status'] === 'Pending')
         $pending = $bs['cnt'];
@@ -69,6 +71,8 @@ foreach ($bookingStatuses as $bs) {
         $confirmed = $bs['cnt'];
     elseif ($bs['status'] === 'Cancelled')
         $cancelled = $bs['cnt'];
+    elseif ($bs['status'] === 'Completed')
+        $completed = $bs['cnt'];
 }
 
 $recentBookings = $conn->query("SELECT b.id, b.event_date, b.total_cost, b.status,
@@ -103,6 +107,8 @@ for ($i = 6; $i >= 0; $i--) {
     $thisWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$d'")->fetch_assoc()['c'] ?? 0);
     $lastWeekData[] = (int) ($conn->query("SELECT COUNT(*) c FROM bookings WHERE DATE(created_at)='$lw'")->fetch_assoc()['c'] ?? 0);
 }
+
+$timeSlots = $conn->query("SELECT * FROM time_slots ORDER BY id")->fetch_all(MYSQLI_ASSOC);
 
 // Last month data: daily booking counts for the previous calendar month
 $lastMonthStart = date('Y-m-01', strtotime('first day of last month'));
@@ -214,17 +220,29 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         <a href="?period=last_week<?= $search ? '&search=' . urlencode($search) : '' ?>"
                             class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition <?= $period === 'last_week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">Last
                             Week</a>
-                        <form method="GET" class="flex items-center gap-2 ml-2">
-                            <input type="date" name="date_from" value="<?= $dateFrom ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
+                        <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDashDates()">
+                            <input type="date" name="date_from" id="dashDateFrom" value="<?= $dateFrom ?>"
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('dashDateTo').min=this.value">
                             <span class="text-xs text-gray-400">—</span>
-                            <input type="date" name="date_to" value="<?= $dateTo ?>"
+                            <input type="date" name="date_to" id="dashDateTo" value="<?= $dateTo ?>"
+                                min="<?= $dateFrom ?>"
                                 class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
                             <?php if ($search): ?><input type="hidden" name="search"
                                     value="<?= htmlspecialchars($search) ?>"><?php endif; ?>
                             <button type="submit"
                                 class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
                         </form>
+                        <script>
+                            function validateDashDates() {
+                                const from = document.getElementById('dashDateFrom').value;
+                                const to = document.getElementById('dashDateTo').value;
+                                if (from && to && to < from) {
+                                    alert('"To" date must be later than or equal to "From" date.');
+                                    return false;
+                                }
+                                return true;
+                            }
+                        </script>
                         <div
                             class="bg-white border border-gray-200 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-gray-500">
                             <i class="fa-regular fa-calendar text-gray-400"></i>
@@ -451,7 +469,22 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                                         </span>
                                     </span>
                                 </div>
-                                <div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span class="font-semibold text-gray-800 "><?= $cancelled ?> (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span></div>
+                                <div class="flex justify-between items-center"><span
+                                        class="flex items-center gap-2"><span
+                                            class="w-2 h-2 rounded-full bg-rose-400"></span> Cancelled</span><span
+                                        class="font-semibold text-gray-800 "><?= $cancelled ?>
+                                        (<?= $totalBookings > 0 ? round($cancelled / $totalBookings * 100) : 0 ?>%)</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                                        Completed
+                                    </span>
+                                    <span class="font-semibold text-gray-800 flex items-center whitespace-nowrap">
+                                        <span><?= $completed ?></span>
+                                        <span class="ml-0.5">(<?= $totalBookings > 0 ? round($completed / $totalBookings * 100) : 0 ?>%)</span>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -473,8 +506,8 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [<?= $pending ?>, <?= $confirmed ?>, <?= $cancelled ?>],
-                    backgroundColor: ['#fbbf24', '#34d399', '#f87171'],
+                    data: [<?= $pending ?>, <?= $confirmed ?>, <?= $cancelled ?>, <?= $completed ?>],
+                    backgroundColor: ['#fbbf24', '#34d399', '#f87171', '#60a5fa'],
                     borderWidth: 0,
                     cutout: '75%'
                 }]

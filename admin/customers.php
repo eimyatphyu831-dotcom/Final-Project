@@ -28,9 +28,10 @@ if (isset($_GET['delete'])) {
 // --- VIEW ---
 $viewUser = null;
 $viewBookings = [];
+$viewReviews = [];
 $viewId = $_GET['view'] ?? 0;
 if ($viewId) {
-    $stmt = $conn->prepare("SELECT id, name, email, phone, created_at FROM users WHERE id=?");
+    $stmt = $conn->prepare("SELECT id, name, email, phone, image, created_at FROM users WHERE id=?");
     $stmt->bind_param("i", $viewId);
     $stmt->execute();
     $viewUser = $stmt->get_result()->fetch_assoc();
@@ -38,16 +39,28 @@ if ($viewId) {
 
     if ($viewUser) {
         $stmt = $conn->prepare("SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at,
-                                       e.event_name, v.name AS venue_name, p.name AS package_name
+                                       e.event_name, v.name AS venue_name, p.name AS package_name,
+                                       ts.start_time, ts.end_time
                                 FROM bookings b
                                 JOIN events e ON b.event_id = e.id
                                 JOIN venues v ON b.venue_id = v.id
                                 JOIN packages p ON b.package_id = p.id
+                                LEFT JOIN time_slots ts ON b.time_slot_id = ts.id
                                 WHERE b.user_id=?
                                 ORDER BY b.created_at DESC");
         $stmt->bind_param("i", $viewId);
         $stmt->execute();
         $viewBookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT r.id, r.rating, r.review_text, r.created_at, e.event_name
+                                FROM reviews r
+                                JOIN events e ON r.event_id = e.id
+                                WHERE r.user_id=?
+                                ORDER BY r.created_at DESC");
+        $stmt->bind_param("i", $viewId);
+        $stmt->execute();
+        $viewReviews = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     }
 }
@@ -156,9 +169,22 @@ $stmt->close();
                             </div>
 
                             <div class="flex items-center gap-4 pb-4 border-b border-gray-100 mb-4">
-                                <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <i class="fa-solid fa-user text-purple-500 text-2xl"></i>
-                                </div>
+                                <?php
+                                    $profileImg = $viewUser['image'] ? '../uploads/profiles/' . $viewUser['image'] : null;
+                                    $initials = strtoupper(substr($viewUser['name'], 0, 2));
+                                ?>
+                                <?php if ($profileImg): ?>
+                                    <img src="<?= htmlspecialchars($profileImg) ?>" alt="<?= htmlspecialchars($viewUser['name']) ?>"
+                                        class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+                                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 items-center justify-center text-white text-xl font-bold shrink-0" style="display:none">
+                                        <?= $initials ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shrink-0">
+                                        <?= $initials ?>
+                                    </div>
+                                <?php endif; ?>
                                 <div>
                                     <h4 class="text-lg font-semibold text-gray-800">
                                         <?= htmlspecialchars($viewUser['name']) ?>
@@ -194,6 +220,7 @@ $stmt->close();
                                                 <th class="p-2 text-left">Venue</th>
                                                 <th class="p-2 text-left">Package</th>
                                                 <th class="p-2 text-left">Date</th>
+                                                <th class="p-2 text-left">Time</th>
                                                 <th class="p-2 text-left">Cost</th>
                                                 <th class="p-2 text-left">Status</th>
                                             </tr>
@@ -209,6 +236,7 @@ $stmt->close();
                                                     <td class="p-2 text-gray-600">
                                                         <?= date('M j, Y', strtotime($bk['event_date'])) ?>
                                                     </td>
+                                                    <td class="p-2 text-gray-600"><?= date('g:i A', strtotime($bk['start_time'])) ?> – <?= date('g:i A', strtotime($bk['end_time'])) ?></td>
                                                     <td class="p-2 text-gray-800">$<?= number_format($bk['total_cost'], 2) ?></td>
                                                     <td class="p-2">
                                                         <?php
@@ -228,7 +256,29 @@ $stmt->close();
                                 </div>
                             <?php endif; ?>
 
-                            <div class="flex justify-end pt-4">
+                            <h4 class="text-md font-semibold text-gray-800 mb-3 mt-6">Reviews (<?= count($viewReviews) ?>)</h4>
+                            <?php if (empty($viewReviews)): ?>
+                                <p class="text-sm text-gray-400 py-4 text-center">No reviews from this customer.</p>
+                            <?php else: ?>
+                                <div class="space-y-3">
+                                    <?php foreach ($viewReviews as $rv): ?>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($rv['event_name']) ?></span>
+                                                <span class="text-xs text-gray-400"><?= date('M j, Y', strtotime($rv['created_at'])) ?></span>
+                                            </div>
+                                            <div class="flex gap-0.5 mb-1">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <svg class="w-4 h-4 <?= $i <= $rv['rating'] ? 'text-yellow-400' : 'text-gray-300' ?>" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                <?php endfor; ?>
+                                            </div>
+                                            <p class="text-xs text-gray-600">&ldquo;<?= htmlspecialchars($rv['review_text']) ?>&rdquo;</p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="flex justify-end pt-4 mt-4 border-t border-gray-100">
                                 <a href="customers.php<?= $search ? "?search=$search" : '' ?>"
                                     class="px-6 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all">Close</a>
                             </div>

@@ -6,6 +6,7 @@ $sql = "SELECT
             r.review_text,
             r.rating,
             u.name AS user_name,
+            u.image AS user_image,
             e.event_name
         FROM reviews r
         JOIN users u ON r.user_id = u.id
@@ -39,6 +40,7 @@ $allReviews = array_merge($reviews, $reviews);
                 <?php
                 $allReviews = array_merge($reviews, $reviews);
                 foreach ($allReviews as $rev):
+                    $userImage = $rev['user_image'] ? '../uploads/profiles/' . $rev['user_image'] : null;
                     $initials = '';
                     $parts = explode(' ', $rev['user_name']);
                     foreach ($parts as $p)
@@ -50,10 +52,20 @@ $allReviews = array_merge($reviews, $reviews);
                     <div
                         class="w-80 shrink-0 group relative bg-white rounded-3xl p-7 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
                         <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 rounded-full bg-gradient-to-br <?= $gradient ?> flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm mt-0.5">
-                                <?= htmlspecialchars($initials) ?>
-                            </div>
+                            <?php if ($userImage): ?>
+                                <img src="<?= htmlspecialchars($userImage) ?>" alt="<?= htmlspecialchars($rev['user_name']) ?>"
+                                    class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm shrink-0 mt-0.5"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br <?= $gradient ?> items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm mt-0.5" style="display:none">
+                                    <?= htmlspecialchars($initials) ?>
+                                </div>
+                            <?php else: ?>
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br <?= $gradient ?> flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm mt-0.5">
+                                    <?= htmlspecialchars($initials) ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-semibold text-brand-900">
                                     <?= htmlspecialchars($rev['user_name']) ?>
