@@ -115,7 +115,7 @@ include "../includes/header.php";
     <div class="max-w-2xl mx-auto px-4">
 
         <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-brand-900">My Reviews</h1>
+            <h1 class="text-2xl font-bold text-brand-600">My Reviews</h1>
             <p class="text-xs text-gray-400">Share your experience with upcoming events</p>
         </div>
 

@@ -36,16 +36,12 @@ $conn->close();
 
 <div class="min-h-screen bg-slate-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex items-center justify-between mb-8">
-            <div>
+       
+            <div class="text-center mb-6">
                 <h1 class="text-2xl font-bold text-brand-600">My Bookings</h1>
                 <p class="text-sm text-gray-500 mt-1">View all your event bookings and their status</p>
             </div>
-            <!-- <a href="bookingform.php"
-                class="bg-brand-200 hover:bg-brand-900 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm transition duration-200 font-semibold">
-                + New Booking
-            </a> -->
-        </div>
+    
 
         <?php if (count($bookings) === 0): ?>
             <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-12 text-center">
@@ -62,7 +58,7 @@ $conn->close();
                 </a>
             </div>
         <?php else: ?>
-            <div class="space-y-4">
+            <div class="space-y-3">
                 <?php foreach ($bookings as $booking): ?>
                     <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

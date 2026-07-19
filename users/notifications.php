@@ -22,7 +22,6 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
-$conn->close();
 
 $pageTitle = "Notifications";
 include "../includes/header.php";
