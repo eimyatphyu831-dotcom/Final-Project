@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     total_cost DECIMAL(12,2) NOT NULL,
     receipt_image varchar(200) NOT NULL,
 
-    status ENUM('Pending','Confirmed','Cancelled')
+    status ENUM('Pending','Confirmed','Cancelled','Completed')
         DEFAULT 'Pending',
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

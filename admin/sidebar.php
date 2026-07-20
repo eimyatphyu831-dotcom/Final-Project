@@ -398,7 +398,7 @@ function activeMenu($page)
                 <!-- Customers -->
                 <a href="customers.php"
                     class="flex items-center gap-3 px-4 py-2 rounded-xl transition-all <?= activeMenu('customers.php') ?>">
-                    <i class="fa-solid fa-users w-5 text-purple-brand"></i>
+                    <i class="fa-solid fa-user-group w-5 text-purple-brand"></i>
                     Customers
                 </a>
 

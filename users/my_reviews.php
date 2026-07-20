@@ -33,8 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $rating = (int) $_POST['rating'];
     $review_text = trim($_POST['review_text'] ?? '');
 
-    // Verify booking belongs to user and is confirmed
-    $check = $conn->prepare("SELECT id FROM bookings WHERE id = ? AND user_id = ? AND status = 'Confirmed'");
+    // Verify booking belongs to user and is completed
+    $check = $conn->prepare("SELECT id FROM bookings WHERE id = ? AND user_id = ? AND status = 'Completed'");
     $check->bind_param("ii", $booking_id, $user_id);
     $check->execute();
     $check->store_result();
@@ -78,13 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $check->close();
 }
 
-// Fetch bookings available for review (confirmed & not yet reviewed)
+// Fetch bookings available for review (completed & not yet reviewed)
 $available = [];
 $stmt = $conn->prepare("SELECT b.id, b.event_id, e.event_name, b.event_date, v.name AS venue_name
     FROM bookings b
     JOIN events e ON b.event_id = e.id
     JOIN venues v ON b.venue_id = v.id
-    WHERE b.user_id = ? AND b.status = 'Confirmed'
+    WHERE b.user_id = ? AND b.status = 'Completed'
     AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.booking_id = b.id AND r.user_id = ?)
     ORDER BY b.event_date DESC");
 $stmt->bind_param("ii", $user_id, $user_id);

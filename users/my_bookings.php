@@ -13,18 +13,20 @@ $user_id = $_SESSION['user_id'];
 $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at,
                  p.name AS package_name, e.event_name, v.name AS venue_name, v.address AS location,
                  pm.payment_name,
-                 ts.start_time, ts.end_time
+                 ts.start_time, ts.end_time,
+                 CASE WHEN r.id IS NOT NULL THEN 1 ELSE 0 END AS has_review
           FROM bookings b
           JOIN packages p ON b.package_id = p.id
           JOIN events e ON b.event_id = e.id
           JOIN venues v ON b.venue_id = v.id
           LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
           LEFT JOIN time_slots ts ON b.time_slot_id = ts.id
+          LEFT JOIN reviews r ON r.booking_id = b.id AND r.user_id = ?
           WHERE b.user_id = ?
           ORDER BY b.created_at DESC";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $bookings = $result->fetch_all(MYSQLI_ASSOC);
@@ -128,7 +130,7 @@ $conn->close();
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                         </div>
-                                        <span class="truncate font-medium text-gray-700"><?= htmlspecialchars($booking['venue_name']) ?></span>
+                                        <span class="font-medium text-gray-700"><?= htmlspecialchars($booking['venue_name']) ?></span>
                                     </div>
 
                                     <div class="flex items-center gap-2">
@@ -168,12 +170,20 @@ $conn->close();
                                 <p class="text-[11px] text-gray-400 whitespace-nowrap">
                                     <span class="hidden lg:inline">Booked </span><?= date('M j, Y', strtotime($booking['created_at'])) ?>
                                 </p>
-                                <?php if ($booking['status'] === 'Confirmed'): ?>
-                                    <a href="reviews.php"
-                                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 rounded-xl text-xs font-semibold hover:from-purple-100 hover:to-indigo-100 transition-all duration-200 border border-purple-200/50">
-                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                        Write Review
-                                    </a>
+                                <?php if ($booking['status'] === 'Completed'): ?>
+                                    <?php if ($booking['has_review']): ?>
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 text-gray-500 rounded-xl text-xs font-semibold border border-gray-200">
+                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            Reviewed
+                                        </span>
+                                    <?php else: ?>
+                                        <a href="my_reviews.php"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 rounded-xl text-xs font-semibold hover:from-purple-100 hover:to-indigo-100 transition-all duration-200 border border-purple-200/50">
+                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            Write Review
+                                        </a>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
 

@@ -206,30 +206,27 @@ if (empty($bookings)) {
                                 </option>
                                 <option value="Confirmed" <?= $statusFilter == 'Confirmed' ? 'selected' : '' ?>>Confirmed
                                 </option>
-                                <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled
-                                </option>
                                 <option value="Completed" <?= $statusFilter == 'Completed' ? 'selected' : '' ?>>
                                     Completed</option>
+                                <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled
+                                </option>
                             </select>
                         </form>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
-                    <div class="overflow-x-auto">
+                    <div>
 
                         <table class="w-full text-sm rounded-2xl">
                             <thead class="bg-gray-50 text-gray-600">
                                 <tr>
-                                    <th class="p-3 text-left">Customer</th>
-                                    <th class="p-3 text-left">Event</th>
-                                    <th class="p-3 text-left">Package</th>
-                                    <th class="p-3 text-left">Time</th>
-                                    <th class="p-3 text-left">Date</th>
-                                    <th class="p-3 text-left">Payment</th>
-                                    <th class="p-3 text-left">Receipt</th>
-                                    <th class="p-3 text-center">Status</th>
-                                    <th class="p-3 text-center">Actions</th>
+                                    <th class="p-2 text-left">Customer</th>
+                                    <th class="p-2 text-left">Event</th>
+                                    <th class="p-2 text-left">Venue</th>
+                                    <th class="p-2 text-left">Date</th>
+                                    <th class="p-2 text-center">Status</th>
+                                    <th class="p-2 text-center">Actions</th>
                                 </tr>
                             </thead>
 
@@ -242,57 +239,15 @@ if (empty($bookings)) {
 
                                     <tr class="border-t hover:bg-gray-50">
 
-                                        <td class="p-3">
+                                        <td class="p-2">
                                             <div class="font-semibold"><?= htmlspecialchars($b['customer_name']) ?></div>
                                             <div class="text-xs text-gray-500"><?= htmlspecialchars($b['email']) ?></div>
                                         </td>
 
-                                        <td class="p-3"><?= htmlspecialchars($b['event_name']) ?></td>
-                                        <td class="p-3">
-                                            <span
-                                                class="px-2 py-0.5 text-xs font-bold rounded-full 
-                                    <?= $b['package_name'] === 'Silver' ? 'bg-gray-200 text-gray-700' : ($b['package_name'] === 'Gold' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700') ?>">
-                                                <?= htmlspecialchars($b['package_name']) ?>
-                                            </span>
-                                        </td>
-                                        <td class="p-3">
-                                            <?php if (!empty($b['time_slot_name'])): ?>
-                                                <span
-                                                    class="px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700">
-                                                    <?= htmlspecialchars($b['time_slot_name']) ?>
-                                                </span>
-                                                <?php if (!empty($b['team_name'])): ?>
-                                                    <div class="text-[10px] text-gray-400 mt-0.5">
-                                                        <?= htmlspecialchars($b['team_name']) ?></div>
-                                                <?php endif; ?>
-                                            <?php else: ?>
-                                                <span class="text-gray-400 text-xs">—</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="p-3"><?= htmlspecialchars($b['event_date']) ?></td>
-                                        <td class="p-3">
-                                            <?php if (!empty($b['payment_name'])): ?>
-                                                <span
-                                                    class="px-2 py-0.5 text-xs font-bold rounded-full
-                                        <?= $b['payment_name'] === 'KBZPay' ? 'bg-green-100 text-green-700' : ($b['payment_name'] === 'WavePay' ? 'bg-blue-100 text-blue-700' : ($b['payment_name'] === 'CBPay' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700')) ?>">
-                                                    <?= htmlspecialchars($b['payment_name']) ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="text-gray-400 text-xs">—</span>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <td class="p-3">
-                                            <?php if (!empty($b['receipt_image'])): ?>
-                                                <a href="javascript:void(0)"
-                                                    onclick="openReceiptModal('../<?= htmlspecialchars($b['receipt_image']) ?>')"
-                                                    class="text-purple-600 hover:text-purple-800 underline text-xs">View</a>
-                                            <?php else: ?>
-                                                <span class="text-gray-400 text-xs">—</span>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <td class="p-3">
+                                        <td class="p-2"><?= htmlspecialchars($b['event_name']) ?></td>
+                                        <td class="p-2"><?= htmlspecialchars($b['venue_name']) ?></td>
+                                        <td class="p-2"><?= htmlspecialchars($b['event_date']) ?></td>
+                                        <td class="p-2">
                                             <?php if ($b['status'] === 'Pending'): ?>
                                                 <span
                                                     class="status-badge px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Pending</span>
@@ -310,21 +265,27 @@ if (empty($bookings)) {
                                             <?php endif; ?>
                                         </td>
 
-                                        <td class="p-3">
+                                        <td class="p-2">
                                             <div class="flex justify-center items-center gap-2">
-                                                <?php $isCompleted = $b['status'] === 'Completed'; ?>
+                                                <button type="button"
+                                                    onclick="openViewModal(<?= $b['id'] ?>, '<?= htmlspecialchars($b['customer_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['email'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['package_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['venue_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['time_slot_name'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['team_name'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_date'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['payment_name'] ?? '—', ENT_QUOTES) ?>', '<?= number_format($b['total_cost']) ?>', '<?= htmlspecialchars($b['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['receipt_image'] ?? '', ENT_QUOTES) ?>')"
+                                                    class="inline-flex items-center gap-1 px-1.5 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-200 transition">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                    View
+                                                </button>
+                                                <?php $disableActions = in_array($b['status'], ['Confirmed', 'Completed', 'Cancelled']); ?>
                                                 <button type="button"
                                                     onclick="confirmBooking(<?= $b['id'] ?>, this)"
-                                                    class="confirm-btn inline-flex items-center gap-1 px-1.5 py-1 bg-green-100 text-green-600 rounded-lg text-xs transition <?= $isCompleted ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-green-300' ?>"
-                                                    <?= $isCompleted ? 'disabled' : '' ?>>
+                                                    class="confirm-btn inline-flex items-center gap-1 px-1.5 py-1 bg-green-100 text-green-600 rounded-lg text-xs transition <?= $disableActions ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-green-300' ?>"
+                                                    <?= $disableActions ? 'disabled' : '' ?>>
                                                     <i class="fa-solid fa-circle-check"></i>
                                                     Confirm
                                                 </button>
                                                 <button type="button"
                                                     onclick="openCancelModal(<?= $b['id'] ?>)"
                                                     data-id="<?= $b['id'] ?>"
-                                                    class="cancel-btn inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs transition <?= $isCompleted ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-red-300' ?>"
-                                                    <?= $isCompleted ? 'disabled' : '' ?>>
+                                                    class="cancel-btn inline-flex items-center gap-1 px-1.5 py-1 bg-red-100 text-red-600 rounded-lg text-xs transition <?= $disableActions ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-red-300' ?>"
+                                                    <?= $disableActions ? 'disabled' : '' ?>>
                                                     <i class="fa-solid fa-circle-xmark"></i>
                                                     Cancel
                                                 </button>
@@ -335,7 +296,7 @@ if (empty($bookings)) {
 
                                 <?php endforeach; ?>
                                 <tr class="no-results hidden">
-                                    <td colspan="9" class="p-6 text-center text-gray-400 text-sm">No bookings found
+                                    <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No bookings found
                                         matching
                                         your search.</td>
                                 </tr>
@@ -386,6 +347,73 @@ if (empty($bookings)) {
         </div>
     </div>
 
+    <!-- View Booking Modal -->
+    <div id="viewModal" class="fixed inset-0 z-50 hidden items-center justify-center"
+        style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+        <div class="bg-white rounded-2xl p-4 max-w-2xl w-full mx-4 shadow-2xl">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold text-gray-800">Booking Details</h3>
+                <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="flex gap-4">
+                <div class="flex-1 space-y-1.5 text-xs">
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Customer</span>
+                        <span class="font-semibold text-gray-800" id="viewCustomer"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Email</span>
+                        <span class="font-semibold text-gray-800" id="viewEmail"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Event</span>
+                        <span class="font-semibold text-gray-800" id="viewEvent"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Package</span>
+                        <span class="font-semibold text-gray-800" id="viewPackage"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Venue</span>
+                        <span class="font-semibold text-gray-800" id="viewVenue"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Date</span>
+                        <span class="font-semibold text-gray-800" id="viewDate"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Payment</span>
+                        <span class="font-semibold text-gray-800" id="viewPayment"></span>
+                    </div>
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Total Cost</span>
+                        <span class="font-semibold text-gray-800" id="viewCost"></span>
+                    </div>
+                    <div class="flex justify-between pb-1">
+                        <span class="text-gray-500">Status</span>
+                        <span class="font-semibold" id="viewStatus"></span>
+                    </div>
+                </div>
+                <div class="w-48 flex-shrink-0 border-l border-gray-200 pl-4">
+                    <span class="text-xs text-gray-500 font-medium">Payment Receipt</span>
+                    <div class="mt-2">
+                        <img id="viewReceipt" src="" alt="Receipt"
+                            class="w-full rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition"
+                            onclick="if(this.src) window.open(this.src, '_blank')"
+                            onerror="this.style.display='none'" />
+                        <span id="viewNoReceipt" class="text-[11px] text-gray-400">No receipt uploaded</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-right">
+                <button onclick="closeViewModal()"
+                    class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-xs transition">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.getElementById('bookingSearch').addEventListener('input', function () {
             const q = this.value.toLowerCase();
@@ -397,6 +425,45 @@ if (empty($bookings)) {
                 if (match) visible++;
             });
             document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+        });
+
+        function openViewModal(id, customer, email, event, pkg, venue, slot, team, date, payment, cost, status, receipt) {
+            document.getElementById('viewCustomer').textContent = customer;
+            document.getElementById('viewEmail').textContent = email;
+            document.getElementById('viewEvent').textContent = event;
+            document.getElementById('viewPackage').textContent = pkg;
+            document.getElementById('viewVenue').textContent = venue;
+            document.getElementById('viewDate').textContent = date;
+            document.getElementById('viewPayment').textContent = payment;
+            document.getElementById('viewCost').textContent = cost + ' MMK';
+            const st = document.getElementById('viewStatus');
+            st.textContent = status;
+            st.className = 'font-semibold px-2 py-0.5 rounded-full text-xs ' + (
+                status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                status === 'Confirmed' ? 'bg-green-100 text-green-700' :
+                status === 'Completed' ? 'bg-blue-100 text-blue-700' :
+                status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
+            );
+            const img = document.getElementById('viewReceipt');
+            const noReceipt = document.getElementById('viewNoReceipt');
+            if (receipt) {
+                img.src = '../' + receipt;
+                img.style.display = '';
+                noReceipt.style.display = 'none';
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+                noReceipt.style.display = '';
+            }
+            document.getElementById('viewModal').classList.remove('hidden');
+            document.getElementById('viewModal').classList.add('flex');
+        }
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+            document.getElementById('viewModal').classList.remove('flex');
+        }
+        document.getElementById('viewModal')?.addEventListener('click', function (e) {
+            if (e.target === this) closeViewModal();
         });
 
         function openCancelModal(id) {

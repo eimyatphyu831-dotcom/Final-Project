@@ -78,6 +78,14 @@ if ($fkSlot && $fkSlot->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE RESTRICT ON UPDATE CASCADE");
 }
 
+// Add Completed status to ENUM if missing
+$statusCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'status'");
+if ($statusCol && $row = $statusCol->fetch_assoc()) {
+    if (strpos($row['Type'], 'Completed') === false) {
+        $conn->query("ALTER TABLE bookings MODIFY COLUMN status ENUM('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending'");
+    }
+}
+
 $userName = $_SESSION['user_name'] ?? '';
 $userEmail = $_SESSION['user_email'] ?? '';
 $userId = $_SESSION['user_id'];
