@@ -6,7 +6,7 @@ $totalEvents = 0;
 $eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
 if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
 
-$startYear = 2010;
+$startYear = 2020;
 $yearsExp = date('Y') - $startYear;
 include '../includes/header.php';
 ?>

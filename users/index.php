@@ -26,7 +26,7 @@ $totalEvents = 0;
 $eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
 if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
 
-$startYear = 2010;
+$startYear = 2020;
 $yearsExp = date('Y') - $startYear;
 
 $badges = [
@@ -367,7 +367,7 @@ if (isset($_SESSION['success'])) {
         <!-- Left Side Data Content Column -->
         <div class="max-w-md w-full">
             <h2 class="text-3xl font-serif font-bold text-brand-600 leading-tight">
-                Creating Unforgettable Moments Since 2010
+                Creating Unforgettable Moments Since 2020
             </h2>
             <p class="text-sm text-slate-500 mt-4 leading-relaxed">
                 Our dedicated design team focuses on every minor detailed element to craft custom environments that

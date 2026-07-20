@@ -54,7 +54,10 @@ $bkWhere = "WHERE 1=1 $dateCond $searchCond";
 $totalEvents = $conn->query("SELECT COUNT(*) c FROM events")->fetch_assoc()['c'] ?? 0;
 $totalCustomers = $conn->query("SELECT COUNT(*) c FROM users")->fetch_assoc()['c'] ?? 0;
 $totalBookings = $conn->query("SELECT COUNT(*) c $bkJoin $bkWhere")->fetch_assoc()['c'] ?? 0;
-$totalRevenue = $conn->query("SELECT COALESCE(SUM(total_cost),0) c $bkJoin $bkWhere AND b.status='Confirmed'")->fetch_assoc()['c'] ?? 0;
+
+// FIX: Included 'Completed' status along with 'Confirmed' for accurate revenue calculation
+$totalRevenue = $conn->query("SELECT COALESCE(SUM(total_cost),0) c $bkJoin $bkWhere AND b.status IN ('Confirmed', 'Completed')")->fetch_assoc()['c'] ?? 0;
+
 $pendingCount = $conn->query("SELECT COUNT(*) c $bkJoin $bkWhere AND b.status='Pending'")->fetch_assoc()['c'] ?? 0;
 
 $notifications = [];
@@ -222,7 +225,8 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                             Week</a>
                         <form method="GET" class="flex items-center gap-2 ml-2" onsubmit="return validateDashDates()">
                             <input type="date" name="date_from" id="dashDateFrom" value="<?= $dateFrom ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('dashDateTo').min=this.value">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400"
+                                onchange="document.getElementById('dashDateTo').min=this.value">
                             <span class="text-xs text-gray-400">—</span>
                             <input type="date" name="date_to" id="dashDateTo" value="<?= $dateTo ?>"
                                 min="<?= $dateFrom ?>"
@@ -482,7 +486,8 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                                     </span>
                                     <span class="font-semibold text-gray-800 flex items-center whitespace-nowrap">
                                         <span><?= $completed ?></span>
-                                        <span class="ml-0.5">(<?= $totalBookings > 0 ? round($completed / $totalBookings * 100) : 0 ?>%)</span>
+                                        <span
+                                            class="ml-0.5">(<?= $totalBookings > 0 ? round($completed / $totalBookings * 100) : 0 ?>%)</span>
                                     </span>
                                 </div>
                             </div>

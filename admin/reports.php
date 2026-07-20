@@ -19,17 +19,20 @@ $reportType = $_GET['report'] ?? 'revenue';
 $startDate = $_GET['start_date'] ?? date('Y-m-01');
 $endDate = $_GET['end_date'] ?? date('Y-m-d');
 
+// Make escaped variables available for ALL queries
+$sd = $conn->real_escape_string($startDate);
+$ed = $conn->real_escape_string($endDate);
+
 // --- Revenue Report by Date Range ---
 $revenueLabels = [];
 $revenueValues = [];
 $totalRev = 0;
 if ($reportType === 'revenue') {
-    $sd = $conn->real_escape_string($startDate);
-    $ed = $conn->real_escape_string($endDate);
+    // FIX: Include 'Completed' status
     $result = $conn->query("
         SELECT DATE(created_at) as day, COALESCE(SUM(total_cost),0) as rev
         FROM bookings
-        WHERE status='Confirmed' AND DATE(created_at) >= '$sd' AND DATE(created_at) <= '$ed'
+        WHERE status IN ('Confirmed', 'Completed') AND DATE(created_at) >= '$sd' AND DATE(created_at) <= '$ed'
         GROUP BY DATE(created_at)
         ORDER BY day
     ");
@@ -40,15 +43,17 @@ if ($reportType === 'revenue') {
     $totalRev = array_sum($revenueValues);
 }
 
-// --- Event Popularity Forecast ---
+// --- Event Popularity Forecast (Filtered by Date Range) ---
+// FIX: Include 'Completed' status in confirmed_bookings and total_revenue
 $eventPopularity = $conn->query("SELECT e.event_name, COUNT(b.id) AS total_bookings, 
-    SUM(CASE WHEN b.status='Confirmed' THEN 1 ELSE 0 END) AS confirmed_bookings,
-    COALESCE(SUM(CASE WHEN b.status='Confirmed' THEN b.total_cost ELSE 0 END),0) AS total_revenue,
+    SUM(CASE WHEN b.status IN ('Confirmed', 'Completed') THEN 1 ELSE 0 END) AS confirmed_bookings,
+    COALESCE(SUM(CASE WHEN b.status IN ('Confirmed', 'Completed') THEN b.total_cost ELSE 0 END),0) AS total_revenue,
     SUM(CASE WHEN b.event_date >= CURDATE() THEN 1 ELSE 0 END) AS upcoming_bookings,
     MIN(b.event_date) AS first_booking,
     MAX(b.event_date) AS last_booking
     FROM events e
-    LEFT JOIN bookings b ON b.event_id = e.id
+    LEFT JOIN bookings b ON b.event_id = e.id 
+        AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
     GROUP BY e.id, e.event_name
     ORDER BY total_bookings DESC")->fetch_all(MYSQLI_ASSOC);
 
@@ -87,8 +92,7 @@ if (!empty($eventPopularity)) {
 $eventMonthLabels = array_column($recentMonths ?? [], 'label');
 
 // --- Approved & Paid Bookings ---
-$sd = $conn->real_escape_string($startDate);
-$ed = $conn->real_escape_string($endDate);
+// FIX: Include 'Completed' status
 $approvedBookings = $conn->query("
     SELECT b.id, b.created_at, b.total_cost, u.name AS customer_name,
            e.event_name, p.name AS package_name
@@ -96,7 +100,7 @@ $approvedBookings = $conn->query("
     JOIN users u ON b.user_id = u.id
     JOIN events e ON b.event_id = e.id
     JOIN packages p ON b.package_id = p.id
-    WHERE b.status='Confirmed' AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
+    WHERE b.status IN ('Confirmed', 'Completed') AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
     ORDER BY b.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
@@ -161,21 +165,27 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
 // --- Booking Status Breakdown ---
 $bookingStatusData = $conn->query("SELECT status, COUNT(*) cnt FROM bookings GROUP BY status ORDER BY cnt DESC")->fetch_all(MYSQLI_ASSOC);
 
-// --- Venue Performance ---
+// --- Venue Performance (Filtered by Date Range) ---
+// FIX: Include 'Completed' status
 $venuePerformance = $conn->query("
-    SELECT v.name, COUNT(b.id) total_bookings, COALESCE(SUM(b.total_cost),0) total_revenue,
-           COUNT(CASE WHEN b.status='Confirmed' THEN 1 END) confirmed_bookings
+    SELECT v.name, COUNT(b.id) total_bookings, 
+           COALESCE(SUM(CASE WHEN b.status IN ('Confirmed', 'Completed') THEN b.total_cost ELSE 0 END), 0) total_revenue,
+           COUNT(CASE WHEN b.status IN ('Confirmed', 'Completed') THEN 1 END) confirmed_bookings
     FROM venues v
-    LEFT JOIN bookings b ON b.venue_id = v.id
+    LEFT JOIN bookings b ON b.venue_id = v.id 
+        AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
     GROUP BY v.id, v.name
     ORDER BY total_bookings DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
-// --- Package Popularity ---
+// --- Package Popularity (Filtered by Date Range) ---
+// FIX: Include 'Completed' status
 $packagePopularity = $conn->query("
-    SELECT p.name, COUNT(b.id) total_bookings, COALESCE(SUM(b.total_cost),0) total_revenue
+    SELECT p.name, COUNT(b.id) total_bookings, 
+           COALESCE(SUM(CASE WHEN b.status IN ('Confirmed', 'Completed') THEN b.total_cost ELSE 0 END), 0) total_revenue
     FROM packages p
-    LEFT JOIN bookings b ON b.package_id = p.id
+    LEFT JOIN bookings b ON b.package_id = p.id 
+        AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
     GROUP BY p.id, p.name
     ORDER BY total_bookings DESC
 ")->fetch_all(MYSQLI_ASSOC);
@@ -366,16 +376,16 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'revenue' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-chart-line mr-1"></i> Revenue
                     </a>
-                    <a href="?report=forecast"
+                    <a href="?report=forecast&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'forecast' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-magnifying-glass-chart mr-1"></i> Event Forecast
                     </a>
 
-                    <a href="?report=venue_performance"
+                    <a href="?report=venue_performance&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'venue_performance' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-building mr-1"></i> Venue Performance
                     </a>
-                    <a href="?report=package_popularity"
+                    <a href="?report=package_popularity&start_date=<?= $startDate ?>&end_date=<?= $endDate ?>"
                         class="px-4 py-2 rounded-lg text-sm font-semibold border transition <?= $reportType === 'package_popularity' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-200 hover:border-purple-300' ?>">
                         <i class="fa-solid fa-box mr-1"></i> Package Popularity
                     </a>
@@ -385,19 +395,19 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                 <?php if ($reportType === 'revenue'): ?>
                     <!-- Period Quick Filters -->
                     <?php
-                        $periods = [
-                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
-                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
-                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
-                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
-                        ];
-                        $currentPeriod = '';
-                        foreach ($periods as $key => $p) {
-                            if ($startDate === $p['start'] && $endDate === $p['end']) {
-                                $currentPeriod = $key;
-                                break;
-                            }
+                    $periods = [
+                        'daily' => ['label' => 'Daily', 'start' => date('Y-m-d'), 'end' => date('Y-m-d')],
+                        'weekly' => ['label' => 'Weekly', 'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                        'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'), 'end' => date('Y-m-t')],
+                        'yearly' => ['label' => 'Yearly', 'start' => date('Y-01-01'), 'end' => date('Y-12-31')],
+                    ];
+                    $currentPeriod = '';
+                    foreach ($periods as $key => $p) {
+                        if ($startDate === $p['start'] && $endDate === $p['end']) {
+                            $currentPeriod = $key;
+                            break;
                         }
+                    }
                     ?>
                     <div class="flex flex-wrap items-center gap-2">
                         <?php foreach ($periods as $key => $p): ?>
@@ -410,10 +420,10 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <input type="hidden" name="report" value="revenue">
                             <label class="text-xs font-medium text-gray-500">From</label>
                             <input type="date" name="start_date" id="startDate" value="<?= $startDate ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate').min=this.value">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400"
+                                onchange="document.getElementById('endDate').min=this.value">
                             <label class="text-xs font-medium text-gray-500">To</label>
-                            <input type="date" name="end_date" id="endDate" value="<?= $endDate ?>"
-                                min="<?= $startDate ?>"
+                            <input type="date" name="end_date" id="endDate" value="<?= $endDate ?>" min="<?= $startDate ?>"
                                 class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400">
                             <button type="submit"
                                 class="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition font-medium">View</button>
@@ -432,9 +442,11 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                     </div>
 
                     <?php
-                        $totalBookingsPeriod = 0;
-                        $tbResult = $conn->query("SELECT COUNT(*) c FROM bookings WHERE status='Confirmed' AND DATE(created_at) >= '{$conn->real_escape_string($startDate)}' AND DATE(created_at) <= '{$conn->real_escape_string($endDate)}'");
-                        if ($tbResult) $totalBookingsPeriod = (int) $tbResult->fetch_assoc()['c'];
+                    $totalBookingsPeriod = 0;
+                    // FIX: Include 'Completed' status 
+                    $tbResult = $conn->query("SELECT COUNT(*) c FROM bookings WHERE status IN ('Confirmed', 'Completed') AND DATE(created_at) >= '{$conn->real_escape_string($startDate)}' AND DATE(created_at) <= '{$conn->real_escape_string($endDate)}'");
+                    if ($tbResult)
+                        $totalBookingsPeriod = (int) $tbResult->fetch_assoc()['c'];
                     ?>
                     <!-- Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,7 +455,9 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                 <i class="fa-solid fa-money-bill-wave text-purple-600"></i>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-400 font-medium">Total Revenue (<?= $startDate ?> to <?= $endDate ?>)</p>
+                                <p class="text-xs text-gray-400 font-medium">Total Revenue (<?= $startDate ?> to
+                                    <?= $endDate ?>)
+                                </p>
                                 <p class="text-xl font-bold text-gray-800"><?= number_format($totalRev) ?> <span
                                         class="text-sm font-normal text-gray-400">MMK</span></p>
                             </div>
@@ -453,7 +467,9 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                 <i class="fa-solid fa-calendar-check text-emerald-600"></i>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-400 font-medium">Total Bookings (<?= $startDate ?> to <?= $endDate ?>)</p>
+                                <p class="text-xs text-gray-400 font-medium">Total Bookings (<?= $startDate ?> to
+                                    <?= $endDate ?>)
+                                </p>
                                 <p class="text-xl font-bold text-gray-800"><?= number_format($totalBookingsPeriod) ?></p>
                             </div>
                         </div>
@@ -487,14 +503,16 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                         <tr class="hover:bg-gray-50/50">
                                             <td class="py-3 font-semibold text-gray-800"><?= $label ?></td>
                                             <td class="py-3 text-right">
-                                                <span class="font-medium text-gray-800"><?= number_format($revenueValues[$i]) ?></span>
+                                                <span
+                                                    class="font-medium text-gray-800"><?= number_format($revenueValues[$i]) ?></span>
                                                 <span class="text-gray-400 text-xs ml-2"><?= number_format($pct, 1) ?>%</span>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($revenueLabels)): ?>
                                         <tr>
-                                            <td colspan="2" class="py-4 text-center text-gray-400 text-sm">No revenue data for this period</td>
+                                            <td colspan="2" class="py-4 text-center text-gray-400 text-sm">No revenue data for
+                                                this period</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -541,13 +559,15 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                             <td class="py-3 text-gray-600"><?= date('Y-m-d', strtotime($ab['created_at'])) ?>
                                             </td>
                                             <td class="py-3 font-semibold text-gray-800">
-                                                <?= htmlspecialchars($ab['customer_name']) ?></td>
+                                                <?= htmlspecialchars($ab['customer_name']) ?>
+                                            </td>
                                             <td class="py-3 text-gray-600"><?= htmlspecialchars($ab['event_name']) ?></td>
                                             <td class="py-3"><span
                                                     class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs font-semibold rounded-full"><?= htmlspecialchars($ab['package_name']) ?></span>
                                             </td>
                                             <td class="py-3 text-right font-medium text-gray-800">
-                                                <?= number_format($ab['total_cost']) ?></td>
+                                                <?= number_format($ab['total_cost']) ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($approvedBookings)): ?>
@@ -562,7 +582,8 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                         <td colspan="4" class="py-3">Total</td>
                                         <td class="py-3 text-right">
                                             <?= number_format(array_sum(array_column($approvedBookings, 'total_cost'))) ?>
-                                            MMK</td>
+                                            MMK
+                                        </td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -573,19 +594,19 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                 <?php elseif ($reportType === 'forecast'): ?>
                     <!-- Period Quick Filters -->
                     <?php
-                        $periods = [
-                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
-                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
-                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
-                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
-                        ];
-                        $currentPeriod = '';
-                        foreach ($periods as $key => $p) {
-                            if ($startDate === $p['start'] && $endDate === $p['end']) {
-                                $currentPeriod = $key;
-                                break;
-                            }
+                    $periods = [
+                        'daily' => ['label' => 'Daily', 'start' => date('Y-m-d'), 'end' => date('Y-m-d')],
+                        'weekly' => ['label' => 'Weekly', 'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                        'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'), 'end' => date('Y-m-t')],
+                        'yearly' => ['label' => 'Yearly', 'start' => date('Y-01-01'), 'end' => date('Y-12-31')],
+                    ];
+                    $currentPeriod = '';
+                    foreach ($periods as $key => $p) {
+                        if ($startDate === $p['start'] && $endDate === $p['end']) {
+                            $currentPeriod = $key;
+                            break;
                         }
+                    }
                     ?>
                     <div class="flex flex-wrap items-center gap-2 mb-6">
                         <?php foreach ($periods as $key => $p): ?>
@@ -598,7 +619,8 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <input type="hidden" name="report" value="forecast">
                             <label class="text-xs font-medium text-gray-500">From</label>
                             <input type="date" name="start_date" id="startDate_fc" value="<?= $startDate ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_fc').min=this.value">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400"
+                                onchange="document.getElementById('endDate_fc').min=this.value">
                             <label class="text-xs font-medium text-gray-500">To</label>
                             <input type="date" name="end_date" id="endDate_fc" value="<?= $endDate ?>"
                                 min="<?= $startDate ?>"
@@ -687,12 +709,15 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                     <?php foreach ($eventPopularity as $ep): ?>
                                         <tr class="hover:bg-gray-50/50">
                                             <td class="py-3 font-semibold text-gray-800">
-                                                <?= htmlspecialchars($ep['event_name']) ?></td>
+                                                <?= htmlspecialchars($ep['event_name']) ?>
+                                            </td>
                                             <td class="py-3 text-right text-gray-600"><?= $ep['total_bookings'] ?></td>
                                             <td class="py-3 text-right text-emerald-600 font-medium">
-                                                <?= $ep['confirmed_bookings'] ?></td>
+                                                <?= $ep['confirmed_bookings'] ?>
+                                            </td>
                                             <td class="py-3 text-right text-gray-800 font-medium">
-                                                <?= number_format($ep['total_revenue']) ?></td>
+                                                <?= number_format($ep['total_revenue']) ?>
+                                            </td>
                                             <td class="py-3 text-right">
                                                 <?php if ($ep['upcoming_bookings'] > 0): ?>
                                                     <span class="text-blue-600 font-medium"><?= $ep['upcoming_bookings'] ?></span>
@@ -762,23 +787,23 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <?php endif; ?>
                         </div>
                     </div>
-                <!-- ===================== VENUE PERFORMANCE ===================== -->
+                    <!-- ===================== VENUE PERFORMANCE ===================== -->
                 <?php elseif ($reportType === 'venue_performance'): ?>
                     <!-- Period Quick Filters -->
                     <?php
-                        $periods = [
-                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
-                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
-                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
-                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
-                        ];
-                        $currentPeriod = '';
-                        foreach ($periods as $key => $p) {
-                            if ($startDate === $p['start'] && $endDate === $p['end']) {
-                                $currentPeriod = $key;
-                                break;
-                            }
+                    $periods = [
+                        'daily' => ['label' => 'Daily', 'start' => date('Y-m-d'), 'end' => date('Y-m-d')],
+                        'weekly' => ['label' => 'Weekly', 'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                        'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'), 'end' => date('Y-m-t')],
+                        'yearly' => ['label' => 'Yearly', 'start' => date('Y-01-01'), 'end' => date('Y-12-31')],
+                    ];
+                    $currentPeriod = '';
+                    foreach ($periods as $key => $p) {
+                        if ($startDate === $p['start'] && $endDate === $p['end']) {
+                            $currentPeriod = $key;
+                            break;
                         }
+                    }
                     ?>
                     <div class="flex flex-wrap items-center gap-2 mb-6">
                         <?php foreach ($periods as $key => $p): ?>
@@ -791,7 +816,8 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <input type="hidden" name="report" value="venue_performance">
                             <label class="text-xs font-medium text-gray-500">From</label>
                             <input type="date" name="start_date" id="startDate_vp" value="<?= $startDate ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_vp').min=this.value">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400"
+                                onchange="document.getElementById('endDate_vp').min=this.value">
                             <label class="text-xs font-medium text-gray-500">To</label>
                             <input type="date" name="end_date" id="endDate_vp" value="<?= $endDate ?>"
                                 min="<?= $startDate ?>"
@@ -827,7 +853,9 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-medium">Top Venue</p>
-                                <p class="text-lg font-bold text-gray-800"><?= !empty($venuePerformance) ? htmlspecialchars($venuePerformance[0]['name']) : 'N/A' ?></p>
+                                <p class="text-lg font-bold text-gray-800">
+                                    <?= !empty($venuePerformance) ? htmlspecialchars($venuePerformance[0]['name']) : 'N/A' ?>
+                                </p>
                             </div>
                         </div>
                         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
@@ -836,7 +864,10 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-medium">Total Revenue</p>
-                                <p class="text-xl font-bold text-gray-800"><?= number_format(array_sum(array_column($venuePerformance, 'total_revenue'))) ?> <span class="text-sm font-normal text-gray-400">MMK</span></p>
+                                <p class="text-xl font-bold text-gray-800">
+                                    <?= number_format(array_sum(array_column($venuePerformance, 'total_revenue'))) ?> <span
+                                        class="text-sm font-normal text-gray-400">MMK</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -861,37 +892,45 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                 <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
                                     <?php foreach ($venuePerformance as $vp): ?>
                                         <tr class="hover:bg-gray-50/50">
-                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($vp['name']) ?></td>
+                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($vp['name']) ?>
+                                            </td>
                                             <td class="py-3 text-right text-gray-600"><?= $vp['total_bookings'] ?></td>
-                                            <td class="py-3 text-right text-emerald-600 font-medium"><?= $vp['confirmed_bookings'] ?></td>
-                                            <td class="py-3 text-right text-gray-800 font-medium"><?= number_format($vp['total_revenue']) ?></td>
+                                            <td class="py-3 text-right text-emerald-600 font-medium">
+                                                <?= $vp['confirmed_bookings'] ?>
+                                            </td>
+                                            <td class="py-3 text-right text-gray-800 font-medium">
+                                                <?= number_format($vp['total_revenue']) ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($venuePerformance)): ?>
-                                        <tr><td colspan="4" class="py-4 text-center text-gray-400 text-sm">No venue data available</td></tr>
+                                        <tr>
+                                            <td colspan="4" class="py-4 text-center text-gray-400 text-sm">No venue data
+                                                available</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                <!-- ===================== PACKAGE POPULARITY ===================== -->
+                    <!-- ===================== PACKAGE POPULARITY ===================== -->
                 <?php elseif ($reportType === 'package_popularity'): ?>
                     <!-- Period Quick Filters -->
                     <?php
-                        $periods = [
-                            'daily'   => ['label' => 'Daily',   'start' => date('Y-m-d'),     'end' => date('Y-m-d')],
-                            'weekly'  => ['label' => 'Weekly',  'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
-                            'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'),    'end' => date('Y-m-t')],
-                            'yearly'  => ['label' => 'Yearly',  'start' => date('Y-01-01'),   'end' => date('Y-12-31')],
-                        ];
-                        $currentPeriod = '';
-                        foreach ($periods as $key => $p) {
-                            if ($startDate === $p['start'] && $endDate === $p['end']) {
-                                $currentPeriod = $key;
-                                break;
-                            }
+                    $periods = [
+                        'daily' => ['label' => 'Daily', 'start' => date('Y-m-d'), 'end' => date('Y-m-d')],
+                        'weekly' => ['label' => 'Weekly', 'start' => date('Y-m-d', strtotime('monday this week')), 'end' => date('Y-m-d', strtotime('sunday this week'))],
+                        'monthly' => ['label' => 'Monthly', 'start' => date('Y-m-01'), 'end' => date('Y-m-t')],
+                        'yearly' => ['label' => 'Yearly', 'start' => date('Y-01-01'), 'end' => date('Y-12-31')],
+                    ];
+                    $currentPeriod = '';
+                    foreach ($periods as $key => $p) {
+                        if ($startDate === $p['start'] && $endDate === $p['end']) {
+                            $currentPeriod = $key;
+                            break;
                         }
+                    }
                     ?>
                     <div class="flex flex-wrap items-center gap-2 mb-6">
                         <?php foreach ($periods as $key => $p): ?>
@@ -904,7 +943,8 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <input type="hidden" name="report" value="package_popularity">
                             <label class="text-xs font-medium text-gray-500">From</label>
                             <input type="date" name="start_date" id="startDate_pp" value="<?= $startDate ?>"
-                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400" onchange="document.getElementById('endDate_pp').min=this.value">
+                                class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-400"
+                                onchange="document.getElementById('endDate_pp').min=this.value">
                             <label class="text-xs font-medium text-gray-500">To</label>
                             <input type="date" name="end_date" id="endDate_pp" value="<?= $endDate ?>"
                                 min="<?= $startDate ?>"
@@ -940,7 +980,9 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-medium">Most Popular Package</p>
-                                <p class="text-xl font-bold text-gray-800"><?= !empty($packagePopularity) ? htmlspecialchars($packagePopularity[0]['name']) : 'N/A' ?></p>
+                                <p class="text-xl font-bold text-gray-800">
+                                    <?= !empty($packagePopularity) ? htmlspecialchars($packagePopularity[0]['name']) : 'N/A' ?>
+                                </p>
                             </div>
                         </div>
                         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
@@ -949,7 +991,10 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             </div>
                             <div>
                                 <p class="text-xs text-gray-400 font-medium">Total Revenue</p>
-                                <p class="text-xl font-bold text-gray-800"><?= number_format(array_sum(array_column($packagePopularity, 'total_revenue'))) ?> <span class="text-sm font-normal text-gray-400">MMK</span></p>
+                                <p class="text-xl font-bold text-gray-800">
+                                    <?= number_format(array_sum(array_column($packagePopularity, 'total_revenue'))) ?> <span
+                                        class="text-sm font-normal text-gray-400">MMK</span>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -973,18 +1018,22 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                 </thead>
                                 <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
                                     <?php
-                                        $maxPkg = !empty($packagePopularity) ? max(array_column($packagePopularity, 'total_bookings')) : 1;
-                                        foreach ($packagePopularity as $pp):
-                                            $pct = $maxPkg > 0 ? round($pp['total_bookings'] / $maxPkg * 100) : 0;
-                                    ?>
+                                    $maxPkg = !empty($packagePopularity) ? max(array_column($packagePopularity, 'total_bookings')) : 1;
+                                    foreach ($packagePopularity as $pp):
+                                        $pct = $maxPkg > 0 ? round($pp['total_bookings'] / $maxPkg * 100) : 0;
+                                        ?>
                                         <tr class="hover:bg-gray-50/50">
-                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($pp['name']) ?></td>
+                                            <td class="py-3 font-semibold text-gray-800"><?= htmlspecialchars($pp['name']) ?>
+                                            </td>
                                             <td class="py-3 text-right text-gray-600"><?= $pp['total_bookings'] ?></td>
-                                            <td class="py-3 text-right text-gray-800 font-medium"><?= number_format($pp['total_revenue']) ?></td>
+                                            <td class="py-3 text-right text-gray-800 font-medium">
+                                                <?= number_format($pp['total_revenue']) ?>
+                                            </td>
                                             <td class="py-3 text-right">
                                                 <div class="flex items-center gap-2 justify-end">
                                                     <div class="w-24 bg-gray-100 rounded-full h-2">
-                                                        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full" style="width: <?= $pct ?>%"></div>
+                                                        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
+                                                            style="width: <?= $pct ?>%"></div>
                                                     </div>
                                                     <span class="text-xs text-gray-500 w-8 text-right"><?= $pct ?>%</span>
                                                 </div>
@@ -992,7 +1041,10 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                         </tr>
                                     <?php endforeach; ?>
                                     <?php if (empty($packagePopularity)): ?>
-                                        <tr><td colspan="4" class="py-4 text-center text-gray-400 text-sm">No package data available</td></tr>
+                                        <tr>
+                                            <td colspan="4" class="py-4 text-center text-gray-400 text-sm">No package data
+                                                available</td>
+                                        </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>

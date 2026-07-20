@@ -141,13 +141,19 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
             <div class="grid grid-cols-3 gap-5 mt-12">
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
-                    <h3 class="text-3xl font-bold text-purple-500"><?= $maxCapacity ? number_format($maxCapacity) . '+' : 'N/A' ?></h3>
+                    <h3 class="text-3xl font-bold text-purple-500">
+                        <?= $maxCapacity ? number_format($maxCapacity) . '+' : 'N/A' ?>
+                    </h3>
                     <p class="text-gray-500 text-sm mt-2">Max Guests</p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
-                    <h3 class="text-3xl font-bold text-purple-500"><?= $avgRating ? str_repeat('★', floor($avgRating)) . ($avgRating - floor($avgRating) >= 0.5 ? '½' : '') : '☆☆☆☆☆' ?></h3>
-                    <p class="text-gray-500 text-sm mt-2"><?= $avgRating ? number_format($avgRating, 1) . ' / 5' : 'No ratings' ?></p>
+                    <h3 class="text-3xl font-bold text-purple-500">
+                        <?= $avgRating ? str_repeat('★', floor($avgRating)) . ($avgRating - floor($avgRating) >= 0.5 ? '½' : '') : '☆☆☆☆☆' ?>
+                    </h3>
+                    <p class="text-gray-500 text-sm mt-2">
+                        <?= $avgRating ? number_format($avgRating, 1) . ' / 5' : 'No ratings' ?>
+                    </p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
