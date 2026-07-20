@@ -23,6 +23,14 @@ if ($result && $result->num_rows > 0) {
     $reviews = $result->fetch_all(MYSQLI_ASSOC);
 }
 
+// Pagination
+$rPage = isset($_GET['r_page']) ? max(1, (int)$_GET['r_page']) : 1;
+$rPerPage = 8;
+$rTotal = count($reviews);
+$rTotalPages = ceil($rTotal / $rPerPage);
+$rOffset = ($rPage - 1) * $rPerPage;
+$paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
+
 ?>
 
 <!DOCTYPE html>
@@ -79,6 +87,7 @@ if ($result && $result->num_rows > 0) {
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+                                        <th class="p-4 text-center w-10">No.</th>
                                         <th class="p-4 text-left">Customer</th>
                                         <th class="p-4 text-left">Event</th>
                                         <th class="p-4 text-left">Rating</th>
@@ -87,8 +96,10 @@ if ($result && $result->num_rows > 0) {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
-                                    <?php foreach ($reviews as $r): ?>
+                                    <?php $rIndex = $rOffset; ?>
+                                    <?php foreach ($paginatedReviews as $r): $rIndex++; ?>
                                         <tr class="hover:bg-gray-50/50 transition">
+                                            <td class="p-4 text-center text-gray-500"><?= $rIndex ?></td>
                                             <td class="p-4">
                                                 <div class="flex items-center gap-3">
                                                     <?php
@@ -135,11 +146,34 @@ if ($result && $result->num_rows > 0) {
                                         </tr>
                                     <?php endforeach; ?>
                                     <tr class="no-results hidden">
-                                        <td colspan="5" class="p-6 text-center text-gray-400 text-sm">No reviews matching your search.</td>
+                                        <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No reviews matching your search.</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+
+                        <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                            Total: <span class="font-semibold text-gray-700"><?= $rTotal ?></span> reviews
+                        </div>
+
+                        <?php if ($rTotalPages > 1): ?>
+                        <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                            <a href="?r_page=<?= max(1, $rPage-1) ?>"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                            </a>
+                            <?php for ($i = 1; $i <= $rTotalPages; $i++): ?>
+                            <a href="?r_page=<?= $i ?>"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $rPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                <?= $i ?>
+                            </a>
+                            <?php endfor; ?>
+                            <a href="?r_page=<?= min($rTotalPages, $rPage+1) ?>"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage >= $rTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                            </a>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </main>

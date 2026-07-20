@@ -33,7 +33,8 @@ $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
     'birthday' => 'bg-yellow-500/60 text-white',
-    'music' => 'bg-blue-500/60 text-white'
+    'music' => 'bg-purple-500/60 text-white',
+    'educational' => 'bg-blue-500/60 text-white'
 ];
 
 
@@ -150,7 +151,7 @@ if (isset($_SESSION['success'])) {
 
         <!-- Right Side View All -->
         <a href="viewevents.php"
-            class="text-sm font-bold text-brand-900 dark:text-gray-200 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+            class="text-sm font-bold text-brand-600 dark:text-gray-200 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
             View All <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
     </div>
@@ -307,7 +308,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Right View All -->
             <a href="viewvenues.php"
-                class="text-sm font-bold text-brand-900 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+                class="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
                 View All
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>

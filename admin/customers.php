@@ -87,6 +87,14 @@ $stmt->execute();
 $result = $stmt->get_result();
 $customers = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Pagination
+$cPage = isset($_GET['c_page']) ? max(1, (int)$_GET['c_page']) : 1;
+$cPerPage = 8;
+$cTotal = count($customers);
+$cTotalPages = ceil($cTotal / $cPerPage);
+$cOffset = ($cPage - 1) * $cPerPage;
+$paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -234,6 +242,7 @@ $stmt->close();
                                     <table class="w-full text-xs">
                                         <thead class="bg-gray-50 text-gray-600">
                                             <tr>
+                                                <th class="p-1.5 text-center w-8">No.</th>
                                                 <th class="p-1.5 text-left">Event</th>
                                                 <th class="p-1.5 text-left">Venue</th>
                                                 <th class="p-1.5 text-left">Package</th>
@@ -243,8 +252,10 @@ $stmt->close();
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($viewBookings as $bk): ?>
+                                            <?php $vbIndex = 0; ?>
+                                            <?php foreach ($viewBookings as $bk): $vbIndex++; ?>
                                                 <tr class="border-t hover:bg-gray-50">
+                                                    <td class="p-1.5 text-center text-gray-500"><?= $vbIndex ?></td>
                                                     <td class="p-1.5 font-medium text-gray-800"><?= htmlspecialchars($bk['event_name']) ?></td>
                                                     <td class="p-1.5 text-gray-600"><?= htmlspecialchars($bk['venue_name']) ?></td>
                                                     <td class="p-1.5 text-gray-600"><?= htmlspecialchars($bk['package_name']) ?></td>
@@ -284,6 +295,7 @@ $stmt->close();
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
+                                <th class="p-3 text-center w-10">No.</th>
                                 <th class="p-3 text-left">Customer</th>
                                 <th class="p-3 text-left">Phone</th>
                                 <th class="p-3 text-left">Joined</th>
@@ -294,9 +306,11 @@ $stmt->close();
 
                         <tbody id="tableBody">
 
-                            <?php foreach ($customers as $c): ?>
+                            <?php $cIndex = $cOffset; ?>
+                            <?php foreach ($paginatedCustomers as $c): $cIndex++; ?>
                                 <tr class="border-t hover:bg-gray-50">
 
+                                    <td class="p-3 text-center text-gray-500"><?= $cIndex ?></td>
                                     <td class="p-3">
                                         <div class="font-semibold text-gray-800"><?= htmlspecialchars($c['name']) ?></div>
                                         <div class="text-xs text-gray-500"><?= htmlspecialchars($c['email']) ?></div>
@@ -337,13 +351,37 @@ $stmt->close();
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="5" class="p-6 text-center text-gray-400 text-sm">No customers found
+                                <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No customers found
                                     matching your search.</td>
                             </tr>
 
                         </tbody>
                     </table>
                     </div>
+
+                    <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                        Total: <span class="font-semibold text-gray-700"><?= $cTotal ?></span> customers
+                    </div>
+
+                    <?php if ($cTotalPages > 1): ?>
+                    <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                        <?php $cQueryStr = $search ? '&search=' . urlencode($search) : ''; ?>
+                        <a href="?c_page=<?= max(1, $cPage-1) ?><?= $cQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                        </a>
+                        <?php for ($i = 1; $i <= $cTotalPages; $i++): ?>
+                        <a href="?c_page=<?= $i ?><?= $cQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $cPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <?= $i ?>
+                        </a>
+                        <?php endfor; ?>
+                        <a href="?c_page=<?= min($cTotalPages, $cPage+1) ?><?= $cQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage >= $cTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
             </main>

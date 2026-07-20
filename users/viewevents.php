@@ -23,7 +23,8 @@ $badges = [
     'corporate' => 'bg-green-600/60 text-white',
     'wedding' => 'bg-pink-500/60 text-white',
     'birthday' => 'bg-yellow-500/60 text-white',
-    'music' => 'bg-blue-500/60 text-white',
+    'music' => 'bg-purple-500/60 text-white',
+    'educational' => 'bg-blue-500/60 text-white'
 ];
 ?>
 

@@ -119,11 +119,20 @@ if ($result && $result->num_rows > 0) {
 }
 
 // Fallback if no data
-if (empty($bookings)) {
+$hasData = !empty($bookings);
+if (!$hasData) {
     $bookings = [
         ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
     ];
 }
+
+// Pagination
+$bPage = isset($_GET['b_page']) ? max(1, (int)$_GET['b_page']) : 1;
+$bPerPage = 8;
+$bTotal = $hasData ? count($bookings) : 0;
+$bTotalPages = ceil($bTotal / $bPerPage);
+$bOffset = ($bPage - 1) * $bPerPage;
+$paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $bookings;
 ?>
 
 <!DOCTYPE html>
@@ -221,6 +230,7 @@ if (empty($bookings)) {
                         <table class="w-full text-sm rounded-2xl">
                             <thead class="bg-gray-50 text-gray-600">
                                 <tr>
+                                    <th class="p-2 text-center w-10">No.</th>
                                     <th class="p-2 text-left">Customer</th>
                                     <th class="p-2 text-left">Event</th>
                                     <th class="p-2 text-left">Venue</th>
@@ -232,13 +242,15 @@ if (empty($bookings)) {
 
                             <tbody id="tableBody">
 
-                                <?php foreach ($bookings as $b): ?>
+                                <?php $bIndex = $bOffset; ?>
+                                <?php foreach ($paginatedBookings as $b): $bIndex++; ?>
 
                                     <?php if ($b['id'] === 0 || ($statusFilter != 'all' && $b['status'] != $statusFilter))
                                         continue; ?>
 
                                     <tr class="border-t hover:bg-gray-50">
 
+                                        <td class="p-2 text-center text-gray-500"><?= $bIndex ?></td>
                                         <td class="p-2">
                                             <div class="font-semibold"><?= htmlspecialchars($b['customer_name']) ?></div>
                                             <div class="text-xs text-gray-500"><?= htmlspecialchars($b['email']) ?></div>
@@ -296,7 +308,7 @@ if (empty($bookings)) {
 
                                 <?php endforeach; ?>
                                 <tr class="no-results hidden">
-                                    <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No bookings found
+                                    <td colspan="7" class="p-6 text-center text-gray-400 text-sm">No bookings found
                                         matching
                                         your search.</td>
                                 </tr>
@@ -304,6 +316,33 @@ if (empty($bookings)) {
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                        Total: <span class="font-semibold text-gray-700"><?= $bTotal ?></span> bookings
+                    </div>
+
+                    <?php if ($bTotalPages > 1): ?>
+                    <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                        <?php
+                        $bQueryStr = '';
+                        if ($statusFilter !== 'all') $bQueryStr = '&status=' . urlencode($statusFilter);
+                        ?>
+                        <a href="?b_page=<?= max(1, $bPage-1) ?><?= $bQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                        </a>
+                        <?php for ($i = 1; $i <= $bTotalPages; $i++): ?>
+                        <a href="?b_page=<?= $i ?><?= $bQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $bPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <?= $i ?>
+                        </a>
+                        <?php endfor; ?>
+                        <a href="?b_page=<?= min($bTotalPages, $bPage+1) ?><?= $bQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage >= $bTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
             </main>

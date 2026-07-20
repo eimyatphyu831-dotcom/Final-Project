@@ -152,15 +152,16 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">#</th> -->
+                                <th class="text-center px-6 py-4 font-semibold text-gray-600 w-12">No.</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Team Name</th>
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y divide-gray-100">
-                            <?php foreach ($teams as $t): ?>
+                            <?php $tIndex = 0; ?>
+                            <?php foreach ($teams as $t): $tIndex++; ?>
                                 <tr class="hover:bg-gray-50 transition">
-                                    <!-- <td class="px-6 py-4 text-gray-500"><?= $t['id'] ?></td> -->
+                                    <td class="px-6 py-4 text-center text-gray-500"><?= $tIndex ?></td>
                                     <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($t['name']) ?></td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
@@ -178,7 +179,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No teams found matching your search.</td>
+                                <td colspan="3" class="px-6 py-10 text-center text-gray-400 text-sm">No teams found matching your search.</td>
                             </tr>
                         </tbody>
                     </table>

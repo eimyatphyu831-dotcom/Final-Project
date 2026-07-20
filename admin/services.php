@@ -59,6 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch all services
 $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI_ASSOC);
+
+// Pagination
+$sPage = isset($_GET['s_page']) ? max(1, (int)$_GET['s_page']) : 1;
+$sPerPage = 8;
+$sTotal = count($services);
+$sTotalPages = ceil($sTotal / $sPerPage);
+$sOffset = ($sPage - 1) * $sPerPage;
+$paginatedServices = array_slice($services, $sOffset, $sPerPage);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -157,15 +165,16 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">#</th> -->
+                                <th class="text-center px-6 py-4 font-semibold text-gray-600 w-12">No.</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Service Name</th>
                                 <th class="text-center px-6 py-4 font-semibold text-gray-600">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y divide-gray-100">
-                            <?php foreach ($services as $s): ?>
+                            <?php $sIndex = $sOffset; ?>
+                            <?php foreach ($paginatedServices as $s): $sIndex++; ?>
                                 <tr class="hover:bg-gray-50 transition">
-                                    <!-- <td class="px-6 py-4 text-gray-500"><?= $s['id'] ?></td> -->
+                                    <td class="px-6 py-4 text-center text-gray-500"><?= $sIndex ?></td>
                                     <td class="px-6 py-4 font-medium text-gray-800">
                                         <?= htmlspecialchars($s['service_name']) ?></td>
                                     <td class="px-6 py-4">
@@ -184,11 +193,34 @@ $services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="2" class="px-6 py-10 text-center text-gray-400 text-sm">No services found matching your search.</td>
+                                <td colspan="3" class="px-6 py-10 text-center text-gray-400 text-sm">No services found matching your search.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                    Total: <span class="font-semibold text-gray-700"><?= $sTotal ?></span> services
+                </div>
+
+                <?php if ($sTotalPages > 1): ?>
+                <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100 bg-white rounded-2xl mt-4">
+                    <a href="?s_page=<?= max(1, $sPage-1) ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                    </a>
+                    <?php for ($i = 1; $i <= $sTotalPages; $i++): ?>
+                    <a href="?s_page=<?= $i ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $sPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <?= $i ?>
+                    </a>
+                    <?php endfor; ?>
+                    <a href="?s_page=<?= min($sTotalPages, $sPage+1) ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage >= $sTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+                <?php endif; ?>
 
                 <!-- Add/Edit Modal -->
                 <div id="serviceModal"

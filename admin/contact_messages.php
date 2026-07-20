@@ -223,6 +223,7 @@ $stmt->close();
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
+                                <th class="p-3 text-center w-10">No.</th>
                                 <th class="p-3 text-left">From</th>
                                 <th class="p-3 text-left">Event Type</th>
                                 <th class="p-3 text-left">Message</th>
@@ -236,13 +237,15 @@ $stmt->close();
 
                             <?php if (empty($messages)): ?>
                                 <tr>
-                                    <td colspan="6" class="p-8 text-center text-gray-400">No messages yet.</td>
+                                    <td colspan="7" class="p-8 text-center text-gray-400">No messages yet.</td>
                                 </tr>
                             <?php endif; ?>
 
-                            <?php foreach ($messages as $m): ?>
+                            <?php $mIndex = 0; ?>
+                            <?php foreach ($messages as $m): $mIndex++; ?>
                                 <tr class="border-t hover:bg-gray-50 <?= !$m['is_read'] ? 'bg-purple-50/50' : '' ?>">
 
+                                    <td class="p-3 text-center text-gray-500"><?= $mIndex ?></td>
                                     <td class="p-3">
                                         <div class="font-semibold text-gray-800"><?= htmlspecialchars($m['name']) ?></div>
                                         <div class="text-xs text-gray-500"><?= htmlspecialchars($m['email']) ?></div>
@@ -299,7 +302,7 @@ $stmt->close();
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No messages found matching
+                                    <td colspan="7" class="p-6 text-center text-gray-400 text-sm">No messages found matching
                                     your search.</td>
                             </tr>
 

@@ -107,6 +107,14 @@ $eventFilter = $filterEventId > 0 ? "WHERE v.event_id = $filterEventId" : "";
 $result = $conn->query("SELECT v.*, COALESCE(e.event_name, '—') AS event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id $eventFilter ORDER BY v.id");
 $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
+// Pagination
+$vPage = isset($_GET['v_page']) ? max(1, (int)$_GET['v_page']) : 1;
+$vPerPage = 8;
+$vTotal = count($venues);
+$vTotalPages = ceil($vTotal / $vPerPage);
+$vOffset = ($vPage - 1) * $vPerPage;
+$paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
+
 // Fallback sample data when DB is empty
 // if (empty($venues)) {
 //     $venues = [
@@ -168,11 +176,9 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         .modal-content {
             background: #fff;
             border-radius: 1rem;
-            padding: 2rem;
+            padding: 1.5rem;
             width: 100%;
             max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
     </style>
@@ -209,6 +215,7 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                 <table class="w-full text-sm">
     <thead class="bg-gray-50 border-b border-gray-200">
                         <tr>
+                            <th class="text-center px-6 py-4 font-semibold text-gray-600 w-12">No.</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Image</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Name</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Event</th>
@@ -219,8 +226,10 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-100">
-                        <?php foreach ($venues as $v): ?>
+                        <?php $vIndex = $vOffset; ?>
+                        <?php foreach ($paginatedVenues as $v): $vIndex++; ?>
                             <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 text-center text-gray-500"><?= $vIndex ?></td>
                                 <td class="px-6 py-4">
                                     <img src="<?= $v['image_path'] ?: '../assets/images/venue1.png' ?>"
                                         class="w-14 h-14 rounded-lg object-cover">
@@ -260,11 +269,40 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             </tr>
                         <?php endforeach; ?>
                         <tr class="no-results hidden">
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
+                            <td colspan="7" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
                         </tr>
                     </tbody>
                 </table>
                 </div>
+
+                <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                    Total: <span class="font-semibold text-gray-700"><?= $vTotal ?></span> venues
+                </div>
+
+                <?php
+                $vQueryParams = [];
+                if ($filterEventId > 0) $vQueryParams['event_id'] = $filterEventId;
+                if ($search !== '') $vQueryParams['search'] = $search;
+                $vQueryStr = $vQueryParams ? '&' . http_build_query($vQueryParams) : '';
+                ?>
+                <?php if ($vTotalPages > 1): ?>
+                <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                    <a href="?v_page=<?= max(1, $vPage-1) ?><?= $vQueryStr ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                    </a>
+                    <?php for ($i = 1; $i <= $vTotalPages; $i++): ?>
+                    <a href="?v_page=<?= $i ?><?= $vQueryStr ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $vPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <?= $i ?>
+                    </a>
+                    <?php endfor; ?>
+                    <a href="?v_page=<?= min($vTotalPages, $vPage+1) ?><?= $vQueryStr ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage >= $vTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- View Modal -->
@@ -320,19 +358,17 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
             <!-- Add/Edit Modal -->
             <div id="venueModal" class="modal-overlay <?= ($action === 'add' || $action === 'edit') ? '' : 'hidden' ?>">
-                <div class="modal-content">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-800">
-                                <?= $action === 'add' ? 'Add Venue' : 'Edit Venue' ?></h2>
-                            <p class="text-sm text-gray-500 mt-0.5">
-                                <?= $action === 'add' ? 'Create a new venue' : 'Update venue details' ?></p>
-                        </div>
+                <div class="modal-content relative">
+                    <div class="text-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">
+                            <?= $action === 'add' ? 'Add Venue' : 'Edit Venue' ?></h2>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            <?= $action === 'add' ? 'Create a new venue' : 'Update venue details' ?></p>
                         <button onclick="closeModal()"
-                            class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                            class="text-gray-400 hover:text-gray-600 text-lg leading-none absolute top-3 right-3">&times;</button>
                     </div>
 
-                    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <form method="POST" enctype="multipart/form-data" class="space-y-3">
                         <?php if ($action === 'edit' && $editVenue): ?>
                             <input type="hidden" name="id" value="<?= $editVenue['id'] ?>">
                             <input type="hidden" name="existing_image" value="<?= $editVenue['image_path'] ?>">
@@ -342,23 +378,23 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         <?php endif; ?>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Venue Name</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Venue Name</label>
                             <input type="text" name="name" required
                                 value="<?= $action === 'edit' && $editVenue ? htmlspecialchars($editVenue['name']) : '' ?>"
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Event</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Event</label>
                             <?php if ($filterEventId > 0 && $action !== 'edit'): ?>
                                 <?php foreach ($eventsList as $ev): ?>
                                     <?php if ($ev['id'] == $filterEventId): ?>
-                                        <div class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-100 text-gray-600"><?= htmlspecialchars($ev['event_name']) ?></div>
+                                        <div class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-600 text-sm"><?= htmlspecialchars($ev['event_name']) ?></div>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php else: ?>
                             <select name="event_id" required
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
                                 <option value="">— Select Event —</option>
                                 <?php foreach ($eventsList as $ev): ?>
                                     <option value="<?= $ev['id'] ?>"
@@ -371,18 +407,18 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Address</label>
                             <input type="text" name="address" required
                                 value="<?= $action === 'edit' && $editVenue ? htmlspecialchars($editVenue['address']) : '' ?>"
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Capacity (guests)</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Capacity (guests)</label>
                                 <input type="number" name="capacity" required min="1"
                                     value="<?= $action === 'edit' && $editVenue ? $editVenue['capacity'] : '' ?>"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
                             </div>
                             <!-- <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Price (MMK)</label>
@@ -393,22 +429,22 @@ $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Venue Image</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Venue Image</label>
                             <?php if ($action === 'edit' && $editVenue && $editVenue['image_path']): ?>
-                                <img src="<?= $editVenue['image_path'] ?>" class="w-24 h-24 rounded-lg object-cover mb-2">
+                                <img src="<?= $editVenue['image_path'] ?>" class="h-8 rounded object-cover mb-1 inline-block">
                             <?php endif; ?>
                             <input type="file" name="image" accept="image/*"
-                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
+                                class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-xs hover:file:bg-purple-100">
                         </div>
 
-                        <div class="flex items-center gap-4 pt-2">
+                        <div class="flex items-center justify-center gap-3 pt-1">
                             <button type="submit"
-                                class="bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-                                <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-2"></i>
+                                class="bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-purple-700 transition text-sm">
+                                <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-1"></i>
                                 <?= $action === 'add' ? 'Create Venue' : 'Update Venue' ?>
                             </button>
                             <button type="button" onclick="closeModal()"
-                                class="text-gray-500 hover:text-gray-700 font-medium text-sm">Cancel</button>
+                                class="text-gray-500 hover:text-gray-700 font-medium text-xs">Cancel</button>
                         </div>
                     </form>
                 </div>

@@ -125,13 +125,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($eventId > 0) {
-        $stmt = $conn->prepare("UPDATE events SET event_type=?, event_name=?, description=?, image=?, venue_id=? WHERE id=?");
-        $stmt->bind_param("ssssii", $type, $title, $description, $imagePath, $venueId, $eventId);
+        $stmt = $conn->prepare("UPDATE events SET event_name=?, description=?, image=? WHERE id=?");
+        $stmt->bind_param("sssi", $title, $description, $imagePath, $eventId);
         $stmt->execute();
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("INSERT INTO events (event_type, event_name, description, image, venue_id) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssi", $type, $title, $description, $imagePath, $venueId);
+        $stmt = $conn->prepare("INSERT INTO events (event_name, description, image) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $title, $description, $imagePath);
         $stmt->execute();
         $eventId = $conn->insert_id;
         $stmt->close();
@@ -182,6 +182,14 @@ GROUP BY e.id
 ORDER BY e.id
 ");
 $events = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
+// Pagination
+$ePage = isset($_GET['e_page']) ? max(1, (int)$_GET['e_page']) : 1;
+$ePerPage = 8;
+$eTotal = count($events);
+$eTotalPages = ceil($eTotal / $ePerPage);
+$eOffset = ($ePage - 1) * $ePerPage;
+$paginatedEvents = array_slice($events, $eOffset, $ePerPage);
 
 // Fetch gallery counts for table
 $galleryCounts = [];
@@ -264,11 +272,9 @@ if ($vResult)
         .modal-content {
             background: #fff;
             border-radius: 1rem;
-            padding: 2rem;
+            padding: 1.5rem;
             width: 100%;
             max-width: 480px;
-            max-height: 90vh;
-            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
     </style>
@@ -306,6 +312,7 @@ if ($vResult)
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th class="text-center px-6 py-4 font-semibold text-gray-600 w-12">No.</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Image</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Name</th>
                                 <th class="text-left px-6 py-4 font-semibold text-gray-600">Description</th>
@@ -314,8 +321,10 @@ if ($vResult)
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y divide-gray-100">
-                            <?php foreach ($events as $event): ?>
+                            <?php $eIndex = $eOffset; ?>
+                            <?php foreach ($paginatedEvents as $event): $eIndex++; ?>
                                 <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 text-center text-gray-500"><?= $eIndex ?></td>
                                     <td class="px-6 py-4">
                                         <img src="<?= $event['image'] ?>" class="w-14 h-14 rounded-lg object-cover">
                                     </td>
@@ -345,28 +354,49 @@ if ($vResult)
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
-                                <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No events found matching your search.</td>
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No events found matching your search.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
+                <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                    Total: <span class="font-semibold text-gray-700"><?= $eTotal ?></span> events
+                </div>
+
+                <?php if ($eTotalPages > 1): ?>
+                <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                    <a href="?e_page=<?= max(1, $ePage-1) ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                    </a>
+                    <?php for ($i = 1; $i <= $eTotalPages; $i++): ?>
+                    <a href="?e_page=<?= $i ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $ePage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <?= $i ?>
+                    </a>
+                    <?php endfor; ?>
+                    <a href="?e_page=<?= min($eTotalPages, $ePage+1) ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage >= $eTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </a>
+                </div>
+                <?php endif; ?>
+
                 <!-- Modal overlay -->
                 <div id="eventModal"
                     class="modal-overlay <?= ($action === 'add' || $action === 'edit') ? '' : 'hidden' ?>">
-                    <div class="modal-content">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    <?= $action === 'add' ? 'Add Event' : 'Edit Event' ?></h2>
-                                <p class="text-sm text-gray-500 mt-0.5">
-                                    <?= $action === 'add' ? 'Create a new event listing' : 'Update event details' ?></p>
-                            </div>
+                    <div class="modal-content relative">
+                        <div class="text-center mb-4">
+                            <h2 class="text-lg font-bold text-gray-800">
+                                <?= $action === 'add' ? 'Add Event' : 'Edit Event' ?></h2>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                <?= $action === 'add' ? 'Create a new event listing' : 'Update event details' ?></p>
                             <button onclick="closeModal()"
-                                class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                                class="text-gray-400 hover:text-gray-600 text-lg leading-none absolute top-3 right-3">&times;</button>
                         </div>
 
-                        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" enctype="multipart/form-data" class="space-y-2">
                             <?php if ($action === 'edit' && $editEvent): ?>
                                 <input type="hidden" name="id" value="<?= $editEvent['id'] ?>">
                                 <input type="hidden" name="existing_image" value="<?= $editEvent['image'] ?>">
@@ -374,15 +404,15 @@ if ($vResult)
                             <input type="hidden" name="type" value="general">
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Event Name</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Event Name</label>
                                 <input type="text" name="title" required
                                     value="<?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['event_name']) : '' ?>"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
+                                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
                             </div>
 
 
 
-                            <div>
+                            <!-- <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Venue</label>
                                 <select name="venue_id" id="venueSelect" onchange="toggleDynamicVenue()"
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50">
@@ -396,10 +426,10 @@ if ($vResult)
                                     <?php endif; ?>
                                     <option value="new">+ Add New Venue</option>
                                 </select>
-                            </div>
+                            </div> -->
 
                             <div id="dynamicVenueFields"
-                                class="hidden p-4 border border-dashed border-purple-300 rounded-xl bg-purple-50/50 space-y-3">
+                                class="hidden p-3 border border-dashed border-purple-300 rounded-xl bg-purple-50/50 space-y-2">
                                 <p class="text-xs font-semibold text-purple-600">New Venue Details</p>
                                 <div>
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Venue Name</label>
@@ -433,31 +463,31 @@ if ($vResult)
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                <textarea name="description" rows="4" required
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none"><?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['description']) : '' ?></textarea>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+                                <textarea name="description" rows="2" required
+                                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none text-sm"><?= $action === 'edit' && $editEvent ? htmlspecialchars($editEvent['description']) : '' ?></textarea>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Event Image</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Event Image</label>
                                 <?php if ($action === 'edit' && $editEvent && $editEvent['image']): ?>
-                                    <img src="<?= $editEvent['image'] ?>" class="w-24 h-24 rounded-lg object-cover mb-2">
+                                    <img src="<?= $editEvent['image'] ?>" class="w-8 h-8 rounded object-cover mb-1 inline-block">
                                 <?php endif; ?>
                                 <input type="file" name="image" accept="image/*"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
+                                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-xs hover:file:bg-purple-100">
                             </div>
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Gallery Images</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Images</label>
                                 <?php if ($action === 'edit' && !empty($editGallery)): ?>
-                                    <div class="flex flex-wrap gap-2 mb-3">
+                                    <div class="flex flex-wrap gap-2 mb-2">
                                         <?php foreach ($editGallery as $photo): ?>
                                             <div class="relative group">
                                                 <img src="<?= $photo['image_path'] ?>"
-                                                    class="w-20 h-20 rounded-lg object-cover border">
+                                                    class="w-8 h-8 rounded-lg object-cover border">
                                                 <a href="events.php?delete_gallery=<?= $photo['id'] ?>"
                                                     onclick="return confirm('Delete this gallery image?')"
-                                                    class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
+                                                    class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition">
                                                     &times;
                                                 </a>
                                             </div>
@@ -465,18 +495,18 @@ if ($vResult)
                                     </div>
                                 <?php endif; ?>
                                 <input type="file" name="gallery_images[]" multiple accept="image/*"
-                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-sm hover:file:bg-purple-100">
-                                <p class="text-xs text-gray-400 mt-1">Upload multiple gallery images</p>
+                                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-purple-50 file:text-purple-700 file:font-semibold file:text-xs hover:file:bg-purple-100">
+                                <p class="text-[11px] text-gray-400 mt-0.5">Upload multiple gallery images</p>
                             </div>
 
-                            <div class="flex items-center gap-4 pt-2">
+                            <div class="flex items-center justify-center gap-3 pt-1">
                                 <button type="submit"
-                                    class="bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-700 transition">
-                                    <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-2"></i>
+                                    class="bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-purple-700 transition text-sm">
+                                    <i class="fa-solid <?= $action === 'add' ? 'fa-plus' : 'fa-save' ?> mr-1"></i>
                                     <?= $action === 'add' ? 'Create Event' : 'Update Event' ?>
                                 </button>
                                 <button type="button" onclick="closeModal()"
-                                    class="text-gray-500 hover:text-gray-700 font-medium text-sm">Cancel</button>
+                                    class="text-gray-500 hover:text-gray-700 font-medium text-xs">Cancel</button>
                             </div>
                         </form>
                     </div>
