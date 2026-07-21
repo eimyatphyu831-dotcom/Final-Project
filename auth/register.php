@@ -2,12 +2,16 @@
 include "../config/db.php";
 
 $message = "";
+$name = $email = $phone = "";
+$errors = ['name' => '', 'email' => '', 'phone' => '', 'password' => ''];
+
 $redirect = $_GET['redirect'] ?? $_POST['redirect'] ?? '';
 if ($redirect && strpos($redirect, 'http') !== 0 && strpos($redirect, '/') !== 0) {
     $redirect = '../users/' . ltrim($redirect, '/');
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retain inputs immediately to keep them in the form on error
     $name = trim($_POST['name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
@@ -15,20 +19,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirm-password'];
     $redirect = $_POST['redirect'] ?? '';
+
     if ($redirect && strpos($redirect, 'http') !== 0 && strpos($redirect, '/') !== 0) {
         $redirect = '../users/' . ltrim($redirect, '/');
     }
 
-    if ($password != $confirmPassword) {
-        $message = "Passwords do not match!";
-    } else {
+    // 1. Validate Name
+    if (empty($name)) {
+        $errors['name'] = "Full Name is required.";
+    } elseif (!preg_match("/^[a-zA-Z-' ]*$/", $name)) {
+        $errors['name'] = "Only letters and white space allowed.";
+    }
+
+    // 2. Validate Email (Must include @)
+    if (empty($email)) {
+        $errors['email'] = "Email is required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strpos($email, '@') === false) {
+        $errors['email'] = "Email must include '@' and be valid (e.g., su@gmail.com).";
+    }
+
+    // 3. Validate Phone (Max 11 digits)
+    $digits_only = preg_replace('/\D/', '', $phone); // Extract only digits
+    if (empty($phone)) {
+        $errors['phone'] = "Phone Number is required.";
+    } elseif (strlen($digits_only) > 11) {
+        $errors['phone'] = "Phone number must be a maximum of 11 digits.";
+    }
+
+    // 4. Validate Passwords
+    if (empty($password)) {
+        $errors['password'] = "Password is required.";
+    } elseif ($password != $confirmPassword) {
+        $errors['password'] = "Passwords do not match!";
+    }
+
+    if (!isset($_POST['terms'])) {
+        $errors['terms'] = "You must agree to the Terms and Privacy Policy.";
+    }
+
+    // Proceed to DB ONLY if there are no validation errors
+    if (empty($errors['name']) && empty($errors['email']) && empty($errors['phone']) && empty($errors['password'])) {
         $check = $conn->prepare("SELECT id FROM users WHERE email=?");
         $check->bind_param("s", $email);
         $check->execute();
         $result = $check->get_result();
 
         if ($result->num_rows > 0) {
-            $message = "Email already registered!";
+            $errors['email'] = "Email already registered!";
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("INSERT INTO users(name,email,phone,password) VALUES(?,?,?,?)");
@@ -38,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: login.php" . ($redirect ? '?redirect=' . urlencode($redirect) : ''));
                 exit();
             } else {
-                $message = "Registration failed!";
+                $message = "Registration failed! Please try again.";
             }
         }
     }
@@ -71,6 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form action="#" method="POST" class="space-y-3" novalidate>
             <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>" required>
 
+            <!-- FULL NAME FIELD -->
             <div>
                 <label for="name" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Full
                     Name</label>
@@ -82,11 +120,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </div>
                     <input type="text" id="name" name="name" required autocomplete="name" placeholder="Alex Morgan"
-                        required
-                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
+                        value="<?= htmlspecialchars($name) ?>"
+                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all"
+                        onkeydown="if(/[0-9]/.test(event.key) && event.key.length === 1) return false;"
+                        oninput="this.value = this.value.replace(/[^a-zA-Z\s'-]/g, '')">
                 </div>
+                <?php if (!empty($errors['name'])): ?>
+                    <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['name'] ?></span>
+                <?php endif; ?>
             </div>
 
+            <!-- EMAIL FIELD -->
             <div>
                 <label for="email" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Email
                     Address</label>
@@ -98,11 +142,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </div>
                     <input type="email" id="email" name="email" required autocomplete="email"
-                        placeholder="alex@gmail.com" required
+                        placeholder="alex@gmail.com" value="<?= htmlspecialchars($email) ?>"
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                 </div>
+                <?php if (!empty($errors['email'])): ?>
+                    <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['email'] ?></span>
+                <?php endif; ?>
             </div>
 
+            <!-- PHONE NUMBER FIELD -->
             <div>
                 <label for="phone" class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Phone
                     Number</label>
@@ -113,11 +161,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                     </div>
-                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="+959..." required
-                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
+                    <!-- Added inputmode and pattern to force numeric keyboard on mobile -->
+                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="09..."
+                        maxlength="11" inputmode="numeric" pattern="[0-9]*" value="<?= htmlspecialchars($phone) ?>"
+                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
+                <?php if (!empty($errors['phone'])): ?>
+                    <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['phone'] ?></span>
+                <?php endif; ?>
             </div>
 
+            <!-- PASSWORD FIELD -->
             <div id="password-container">
                 <label for="password"
                     class="block text-[10px] font-semibold text-slate-700 tracking-wide mb-0.5">Password</label>
@@ -140,6 +195,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </button>
                 </div>
+                <?php if (!empty($errors['password'])): ?>
+                    <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['password'] ?></span>
+                <?php endif; ?>
             </div>
 
             <div id="confirm-password-container">
@@ -173,6 +231,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     agree to the <a href="#" class="text-purple-600 hover:underline">Terms</a> and <a href="#"
                         class="text-purple-600 hover:underline">Privacy</a></label>
             </div>
+           
+
 
             <button type="submit"
                 class="w-full mt-1 py-1.5 px-4 bg-purple-200 hover:bg-purple-300 text-purple-950 font-semibold text-xs rounded-lg tracking-wide shadow-sm transition-all flex items-center justify-center gap-1 group">

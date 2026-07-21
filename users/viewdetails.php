@@ -310,31 +310,43 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
     }
 
 
+function handleBooking(url) {
+    const params = new URLSearchParams(url.split('?')[1] || '');
+    const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
 
-    function handleBooking(url) {
-        const params = new URLSearchParams(url.split('?')[1] || '');
-        const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
+    // 1. If no venue/package is selected, SHOW THE MODAL instead of redirecting instantly
+    if (!hasVenueAndPackage) {
+        showModal(
+            'Selection Required',
+            'Please select a venue and a package before booking this event.',
+            'Select Venue',
+            function () {
+                // This runs when the user clicks "Select Venue" inside the modal
+                window.location.href = 'select_venue.php?event_id=<?= $id ?>';
+            },
+            true // Show the cancel button
+        );
+        return;
+    }
 
-        if (!hasVenueAndPackage) {
-            window.location.href = 'select_venue.php?event_id=<?= $id ?>';
-            return;
-        }
+    // 2. If venue/package ARE selected, but user is not logged in, show Login Modal
+    if (!isLoggedIn) {
+        const bookingUrl = encodeURIComponent(url);
+        showModal(
+            'Login Required',
+            'Please register or login to book this event.',
+            'Login Now',
+            function () {
+                window.location.href = '../auth/login.php?redirect=' + bookingUrl;
+            },
+            true
+        );
+        return;
+    }
 
-        if (!isLoggedIn) {
-            const bookingUrl = encodeURIComponent(url);
-            showModal(
-                'Login Required',
-                'Please register or login to book this event.',
-                'Login Now',
-                function () {
-                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
-                },
-                true
-            );
-            return;
-        }
+    // 3. If everything is fine, go straight to booking form
+    window.location.href = url;
 
-        window.location.href = url;
     }
 </script>
 

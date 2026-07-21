@@ -187,7 +187,7 @@ include "../includes/header.php";
             </div>
             <div class="p-4">
                 <?php if (count($myReviews) === 0): ?>
-                    <p class="text-sm text-gray-400 text-center py-6">No reviews yet. Review your confirmed bookings above!</p>
+                    <p class="text-sm text-gray-400 text-center py-6">No reviews yet. Review your completed bookings above!</p>
                 <?php else: ?>
                     <div class="space-y-3">
                         <?php foreach ($myReviews as $rev): ?>

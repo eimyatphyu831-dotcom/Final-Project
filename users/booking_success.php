@@ -40,7 +40,7 @@ include '../includes/header.php';
             </svg>
         </div>
 
-        <h1 class="text-2xl font-extrabold text-slate-800 mb-2">Booking Confirmed</h1>
+        <h1 class="text-2xl font-extrabold text-slate-800 mb-2">Booking Submitted</h1>
         <p class="text-slate-500 text-sm mb-4 leading-relaxed">
             Thank you for your booking. Your request has been submitted successfully and our team will review it
             shortly.

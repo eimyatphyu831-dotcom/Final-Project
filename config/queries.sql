@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS admins(
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
+    profile_image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
 );
 
@@ -140,7 +141,11 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- Payment Methods Table
 CREATE TABLE IF NOT EXISTS payment_methods (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    payment_name VARCHAR(30) NOT NULL
+    payment_name VARCHAR(30) NOT NULL,
+    payment_image VARCHAR(100) NOT NULL,
+    qr_image VARCHAR(100) NOT NULL,
+    account_name VARCHAR(50) NOT NULL,
+    phone varchar(25) NOT NULL
 );
 
 -- Contact Messages Table

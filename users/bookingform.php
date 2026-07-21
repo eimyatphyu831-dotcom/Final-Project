@@ -10,14 +10,14 @@ require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
 
 // --- Setup time_slots, teams, and migrate columns ---
-$conn->query("CREATE TABLE IF NOT EXISTS time_slots (
+ $conn->query("CREATE TABLE IF NOT EXISTS time_slots (
     id INT AUTO_INCREMENT PRIMARY KEY,
     slot_name VARCHAR(50) NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL
 )");
 
-$r = $conn->query("SELECT COUNT(*) as cnt FROM time_slots");
+ $r = $conn->query("SELECT COUNT(*) as cnt FROM time_slots");
 if ($r && $r->fetch_assoc()['cnt'] == 0) {
     $conn->query("INSERT INTO time_slots (slot_name, start_time, end_time) VALUES
         ('Slot 1', '09:00:00', '12:00:00'),
@@ -27,7 +27,7 @@ if ($r && $r->fetch_assoc()['cnt'] == 0) {
 }
 
 // Seed teams if empty
-$r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
+ $r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
 if ($r && $r->fetch_assoc()['cnt'] == 0) {
     $conn->query("INSERT INTO teams (name) VALUES
         ('Team A'),
@@ -37,29 +37,26 @@ if ($r && $r->fetch_assoc()['cnt'] == 0) {
 }
 
 // Migrate bookings.time_slot (ENUM) -> bookings.time_slot_id (INT FK)
-$slotEnumCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
-$slotIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot_id'");
+ $slotEnumCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot'");
+ $slotIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'time_slot_id'");
 
 if ($slotEnumCol && $slotEnumCol->num_rows > 0 && !($slotIdCol && $slotIdCol->num_rows > 0)) {
-    // Old ENUM exists, new column doesn't: migrate
     $conn->query("ALTER TABLE bookings ADD COLUMN time_slot_id INT AFTER venue_id");
     $conn->query("UPDATE bookings b JOIN time_slots ts ON b.time_slot = ts.slot_name SET b.time_slot_id = ts.id");
     $conn->query("ALTER TABLE bookings DROP COLUMN time_slot");
 } elseif (!($slotEnumCol && $slotEnumCol->num_rows > 0) && !($slotIdCol && $slotIdCol->num_rows > 0)) {
-    // Neither exists: fresh add
     $conn->query("ALTER TABLE bookings ADD COLUMN time_slot_id INT NOT NULL DEFAULT 1 AFTER venue_id");
 }
 
 // team_id column
-$teamIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'team_id'");
+ $teamIdCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'team_id'");
 if ($teamIdCol && $teamIdCol->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD COLUMN team_id INT AFTER time_slot_id");
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
 }
 
-
 // Create reviews table
-$conn->query("CREATE TABLE IF NOT EXISTS reviews (
+ $conn->query("CREATE TABLE IF NOT EXISTS reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -73,43 +70,43 @@ $conn->query("CREATE TABLE IF NOT EXISTS reviews (
 )");
 
 // FK for time_slot_id
-$fkSlot = $conn->query("SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'time_slot_id' AND REFERENCED_TABLE_NAME = 'time_slots'");
+ $fkSlot = $conn->query("SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'time_slot_id' AND REFERENCED_TABLE_NAME = 'time_slots'");
 if ($fkSlot && $fkSlot->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (time_slot_id) REFERENCES time_slots(id) ON DELETE RESTRICT ON UPDATE CASCADE");
 }
 
 // Add Completed status to ENUM if missing
-$statusCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'status'");
+ $statusCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'status'");
 if ($statusCol && $row = $statusCol->fetch_assoc()) {
     if (strpos($row['Type'], 'Completed') === false) {
         $conn->query("ALTER TABLE bookings MODIFY COLUMN status ENUM('Pending','Confirmed','Cancelled','Completed') DEFAULT 'Pending'");
     }
 }
 
-$userName = $_SESSION['user_name'] ?? '';
-$userEmail = $_SESSION['user_email'] ?? '';
-$userId = $_SESSION['user_id'];
-$message = '';
+ $userName = $_SESSION['user_name'] ?? '';
+ $userEmail = $_SESSION['user_email'] ?? '';
+ $userId = $_SESSION['user_id'];
+ $message = '';
 
 // Fetch user phone from DB
-$userPhone = '';
-$stmt = $conn->prepare("SELECT phone FROM users WHERE id=?");
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-$r = $stmt->get_result();
+ $userPhone = '';
+ $stmt = $conn->prepare("SELECT phone FROM users WHERE id=?");
+ $stmt->bind_param("i", $userId);
+ $stmt->execute();
+ $r = $stmt->get_result();
 if ($r && $row = $r->fetch_assoc())
     $userPhone = $row['phone'];
-$stmt->close();
+ $stmt->close();
 
-$eventId = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 0;
-$venueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
-$packageId = isset($_GET['package_id']) ? (int) $_GET['package_id'] : 0;
-$totalCost = isset($_GET['total']) ? (float) $_GET['total'] : 0;
+ $eventId = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 0;
+ $venueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
+ $packageId = isset($_GET['package_id']) ? (int) $_GET['package_id'] : 0;
+ $totalCost = isset($_GET['total']) ? (float) $_GET['total'] : 0;
 
-$eventImage = '../assets/images/slide1.png';
-$eventName = '—';
-$venueName = '—';
-$packageName = '—';
+ $eventImage = '../assets/images/slide1.png';
+ $eventName = '—';
+ $venueName = '—';
+ $packageName = '—';
 
 if ($eventId > 0) {
     $r = $conn->query("SELECT event_name, image FROM events WHERE id=$eventId");
@@ -130,22 +127,22 @@ if ($packageId > 0) {
 }
 
 // Fetch time slots from DB
-$timeSlots = [];
-$r = $conn->query("SELECT * FROM time_slots ORDER BY id");
+ $timeSlots = [];
+ $r = $conn->query("SELECT * FROM time_slots ORDER BY id");
 if ($r) {
     $timeSlots = $r->fetch_all(MYSQLI_ASSOC);
 }
 
-$timeSlotMap = [];
-$slotNames = [];
+ $timeSlotMap = [];
+ $slotNames = [];
 foreach ($timeSlots as $ts) {
     $timeSlotMap[$ts['id']] = [$ts['start_time'], $ts['end_time']];
     $slotNames[$ts['id']] = $ts['slot_name'];
 }
 
 // Track which teams are already assigned per date (across ALL venues and slots)
-$assignedTeamsByDate = [];
-$r = $conn->query("SELECT event_date, team_id FROM bookings WHERE status != 'Cancelled' AND team_id IS NOT NULL");
+ $assignedTeamsByDate = [];
+ $r = $conn->query("SELECT event_date, team_id FROM bookings WHERE status != 'Cancelled' AND team_id IS NOT NULL");
 if ($r) {
     while ($row = $r->fetch_assoc()) {
         $assignedTeamsByDate[$row['event_date']][] = (int) $row['team_id'];
@@ -153,7 +150,7 @@ if ($r) {
 }
 
 // Fetch dates where this user already booked this event
-$userBookedDates = [];
+ $userBookedDates = [];
 if ($userId > 0 && $eventId > 0) {
     $stmt = $conn->prepare("SELECT event_date FROM bookings WHERE user_id = ? AND event_id = ? AND status != 'Cancelled'");
     $stmt->bind_param("ii", $userId, $eventId);
@@ -168,7 +165,7 @@ if ($userId > 0 && $eventId > 0) {
 }
 
 // Fetch booked slots for this specific venue
-$bookedSlots = [];
+ $bookedSlots = [];
 if ($venueId > 0) {
     $stmt = $conn->prepare("SELECT event_date, time_slot_id FROM bookings WHERE venue_id = ? AND status != 'Cancelled'");
     $stmt->bind_param("i", $venueId);
@@ -183,69 +180,42 @@ if ($venueId > 0) {
 }
 
 // Total number of teams
-$totalTeams = 0;
-$r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
+ $totalTeams = 0;
+ $r = $conn->query("SELECT COUNT(*) as cnt FROM teams");
 if ($r && $row = $r->fetch_assoc())
     $totalTeams = (int) $row['cnt'];
 
 // Fetch all teams for assignment (ordered A→B→C→D)
-$teams = [];
-$r = $conn->query("SELECT id, name FROM teams ORDER BY name");
+ $teams = [];
+ $r = $conn->query("SELECT id, name FROM teams ORDER BY name");
 if ($r)
     $teams = $r->fetch_all(MYSQLI_ASSOC);
 
-$paymentMethods = [];
-$r = $conn->query("SELECT id, payment_name FROM payment_methods ORDER BY id");
+// --- FETCH PAYMENT METHODS FROM DATABASE ---
+ $paymentMethods = [];
+ $r = $conn->query("SELECT id, payment_name, payment_image, qr_image, account_name, phone FROM payment_methods ORDER BY id");
 if ($r)
     $paymentMethods = $r->fetch_all(MYSQLI_ASSOC);
 
-$base = '../assets/images/';
+ $base = '../assets/images/';
 
-// Find KBZPay ID for auto-selection
-$kpayId = 0;
-$kpayQr = '';
+// Find KBZPay ID for auto-selection & Default Values
+ $kpayId = 0;
+ $kpayQr = '';
+ $kpayAccount = '';
+ $kpayPhone = '';
+ $kpayName = 'KBZPay';
+
 foreach ($paymentMethods as $pm) {
     if (strtolower($pm['payment_name']) === 'kbzpay') {
         $kpayId = $pm['id'];
-        $kpayQr = $base . 'kpayqr.jpg';
+        $kpayQr = $base . $pm['qr_image'];
+        $kpayAccount = $pm['account_name'];
+        $kpayPhone = $pm['phone'];
+        $kpayName = $pm['payment_name'];
         break;
     }
 }
-
-$logoMap = [
-    'KBZPay' => 'kpay.png',
-    'WavePay' => 'wavepay.png',
-    'CBPay' => 'cbpay.png',
-    'AYAPay' => 'ayapay.png',
-];
-
-$qrMap = [
-    'KBZPay' => 'kpayqr.jpg',
-    'WavePay' => 'wavepay_qr.png',
-    'CBPay' => 'cbpay_qr.png',
-    'AYAPay' => 'ayapay_qr.png',
-];
-
-$accountMap = [
-    'KBZPay' => 'Daw Ei Myat Phyu',
-    'WavePay' => 'U Myat Maung',
-    'CBPay' => 'Ko Kyaw Kyaw',
-    'AYAPay' => 'Ma Hla Hla',
-];
-
-$phoneMap = [
-    'KBZPay' => '09-950305004',
-    'WavePay' => '09-662602024',
-    'CBPay' => '09-694407879',
-    'AYAPay' => '09-965707826',
-];
-
-$colorMap = [
-    'KBZPay' => '#205fb0ff',
-    'WavePay' => '#d3bf25ff',
-    'CBPay' => '#0a1472ff',
-    'AYAPay' => '#540b0bff',
-];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_date = $_POST['event_date'] ?? '';
@@ -286,55 +256,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Step 2: Check if this venue is already booked for this date and time slot
             $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot_id = ? AND status != 'Cancelled'");
-        $stmt->bind_param("isi", $vid, $event_date, $time_slot_id);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $stmt->close();
-            $message = "This time slot is already booked at this venue.";
-        } else {
-            $stmt->close();
-
-            // Step 2: Check if all teams are already assigned on this date
-            $assignedTeamIds = $assignedTeamsByDate[$event_date] ?? [];
-            if (count($assignedTeamIds) >= $totalTeams) {
-                $message = "All teams are fully booked on this date. Please choose another date.";
+            $stmt->bind_param("isi", $vid, $event_date, $time_slot_id);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) {
+                $stmt->close();
+                $message = "This time slot is already booked at this venue.";
             } else {
-                // Step 3: Find the first available team (FIFO order: A → B → C → D)
-                $teamId = null;
-                foreach ($teams as $t) {
-                    if (!in_array((int) $t['id'], $assignedTeamIds)) {
-                        $teamId = (int) $t['id'];
-                        break;
-                    }
-                }
+                $stmt->close();
 
-                // Step 4: If no team is available, reject
-                if ($teamId === null) {
-                    $message = "No service team is available on this date. Please choose another date.";
+                // Step 2: Check if all teams are already assigned on this date
+                $assignedTeamIds = $assignedTeamsByDate[$event_date] ?? [];
+                if (count($assignedTeamIds) >= $totalTeams) {
+                    $message = "All teams are fully booked on this date. Please choose another date.";
                 } else {
-                    // Step 5: Venue slot and team are available — assign team, save
-                    $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-                    $stmt->bind_param("iiiiiisdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $total, $paymentMethodId, $receiptPath);
-                    if ($stmt->execute()) {
-                        $bookingId = $stmt->insert_id;
-                        $stmt->close();
-                        $dateStr = date('M j, Y', strtotime($event_date));
-                        // Notify all admins
-                        $adminResult = $conn->query("SELECT id FROM admins");
-                        if ($adminResult) {
-                            while ($admin = $adminResult->fetch_assoc()) {
-                                createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php', 'admin');
-                            }
+                    // Step 3: Find the first available team (FIFO order: A → B → C → D)
+                    $teamId = null;
+                    foreach ($teams as $t) {
+                        if (!in_array((int) $t['id'], $assignedTeamIds)) {
+                            $teamId = (int) $t['id'];
+                            break;
                         }
-                        header("Location: booking_success.php?booking_id=$bookingId");
-                        exit();
                     }
-                    $stmt->close();
-                    $message = 'Failed to create booking. Please try again.';
+
+                    // Step 4: If no team is available, reject
+                    if ($teamId === null) {
+                        $message = "No service team is available on this date. Please choose another date.";
+                    } else {
+                        // Step 5: Venue slot and team are available — assign team, save
+                        $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+                        $stmt->bind_param("iiiiiisdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $total, $paymentMethodId, $receiptPath);
+                        if ($stmt->execute()) {
+                            $bookingId = $stmt->insert_id;
+                            $stmt->close();
+                            $dateStr = date('M j, Y', strtotime($event_date));
+                            // Notify all admins
+                            $adminResult = $conn->query("SELECT id FROM admins");
+                            if ($adminResult) {
+                                while ($admin = $adminResult->fetch_assoc()) {
+                                    createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php', 'admin');
+                                }
+                            }
+                            header("Location: booking_success.php?booking_id=$bookingId");
+                            exit();
+                        }
+                        $stmt->close();
+                        $message = 'Failed to create booking. Please try again.';
+                    }
                 }
             }
-        }
         }
     } else {
         $message = 'Missing required fields.';
@@ -518,7 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 Receipt Image</span>
                                             <p class="text-[10px] text-gray-400 mt-0.5">PNG, JPG or WEBP</p>
                                         </div>
-                                        <!-- <span class="mt-1 px-4 py-1.5 text-xs font-bold text-white bg-purple-500 rounded-full group-hover:bg-purple-600 transition-colors shadow-sm shadow-purple-200">Choose Image</span> -->
                                     </div>
                                     <img id="receiptPreviewImg" src=""
                                         class="hidden w-full h-48 object-contain rounded-lg">
@@ -531,20 +500,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
                                     Method</label>
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    <?php foreach ($paymentMethods as $pm):
-                                        $logo = $logoMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '.png';
-                                        $qr = $qrMap[$pm['payment_name']] ?? strtolower($pm['payment_name']) . '_qr.png';
-                                        $account = $accountMap[$pm['payment_name']] ?? '';
-                                        $phone = $phoneMap[$pm['payment_name']] ?? '';
-                                        ?>
+                                    <?php foreach ($paymentMethods as $pm): 
+                                        // Since 'color' isn't in the DB schema provided, using default purple theme color
+                                        $pmColor = '#7c3aed'; 
+                                    ?>
                                         <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
-                                            data-id="<?= $pm['id'] ?>" data-qr="<?= $base . $qr ?>"
-                                            data-account="<?= htmlspecialchars($account) ?>"
-                                            data-phone="<?= htmlspecialchars($phone) ?>"
-                                            data-color="<?= $colorMap[$pm['payment_name']] ?? '#7c3aed' ?>"
+                                            data-id="<?= $pm['id'] ?>"
+                                            data-qr="<?= htmlspecialchars($base . $pm['qr_image']) ?>"
+                                            data-account="<?= htmlspecialchars($pm['account_name']) ?>"
+                                            data-phone="<?= htmlspecialchars($pm['phone']) ?>"
+                                            data-color="<?= htmlspecialchars($pmColor) ?>"
                                             onclick="selectPayment(this)">
 
-                                            <img src="<?= $base . $logo ?>"
+                                            <img src="<?= htmlspecialchars($base . $pm['payment_image']) ?>"
                                                 alt="<?= htmlspecialchars($pm['payment_name']) ?>"
                                                 class="w-6 h-6 object-contain mb-0.5">
 
@@ -560,11 +528,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="bg-purple-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center"
                                 id="summaryQrSection">
                                 <p class="text-xs font-bold text-gray-500 uppercase mb-2">Scan to Pay with <span
-                                        id="summaryPmName">KBZPay</span></p>
+                                        id="summaryPmName"><?= htmlspecialchars($kpayName) ?></span></p>
                                 <div id="summaryAccountInfo" class="text-sm text-gray-700 mb-3 space-y-1">
-                                    <div class="font-semibold text-gray-800" id="summaryAccountName">U Mya Maung</div>
+                                    <div class="font-semibold text-gray-800" id="summaryAccountName"><?= htmlspecialchars($kpayAccount) ?></div>
                                     <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
-                                        <span id="summaryPhone">09-123456789</span>
+                                        <span id="summaryPhone"><?= htmlspecialchars($kpayPhone) ?></span>
                                         <button onclick="copyPhone(this)" title="Copy"
                                             class="text-purple-500 hover:text-purple-700 transition">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -574,7 +542,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </button>
                                     </div>
                                 </div>
-                                <img id="summaryQr" src="<?= $base ?>kpayqr.jpg" onclick="openQr()"
+                                <img id="summaryQr" src="<?= htmlspecialchars($kpayQr ?: $base . 'kpayqr.jpg') ?>" onclick="openQr()"
                                     class="w-28 h-28 mx-auto rounded-xl border border-gray-200 shadow-sm cursor-pointer">
                                 <p class="text-[10px] text-gray-400 mt-2">Open your mobile banking app and scan to pay
                                 </p>
@@ -679,12 +647,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="modal-overlay" id="qrModal" onclick="if(event.target===this)closeQr()">
         <div class="modal-box">
             <h3 class="text-lg font-extrabold text-gray-800 mb-1">Scan to Pay</h3>
-            <p class="text-sm text-gray-500 mb-4">Use your <span id="pmName" class="font-bold text-purple-600"></span>
+            <p class="text-sm text-gray-500 mb-4">Use your <span id="pmName" class="font-bold text-purple-600"><?= htmlspecialchars($kpayName) ?></span>
                 app to scan</p>
             <div id="modalAccountInfo" class="text-sm text-gray-700 mb-3">
-                <div class="font-medium" id="modalAccountName">U Mya Maung</div>
+                <div class="font-medium" id="modalAccountName"><?= htmlspecialchars($kpayAccount) ?></div>
                 <div class="flex items-center justify-center gap-1 text-xs text-gray-500">
-                    <span id="modalPhone">09-123456789</span>
+                    <span id="modalPhone"><?= htmlspecialchars($kpayPhone) ?></span>
                     <button onclick="copyPhone(this)" title="Copy phone number"
                         class="text-purple-500 hover:text-purple-700 transition">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -694,7 +662,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </button>
                 </div>
             </div>
-            <img id="qrImage" src="" alt="QR Code"
+            <img id="qrImage" src="<?= htmlspecialchars($kpayQr ?: $base . 'kpayqr.jpg') ?>" alt="QR Code"
                 class="w-56 h-56 mx-auto rounded-xl border border-gray-200 shadow-sm">
             <p class="text-xs text-gray-400 mt-4">Open your mobile banking app and scan this QR code to complete
                 payment.</p>
@@ -760,7 +728,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             selectedPm = el;
 
             const pmName = el.querySelector('span') ? el.querySelector('span').textContent.trim() : 'KBZPay';
-            const qrSrc = el.dataset.qr || '<?= $base ?>kpayqr.jpg';
+            const qrSrc = el.dataset.qr || '<?= $kpayQr ?>';
             const account = el.dataset.account || '';
             const phone = el.dataset.phone || '';
 
@@ -870,7 +838,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     selectedPm = kpayCard;
 
                     const pmName = kpayCard.querySelector('span') ? kpayCard.querySelector('span').textContent.trim() : 'KBZPay';
-                    const qrSrc = kpayCard.dataset.qr || '<?= $base ?>kpayqr.jpg';
+                    const qrSrc = kpayCard.dataset.qr || '<?= $kpayQr ?>';
                     const account = kpayCard.dataset.account || '';
                     const phone = kpayCard.dataset.phone || '';
 
