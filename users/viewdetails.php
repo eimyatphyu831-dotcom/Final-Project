@@ -73,6 +73,8 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
 
 ?>
 
+
+
 <?php include '../includes/header.php'; ?>
 
 <section class="max-w-7xl mx-auto px-6 py-12">
@@ -310,77 +312,29 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
 
 
     function handleBooking(url) {
+        const params = new URLSearchParams(url.split('?')[1] || '');
+        const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
 
+        if (!hasVenueAndPackage) {
+            window.location.href = 'select_venue.php?event_id=<?= $id ?>';
+            return;
+        }
 
         if (!isLoggedIn) {
-
-            const params =
-                new URLSearchParams(url.split('?')[1] || '');
-
-            const hasPackage =
-                params.get('venue_id') &&
-                params.get('package_id');
-
-
-            const redirectUrl =
-                hasPackage ? url : window.location.href;
-
-
-            const bookingUrl =
-                encodeURIComponent(redirectUrl);
-
-
-
+            const bookingUrl = encodeURIComponent(url);
             showModal(
                 'Login Required',
                 'Please register or login to book this event.',
                 'Login Now',
                 function () {
-
-                    window.location.href =
-                        '../auth/login.php?redirect=' + bookingUrl;
-
+                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
                 },
                 true
             );
-
-
             return;
-
         }
-
-
-
-        const params =
-            new URLSearchParams(url.split('?')[1] || '');
-
-
-
-        if (!params.get('venue_id') || !params.get('package_id')) {
-
-
-            showModal(
-                'Book This Event',
-                'Please select a venue and package to continue.',
-                'Select Venue',
-                function () {
-
-                    window.location.href =
-                        'select_venue.php?event_id=<?= $id ?>';
-
-                },
-                true
-            );
-
-
-            return;
-
-        }
-
-
 
         window.location.href = url;
-
     }
 </script>
 

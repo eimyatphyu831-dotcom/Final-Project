@@ -334,27 +334,66 @@ include "../includes/header.php";
     </div>
 </div>
 
+<!-- Custom Alert Modal -->
+<div id="alertModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white w-full max-w-md mx-4 rounded-3xl shadow-2xl p-8 text-center">
+        <div id="modalIcon" class="w-16 h-16 mx-auto rounded-full bg-purple-100 flex items-center justify-center">
+            <i data-lucide="info" class="w-8 h-8 text-purple-600"></i>
+        </div>
+        <h2 id="modalTitle" class="text-2xl font-bold text-slate-800 mt-5"></h2>
+        <p id="modalText" class="text-slate-500 mt-3"></p>
+        <div class="flex justify-center gap-4 mt-8">
+            <button id="modalCancel" onclick="closeModal()"
+                class="px-6 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100">
+                Cancel
+            </button>
+            <button id="modalConfirm" class="px-6 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700">
+                Login Now
+            </button>
+        </div>
+    </div>
+</div>
+
 <?php include "../includes/footer.php"; ?>
 
 <script>
     const isLoggedIn = <?= $isLoggedIn ? 'true' : 'false' ?>;
+    let confirmAction = null;
+
+    function showModal(title, message, confirmText, callback, showCancel = true) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalText').innerText = message;
+        document.getElementById('modalConfirm').innerText = confirmText;
+        document.getElementById('alertModal').classList.remove('hidden');
+        document.getElementById('alertModal').classList.add('flex');
+        document.getElementById('modalCancel').style.display = showCancel ? 'block' : 'none';
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+        confirmAction = callback;
+    }
+
+    document.getElementById('modalConfirm').addEventListener('click', () => {
+        if (confirmAction) {
+            confirmAction();
+        }
+        closeModal();
+    });
+
+    function closeModal() {
+        document.getElementById('alertModal').classList.remove('flex');
+        document.getElementById('alertModal').classList.add('hidden');
+    }
+
     function handleBooking(url) {
         if (!isLoggedIn) {
             const bookingUrl = encodeURIComponent(url);
-            Swal.fire({
-                title: 'Login Required',
-                text: 'Please register or login to book this package.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#9d84c7',
-                cancelButtonColor: '#d1d5db',
-                confirmButtonText: 'Login Now',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '../auth/login.php?redirect=' + bookingUrl;
-                }
-            });
+            showModal(
+                'Login Required',
+                'Please register or login to book this package.',
+                'Login Now',
+                () => { window.location.href = '../auth/login.php?redirect=' + bookingUrl; }
+            );
             return;
         }
         window.location.href = url;
