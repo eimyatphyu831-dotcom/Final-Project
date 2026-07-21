@@ -62,13 +62,33 @@ if ($viewId) {
     $stmt->close();
 }
 
+// --- PAGINATION ---
+$limit = 8;
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$offset = ($page - 1) * $limit;
+
+// --- COUNT TOTAL ---
+if ($search) {
+    $like = "%$search%";
+    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM contact_messages WHERE name LIKE ? OR email LIKE ? OR message LIKE ?");
+    $stmt->bind_param("sss", $like, $like, $like);
+} else {
+    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM contact_messages");
+}
+$stmt->execute();
+$totalMessages = $stmt->get_result()->fetch_assoc()['total'];
+$stmt->close();
+
+$totalPages = ceil($totalMessages / $limit);
+
 // --- FETCH MESSAGES ---
 if ($search) {
     $like = "%$search%";
-    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages WHERE name LIKE ? OR email LIKE ? OR message LIKE ? ORDER BY created_at DESC");
-    $stmt->bind_param("sss", $like, $like, $like);
+    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages WHERE name LIKE ? OR email LIKE ? OR message LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    $stmt->bind_param("sssii", $like, $like, $like, $limit, $offset);
 } else {
-    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages ORDER BY created_at DESC");
+    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    $stmt->bind_param("ii", $limit, $offset);
 }
 
 $stmt->execute();
@@ -241,7 +261,7 @@ $stmt->close();
                                 </tr>
                             <?php endif; ?>
 
-                            <?php $mIndex = 0; ?>
+                            <?php $mIndex = $offset; ?>
                             <?php foreach ($messages as $m): $mIndex++; ?>
                                 <tr class="border-t hover:bg-gray-50 <?= !$m['is_read'] ? 'bg-purple-50/50' : '' ?>">
 
@@ -309,6 +329,29 @@ $stmt->close();
                         </tbody>
                     </table>
                     </div>
+
+                        <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                            Total: <span class="font-semibold text-gray-700"><?= $totalMessages ?></span> messages
+                        </div>
+
+                        <?php if ($totalPages > 1): ?>
+                        <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                            <a href="?page=<?= max(1, $page-1) ?><?= $search ? "&search=$search" : '' ?>"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $page <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                            </a>
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <a href="?page=<?= $i ?><?= $search ? "&search=$search" : '' ?>"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $page ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                    <?= $i ?>
+                                </a>
+                            <?php endfor; ?>
+                            <a href="?page=<?= min($totalPages, $page+1) ?><?= $search ? "&search=$search" : '' ?>"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $page >= $totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                            </a>
+                        </div>
+                        <?php endif; ?>
                 </div>
 
             </main>

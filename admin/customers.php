@@ -176,16 +176,16 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
 
                 <?php if ($viewUser): ?>
                     <div id="viewModal"
-                        class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 py-10">
+                        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                         <div
-                            class="bg-white rounded-2xl shadow-xl border border-gray-200 p-5 w-full max-w-lg mx-4 relative">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-base font-semibold text-gray-800">Customer Details</h3>
+                            class="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 w-full max-w-xl mx-4 relative">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-semibold text-gray-800">Customer Details</h3>
                                 <a href="customers.php<?= $search ? "?search=$search" : '' ?>"
                                     class="text-gray-400 hover:text-gray-600 text-lg"><i class="fa-solid fa-xmark"></i></a>
                             </div>
 
-                            <div class="flex items-center gap-3 pb-3 border-b border-gray-100 mb-3">
+                            <div class="flex items-center gap-3 pb-2 border-b border-gray-100 mb-2">
                                 <?php
                                     $profileImg = $viewUser['image'] ? '../uploads/profiles/' . $viewUser['image'] : null;
                                     $initials = strtoupper(substr($viewUser['name'], 0, 2));
@@ -210,35 +210,35 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                    <label class="block text-[10px] font-medium text-gray-400 uppercase tracking-wide">Phone</label>
-                                    <p class="text-sm text-gray-800 mt-0.5"><?= htmlspecialchars($viewUser['phone'] ?? '—') ?></p>
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
+                                    <label class="block text-[9px] font-medium text-gray-400 uppercase tracking-wide">Phone</label>
+                                    <p class="text-xs text-gray-800 mt-0.5"><?= htmlspecialchars($viewUser['phone'] ?? '—') ?></p>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                    <label class="block text-[10px] font-medium text-gray-400 uppercase tracking-wide">Member Since</label>
-                                    <p class="text-sm text-gray-800 mt-0.5"><?= date('F j, Y', strtotime($viewUser['created_at'])) ?></p>
+                                <div class="bg-gray-50 rounded-lg p-2 border border-gray-100">
+                                    <label class="block text-[9px] font-medium text-gray-400 uppercase tracking-wide">Member Since</label>
+                                    <p class="text-xs text-gray-800 mt-0.5"><?= date('F j, Y', strtotime($viewUser['created_at'])) ?></p>
                                 </div>
                             </div>
 
                             <?php if ($viewStats): ?>
-                                <div class="grid grid-cols-3 gap-3 mb-4">
-                                    <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                                        <label class="block text-[10px] font-medium text-blue-500 uppercase tracking-wide">Total Bookings</label>
-                                        <p class="text-lg font-bold text-blue-700"><?= $viewStats['total_bookings'] ?></p>
+                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                    <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                                        <label class="block text-[9px] font-medium text-blue-500 uppercase tracking-wide">Total Bookings</label>
+                                        <p class="text-base font-bold text-blue-700"><?= $viewStats['total_bookings'] ?></p>
                                     </div>
-                                    <div class="bg-green-50 rounded-lg p-3 border border-green-100">
-                                        <label class="block text-[10px] font-medium text-green-500 uppercase tracking-wide">Completed</label>
-                                        <p class="text-lg font-bold text-green-700"><?= $viewStats['completed_events'] ?></p>
+                                    <div class="bg-green-50 rounded-lg p-2 border border-green-100">
+                                        <label class="block text-[9px] font-medium text-green-500 uppercase tracking-wide">Completed</label>
+                                        <p class="text-base font-bold text-green-700"><?= $viewStats['completed_events'] ?></p>
                                     </div>
-                                    <div class="bg-amber-50 rounded-lg p-3 border border-amber-100">
-                                        <label class="block text-[10px] font-medium text-amber-500 uppercase tracking-wide">Total Spending</label>
-                                        <p class="text-lg font-bold text-amber-700">$<?= number_format($viewStats['total_spending'], 2) ?></p>
+                                    <div class="bg-amber-50 rounded-lg p-2 border border-amber-100">
+                                        <label class="block text-[9px] font-medium text-amber-500 uppercase tracking-wide">Total Spending</label>
+                                        <p class="text-base font-bold text-amber-700">$<?= number_format($viewStats['total_spending'], 2) ?></p>
                                     </div>
                                 </div>
 
-                                <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Booking Details</h5>
-                                <div class="overflow-x-auto mb-4">
+                                <h5 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Booking Details</h5>
+                                <div class="overflow-y-auto max-h-64 mb-4">
                                     <table class="w-full text-xs">
                                         <thead class="bg-gray-50 text-gray-600">
                                             <tr>
@@ -281,9 +281,9 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
                                 <p class="text-xs text-gray-400 py-3 text-center">No data found for this customer.</p>
                             <?php endif; ?>
 
-                            <div class="flex justify-end pt-3 mt-4 border-t border-gray-100">
+                            <div class="flex justify-end pt-2 mt-3 border-t border-gray-100">
                                 <a href="customers.php<?= $search ? "?search=$search" : '' ?>"
-                                    class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all text-xs">Close</a>
+                                    class="px-3 py-1 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all text-xs">Close</a>
                             </div>
                         </div>
                     </div>

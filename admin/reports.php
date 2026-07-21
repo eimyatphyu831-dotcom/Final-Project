@@ -16,8 +16,8 @@ $stmt->close();
 $adminAvatar = $adminImg ? 'uploads/profile/' . $adminImg : null;
 
 $reportType = $_GET['report'] ?? 'revenue';
-$startDate = $_GET['start_date'] ?? date('Y-m-01');
-$endDate = $_GET['end_date'] ?? date('Y-m-d');
+$startDate = !empty($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate = !empty($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
 // Make escaped variables available for ALL queries
 $sd = $conn->real_escape_string($startDate);

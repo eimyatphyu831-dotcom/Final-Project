@@ -81,10 +81,15 @@ $stmt->close();
                         <input type="text" id="notifSearch" placeholder="Search notifications..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
                     </div>
-                    <button id="clearAllBtn"
-                        class="text-sm text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
-                        Clear all
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <span class="bg-purple-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                           Total: <?= count($notifications) ?> 
+                        </span>
+                        <button id="clearAllBtn"
+                            class="text-sm text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
+                            Clear all
+                        </button>
+                    </div>
                 </div>
 
                 <?php if (empty($notifications)): ?>

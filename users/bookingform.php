@@ -152,6 +152,21 @@ if ($r) {
     }
 }
 
+// Fetch dates where this user already booked this event
+$userBookedDates = [];
+if ($userId > 0 && $eventId > 0) {
+    $stmt = $conn->prepare("SELECT event_date FROM bookings WHERE user_id = ? AND event_id = ? AND status != 'Cancelled'");
+    $stmt->bind_param("ii", $userId, $eventId);
+    $stmt->execute();
+    $r = $stmt->get_result();
+    if ($r) {
+        while ($row = $r->fetch_assoc()) {
+            $userBookedDates[] = $row['event_date'];
+        }
+    }
+    $stmt->close();
+}
+
 // Fetch booked slots for this specific venue
 $bookedSlots = [];
 if ($venueId > 0) {
@@ -258,8 +273,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Step 1: Check if this venue is already booked for this date and time slot
-        $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot_id = ? AND status != 'Cancelled'");
+        // Step 1: Check if this user already has a booking for this event on this date
+        $stmt = $conn->prepare("SELECT id FROM bookings WHERE user_id = ? AND event_id = ? AND event_date = ? AND status != 'Cancelled'");
+        $stmt->bind_param("iis", $userId, $eid, $event_date);
+        $stmt->execute();
+        $stmt->store_result();
+        if ($stmt->num_rows > 0) {
+            $stmt->close();
+            $message = "You have already booked this event on this date.";
+        } else {
+            $stmt->close();
+
+            // Step 2: Check if this venue is already booked for this date and time slot
+            $stmt = $conn->prepare("SELECT id FROM bookings WHERE venue_id = ? AND event_date = ? AND time_slot_id = ? AND status != 'Cancelled'");
         $stmt->bind_param("isi", $vid, $event_date, $time_slot_id);
         $stmt->execute();
         $stmt->store_result();
@@ -308,6 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'Failed to create booking. Please try again.';
                 }
             }
+        }
         }
     } else {
         $message = 'Missing required fields.';
@@ -463,14 +490,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <div class="text-xs font-bold text-gray-700">
                                                 <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> –
                                                     <?= date('g:i A', strtotime($ts['end_time'])) ?></span>
-                                                <span class="slot-unavailable text-red-500 hidden"> – Unavailable</span>
                                             </div>
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
-                                <p id="slotStatus" class="text-xs mt-1 text-gray-400">Select a date first to check
-                                    schedule
-                                    availability.</p>
+                                <p id="slotStatus" class="hidden"></p>
                             </div>
 
                             <div>
@@ -864,6 +888,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             const bookedSlots = <?= json_encode($bookedSlots) ?>;
             const assignedTeamsByDate = <?= json_encode($assignedTeamsByDate) ?>;
+            const userBookedDates = <?= json_encode($userBookedDates) ?>;
             const totalTeams = <?= $totalTeams ?>;
             const slotNames = <?= json_encode($slotNames) ?>;
             const input = document.getElementById("eventDatePicker");
@@ -879,21 +904,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const venueTaken = bookedSlots[selectedDate] || [];
                 const teamsAssigned = assignedTeamsByDate[selectedDate] || [];
                 const isDateFull = teamsAssigned.length >= totalTeams;
+                const alreadyBooked = userBookedDates.includes(selectedDate);
                 slotRadios.forEach(r => {
                     const id = parseInt(r.value);
                     const label = r.closest('.slot-option');
-                    const unavailSpan = label.querySelector('.slot-unavailable');
                     const isVenueBooked = venueTaken.includes(id);
-                    const isUnavailable = isVenueBooked || isDateFull;
+                    const isUnavailable = isVenueBooked || isDateFull || alreadyBooked;
                     if (isUnavailable) {
-                        unavailSpan.classList.remove('hidden');
-                        label.classList.add('opacity-40', 'pointer-events-none', 'border-red-300');
-                        label.classList.remove('hover:border-purple-400', 'selected');
+                        label.classList.add('opacity-40', 'pointer-events-none');
                         r.disabled = true;
                     } else {
-                        unavailSpan.classList.add('hidden');
-                        label.classList.remove('opacity-40', 'pointer-events-none', 'border-red-300');
-                        label.classList.add('hover:border-purple-400');
+                        label.classList.remove('opacity-40', 'pointer-events-none');
                         r.disabled = false;
                     }
                     if (r.checked && isUnavailable) r.checked = false;
@@ -902,23 +923,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const anySelected = [...slotRadios].some(r => r.checked);
                 if (!anySelected) {
                     document.getElementById('summaryTimeSlot').textContent = '—';
-                }
-
-                if (isDateFull) {
-                    slotStatus.textContent = 'All teams are fully booked on this date.';
-                    slotStatus.className = 'text-xs mt-1 text-red-500 font-semibold';
-                } else {
-                    const available = [...slotRadios].filter(r => !r.disabled);
-                    if (available.length === 0) {
-                        slotStatus.textContent = 'All time slots are booked at this venue.';
-                        slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
-                    } else if (available.length < slotRadios.length) {
-                        slotStatus.textContent = 'Some time slots are booked at this venue.';
-                        slotStatus.className = 'text-xs mt-1 text-orange-500 font-semibold';
-                    } else {
-                        slotStatus.textContent = 'All teams are available on this date.';
-                        slotStatus.className = 'text-xs mt-1 text-green-600 font-semibold';
-                    }
                 }
             }
 
