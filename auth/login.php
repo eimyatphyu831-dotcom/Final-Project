@@ -147,7 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </svg>
                             </div>
                             <input type="email" id="email" name="email" required autocomplete="email"
-                                placeholder="alex@company.com" required
+                                placeholder="alex@gmail.com" required
                                 class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                         </div>
                     </div>

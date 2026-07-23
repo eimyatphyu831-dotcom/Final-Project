@@ -77,10 +77,10 @@ if ($viewId) {
 // --- FETCH CUSTOMERS ---
 if ($search) {
     $like = "%$search%";
-    $stmt = $conn->prepare("SELECT id, name, email, phone, created_at FROM users WHERE name LIKE ? OR email LIKE ?");
+    $stmt = $conn->prepare("SELECT u.id, u.name, u.email, u.phone, u.created_at, COUNT(b.id) AS total_bookings FROM users u LEFT JOIN bookings b ON b.user_id = u.id WHERE u.name LIKE ? OR u.email LIKE ? GROUP BY u.id");
     $stmt->bind_param("ss", $like, $like);
 } else {
-    $stmt = $conn->prepare("SELECT id, name, email, phone, created_at FROM users");
+    $stmt = $conn->prepare("SELECT u.id, u.name, u.email, u.phone, u.created_at, COUNT(b.id) AS total_bookings FROM users u LEFT JOIN bookings b ON b.user_id = u.id GROUP BY u.id");
 }
 
 $stmt->execute();
@@ -299,7 +299,7 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
                                 <th class="p-3 text-left">Customer</th>
                                 <th class="p-3 text-left">Phone</th>
                                 <th class="p-3 text-left">Joined</th>
-                                <th class="p-3 text-left">Status</th>
+                                <th class="p-3 text-center">Total Bookings</th>
                                 <th class="p-3 text-center">Actions</th>
                             </tr>
                         </thead>
@@ -324,9 +324,8 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
                                         <?= date('Y-m-d', strtotime($c['created_at'])) ?>
                                     </td>
 
-                                    <td class="p-3">
-                                        <span
-                                            class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">Active</span>
+                                    <td class="p-3 text-center font-semibold text-gray-700">
+                                        <?= $c['total_bookings'] ?>
                                     </td>
 
                                     <td class="p-3">
@@ -365,6 +364,7 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
 
                     <?php if ($cTotalPages > 1): ?>
                     <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $cPage ?> of <?= $cTotalPages ?></span>
                         <?php $cQueryStr = $search ? '&search=' . urlencode($search) : ''; ?>
                         <a href="?c_page=<?= max(1, $cPage-1) ?><?= $cQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">

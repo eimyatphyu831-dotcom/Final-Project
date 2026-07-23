@@ -69,6 +69,10 @@ $maxCapacity = $capResult ? (int) $capResult->fetch_assoc()['max_cap'] : 0;
 $ratResult = $conn->query("SELECT ROUND(AVG(rating), 1) AS avg_rating FROM reviews WHERE event_id = $id");
 $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
 
+//   Get services count for this event
+$svcResult = $conn->query("SELECT COUNT(DISTINCT s.id) AS svc_count FROM services s JOIN event_package_services eps ON s.id = eps.service_id WHERE eps.event_id = $id");
+$serviceCount = $svcResult ? (int) $svcResult->fetch_assoc()['svc_count'] : 0;
+
 
 
 ?>
@@ -159,8 +163,8 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-lg p-5 text-center">
-                    <h3 class="text-3xl font-bold text-purple-500">24/7</h3>
-                    <p class="text-gray-500 text-sm mt-2">Support</p>
+                    <h3 class="text-3xl font-bold text-purple-500"><?= $serviceCount ? $serviceCount . '+' : 'N/A' ?></h3>
+                    <p class="text-gray-500 text-sm mt-2">Services</p>
                 </div>
 
             </div>

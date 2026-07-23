@@ -33,6 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
         } else {
             echo json_encode(['success' => false, 'error' => 'No rows affected']);
         }
+    } elseif ($action === 'complete') {
+        $conn->query("UPDATE bookings SET status='Completed' WHERE id=$id");
+        if ($conn->affected_rows > 0) {
+            $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.id = $id")->fetch_assoc();
+            if ($bk) {
+                $dateStr = date('M j, Y', strtotime($bk['event_date']));
+                createNotification($conn, $bk['user_id'], 'Booking Completed', "Your booking for {$bk['event_name']} on {$dateStr} has been marked as completed.", '../users/my_bookings.php', 'user');
+            }
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'No rows affected']);
+        }
+        exit;
     } elseif ($action === 'cancel') {
         $reason = trim($_POST['reason'] ?? '');
         $reasonText = $reason ?: 'No reason provided';
@@ -80,6 +93,14 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
             createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
         }
         $message = "Booking confirmed!";
+    } elseif ($_GET['action'] === 'complete') {
+        $conn->query("UPDATE bookings SET status='Completed' WHERE id=$id");
+        $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date, u.name AS customer_name FROM bookings b JOIN events e ON b.event_id = e.id JOIN users u ON b.user_id = u.id WHERE b.id = $id")->fetch_assoc();
+        if ($bk) {
+            $dateStr = date('M j, Y', strtotime($bk['event_date']));
+            createNotification($conn, $bk['user_id'], 'Booking Completed', "Your booking for {$bk['event_name']} on {$dateStr} has been marked as completed.", '../users/my_bookings.php', 'user');
+        }
+        $message = "Booking marked as completed.";
     } elseif ($_GET['action'] === 'cancel') {
         $conn->query("UPDATE bookings SET status='Cancelled' WHERE id=$id");
         $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date, u.name AS customer_name FROM bookings b JOIN events e ON b.event_id = e.id JOIN users u ON b.user_id = u.id WHERE b.id = $id")->fetch_assoc();
@@ -323,6 +344,7 @@ $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $b
 
                     <?php if ($bTotalPages > 1): ?>
                     <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                        <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $bPage ?> of <?= $bTotalPages ?></span>
                         <?php
                         $bQueryStr = '';
                         if ($statusFilter !== 'all') $bQueryStr = '&status=' . urlencode($statusFilter);

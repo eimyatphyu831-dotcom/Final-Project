@@ -467,7 +467,7 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                 <i class="fa-solid fa-calendar-check text-emerald-600"></i>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-400 font-medium">Total Bookings (<?= $startDate ?> to
+                                <p class="text-xs text-gray-400 font-medium">Total Approved and Paid Bookings (<?= $startDate ?> to
                                     <?= $endDate ?>)
                                 </p>
                                 <p class="text-xl font-bold text-gray-800"><?= number_format($totalBookingsPeriod) ?></p>

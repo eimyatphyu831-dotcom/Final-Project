@@ -287,6 +287,7 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                 ?>
                 <?php if ($vTotalPages > 1): ?>
                 <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                    <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $vPage ?> of <?= $vTotalPages ?></span>
                     <a href="?v_page=<?= max(1, $vPage-1) ?><?= $vQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-chevron-left mr-1"></i> Prev

@@ -182,6 +182,11 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                                 <td colspan="3" class="px-6 py-10 text-center text-gray-400 text-sm">No teams found matching your search.</td>
                             </tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-50 border-t border-gray-200">
+                                <td colspan="3" class="px-6 py-3 text-sm text-gray-500 font-medium">Total: <span class="font-semibold text-gray-700"><?= count($teams) ?></span></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
 

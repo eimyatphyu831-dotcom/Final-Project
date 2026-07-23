@@ -26,8 +26,14 @@ $totalEvents = 0;
 $eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
 if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
 
+$completedEvents = 0;
+$cRes = $conn->query("SELECT COUNT(*) AS c FROM bookings WHERE status = 'Completed'");
+if ($cRes) $completedEvents = (int) $cRes->fetch_assoc()['c'];
+
 $startYear = 2020;
 $yearsExp = date('Y') - $startYear;
+
+$events = $conn->query("SELECT id, event_name FROM events ORDER BY event_name")->fetch_all(MYSQLI_ASSOC);
 
 $badges = [
     'corporate' => 'bg-green-600/60 text-white',
@@ -381,6 +387,10 @@ if (isset($_SESSION['success'])) {
                     <p class="text-xs font-medium text-slate-400 mt-1">Events Managed</p>
                 </div>
                 <div>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($completedEvents) ?>+</span>
+                    <p class="text-xs font-medium text-slate-400 mt-1">Completed Events</p>
+                </div>
+                <div>
                     <span class="text-3xl font-serif font-bold text-brand-900"><?= $yearsExp ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Years Experience</p>
                 </div>
@@ -497,23 +507,23 @@ if (isset($_SESSION['success'])) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
-                        <input type="text" placeholder="John Doe"
+                        <input type="text" placeholder="Alex Morgan"
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
-                        <input type="email" placeholder="john@example.com"
+                        <input type="email" placeholder="alex@gmail.com"
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Event Type</label>
-                    <select
+                    <select name="event_type"
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-400 focus:outline-none focus:border-brand-200">
-                        <option>Select Option...</option>
-                        <option>Wedding Ceremony</option>
-                        <option>Corporate Seminar/Gala</option>
-                        <option>Social/Private Party</option>
+                        <option value="">Select Option...</option>
+                        <?php foreach ($events as $e): ?>
+                            <option value="<?= htmlspecialchars($e['event_name']) ?>"><?= htmlspecialchars($e['event_name']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
@@ -522,7 +532,7 @@ if (isset($_SESSION['success'])) {
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200"></textarea>
                 </div>
                 <button type="submit"
-                    class="w-full bg-brand-200 hover:bg-brand-900 text-brand-900 hover:text-white text-sm font-semibold py-3.5 rounded-xl transition duration-200 shadow-md shadow-brand-200/20">Submit
+                    class="w-full bg-brand-200 hover:bg-brand-700 text-brand-900 hover:text-white text-sm font-semibold py-3.5 rounded-xl transition duration-200 shadow-md shadow-brand-200/20">Submit
                     Inquiry</button>
             </form>
         </div>
@@ -540,7 +550,7 @@ if (isset($_SESSION['success'])) {
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="phone" class="w-4 h-4 shrink-0 text-brand-600"></i>
-                        <span>+95 9 950 305004</span>
+                        <span>09 950 305004</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <i data-lucide="mail" class="w-4 h-4 shrink-0 text-brand-600"></i>
@@ -549,7 +559,7 @@ if (isset($_SESSION['success'])) {
                 </div>
             </div>
             <div class="pt-8 border-t border-slate-200 text-xs text-slate-400">
-                Office Hours: Mon - Fri (9AM - 6PM EST)
+                Office Hours: Mon - Fri (9AM - 6PM)
             </div>
         </div>
     </div>

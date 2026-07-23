@@ -6,6 +6,10 @@ $totalEvents = 0;
 $eRes = $conn->query("SELECT COUNT(*) AS c FROM events");
 if ($eRes) $totalEvents = (int) $eRes->fetch_assoc()['c'];
 
+$completedEvents = 0;
+$cRes = $conn->query("SELECT COUNT(*) AS c FROM bookings WHERE status = 'Completed'");
+if ($cRes) $completedEvents = (int) $cRes->fetch_assoc()['c'];
+
 $startYear = 2020;
 $yearsExp = date('Y') - $startYear;
 include '../includes/header.php';
@@ -19,7 +23,7 @@ include '../includes/header.php';
         <!-- Left Side Data Content Column -->
         <div class="max-w-md w-full">
             <h2 class="text-3xl font-serif font-bold text-brand-600 leading-tight">
-                Creating Unforgettable Moments Since 2010
+                Creating Unforgettable Moments Since 2020
             </h2>
             <p class="text-sm text-slate-500 mt-4 leading-relaxed">
                 Our dedicated design team focuses on every minor detailed element to craft custom environments that
@@ -31,6 +35,10 @@ include '../includes/header.php';
                 <div>
                     <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($totalEvents) ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Events Managed</p>
+                </div>
+                <div>
+                    <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($completedEvents) ?>+</span>
+                    <p class="text-xs font-medium text-slate-400 mt-1">Completed Events</p>
                 </div>
                 <div>
                     <span class="text-3xl font-serif font-bold text-brand-900"><?= $yearsExp ?>+</span>

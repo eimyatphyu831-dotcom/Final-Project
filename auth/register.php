@@ -35,20 +35,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email)) {
         $errors['email'] = "Email is required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || strpos($email, '@') === false) {
-        $errors['email'] = "Email must include '@' and be valid (e.g., su@gmail.com).";
+        $errors['email'] = "Email must include '@gmail.com'";
     }
 
-    // 3. Validate Phone (Max 11 digits)
-    $digits_only = preg_replace('/\D/', '', $phone); // Extract only digits
+    // 3. Validate Phone (Myanmar phone number - must start with 09 and be 9-11 digits)
+    $digits_only = preg_replace('/\D/', '', $phone);
     if (empty($phone)) {
         $errors['phone'] = "Phone Number is required.";
-    } elseif (strlen($digits_only) > 11) {
-        $errors['phone'] = "Phone number must be a maximum of 11 digits.";
+    } elseif (!preg_match('/^09\d{7,9}$/', $digits_only)) {
+        $errors['phone'] = "Enter a valid  phone number starting with '09...'.";
     }
 
-    // 4. Validate Passwords
+    // 4. Validate Passwords (minimum 6 characters)
     if (empty($password)) {
         $errors['password'] = "Password is required.";
+    } elseif (strlen($password) < 6) {
+        $errors['password'] = "Password must be at least 6 characters.";
     } elseif ($password != $confirmPassword) {
         $errors['password'] = "Passwords do not match!";
     }

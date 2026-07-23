@@ -8,7 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 include "../config/db.php";
 
 $user_id = $_SESSION['user_id'];
-$message = '';
+$message = $_SESSION['profile_message'] ?? '';
+unset($_SESSION['profile_message']);
 $error = '';
 
 // Ensure upload directory exists
@@ -83,11 +84,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($update->execute()) {
                         $_SESSION['user_name'] = $name;
                         $_SESSION['user_email'] = $email;
-                        $message = "Profile updated successfully.";
-                        $user['name'] = $name;
-                        $user['email'] = $email;
-                        $user['phone'] = $phone;
-                        $user['image'] = $imageName;
+                        $_SESSION['profile_message'] = "Profile updated successfully.";
+                        $update->close();
+                        $check->close();
+                        header("Location: profile.php");
+                        exit();
                     } else {
                         $error = "Update failed. Please try again.";
                     }
@@ -99,11 +100,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($update->execute()) {
                     $_SESSION['user_name'] = $name;
                     $_SESSION['user_email'] = $email;
-                    $message = "Profile updated successfully.";
-                    $user['name'] = $name;
-                    $user['email'] = $email;
-                    $user['phone'] = $phone;
-                    $user['image'] = $imageName;
+                    $_SESSION['profile_message'] = "Profile updated successfully.";
+                    $update->close();
+                    $check->close();
+                    header("Location: profile.php");
+                    exit();
                 } else {
                     $error = "Update failed. Please try again.";
                 }
@@ -145,12 +146,12 @@ if (!empty($user['name'])) {
 }
 ?>
 
-<div class="min-h-screen bg-brand-50/40 py-10">
+<div class="min-h-screen bg-brand-50/40 py-8">
     <div class="max-w-lg mx-auto px-4">
 
         <?php if ($message): ?>
             <div
-                class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700 flex items-center gap-2">
+                class="p-2 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700 flex items-center gap-2">
                 <svg class="w-4 h-4 shrink-0 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
@@ -166,21 +167,25 @@ if (!empty($user['name'])) {
             </div>
         <?php endif; ?>
 
+        <div class="mb-3 flex flex-col items-center justify-center">
+            <h1 class="text-2xl font-bold text-brand-600">My Profile</h1>
+            <p class="text-sm text-brand-900/70">Manage your personal information</p>
+        </div>
+
         <!-- View Mode -->
         <div id="profileView">
             <div class="bg-white rounded-xl shadow-sm border border-brand-200/50 overflow-hidden">
                 <div class="bg-brand-200 px-4 py-4 text-center">
                     <?php if (!empty($user['image'])): ?>
                         <img src="../uploads/profiles/<?= htmlspecialchars($user['image']) ?>?t=<?= time() ?>"
-                            class="w-14 h-14 mx-auto rounded-full object-cover border-2 border-white/80 shadow-sm mb-1.5">
+                            class="w-14 h-14 mx-auto rounded-full object-cover border-2 border-white/80 shadow-sm mb-1">
                     <?php else: ?>
                         <div
                             class="w-14 h-14 mx-auto rounded-full bg-white/80 flex items-center justify-center text-brand-900 text-lg font-bold shadow-sm mb-1.5">
                             <?= htmlspecialchars($initials ?: '?') ?>
                         </div>
                     <?php endif; ?>
-                    <h1 class="text-base font-bold text-brand-900">My Profile</h1>
-                    <p class="text-[10px] text-brand-700/70">Manage your personal information</p>
+                    
                 </div>
                 <div class="p-4 space-y-3">
                     <div class="flex items-center gap-3 p-3 bg-brand-50 rounded-lg">

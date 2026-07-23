@@ -461,10 +461,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 <span class="slot-time"><?= date('g:i A', strtotime($ts['start_time'])) ?> –
                                                     <?= date('g:i A', strtotime($ts['end_time'])) ?></span>
                                             </div>
+                                            <div class="slot-unavailable-msg text-[10px] font-semibold text-red-500 mt-1 hidden"></div>
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
                                 <p id="slotStatus" class="hidden"></p>
+                                <p id="slotErrorMessage" class="text-xs text-red-500 font-semibold mt-1 hidden"></p>
                             </div>
 
                             <div>
@@ -873,11 +875,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 const teamsAssigned = assignedTeamsByDate[selectedDate] || [];
                 const isDateFull = teamsAssigned.length >= totalTeams;
                 const alreadyBooked = userBookedDates.includes(selectedDate);
+
+                const slotErrorMsg = document.getElementById('slotErrorMessage');
+
+                if (alreadyBooked) {
+                    slotErrorMsg.textContent = 'You have already booked this event on this date.';
+                    slotErrorMsg.classList.remove('hidden');
+                } else if (isDateFull) {
+                    slotErrorMsg.textContent = 'All time slots are fully booked on this date.';
+                    slotErrorMsg.classList.remove('hidden');
+                } else {
+                    slotErrorMsg.classList.add('hidden');
+                }
+
                 slotRadios.forEach(r => {
                     const id = parseInt(r.value);
                     const label = r.closest('.slot-option');
+                    const unavailableMsg = label.querySelector('.slot-unavailable-msg');
                     const isVenueBooked = venueTaken.includes(id);
                     const isUnavailable = isVenueBooked || isDateFull || alreadyBooked;
+
+                    // Reset unavailable message
+                    if (unavailableMsg) {
+                        unavailableMsg.classList.add('hidden');
+                        unavailableMsg.textContent = '';
+                    }
+
+                    if (isVenueBooked || isDateFull) {
+                        unavailableMsg.textContent = 'Unavailable Team';
+                        unavailableMsg.classList.remove('hidden');
+                    }
+
                     if (isUnavailable) {
                         label.classList.add('opacity-40', 'pointer-events-none');
                         r.disabled = true;

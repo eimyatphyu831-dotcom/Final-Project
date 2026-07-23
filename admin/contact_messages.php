@@ -336,6 +336,7 @@ $stmt->close();
 
                         <?php if ($totalPages > 1): ?>
                         <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                            <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $page ?> of <?= $totalPages ?></span>
                             <a href="?page=<?= max(1, $page-1) ?><?= $search ? "&search=$search" : '' ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $page <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 <i class="fa-solid fa-chevron-left mr-1"></i> Prev

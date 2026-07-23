@@ -38,7 +38,7 @@ include "../includes/header.php";
 $conn->close();
 ?>
 
-<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+<div class="min-h-screen bg-purple-50/40">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         <div class="text-center mb-10">
@@ -56,7 +56,7 @@ $conn->close();
                     </div>
                     <h3 class="text-xl font-bold text-gray-700 mb-2">No Bookings Yet</h3>
                     <p class="text-sm text-gray-400 mb-8 leading-relaxed">You haven't made any bookings yet.<br>Start planning your dream event today!</p>
-                    <a href="events.php"
+                    <a href="viewevents.php"
                         class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-7 py-3 rounded-xl text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-purple-200 hover:shadow-xl hover:shadow-purple-300">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

@@ -63,7 +63,7 @@
 
                 <div class="flex items-center gap-2">
                     <i data-lucide="phone" class="w-5 h-5 text-brand-600"></i>
-                    <p>+95 9 950 305004</p>
+                    <p>09 950 305004</p>
                 </div>
 
             </div>
