@@ -181,7 +181,7 @@ if (!empty($user['name'])) {
                             class="w-14 h-14 mx-auto rounded-full object-cover border-2 border-white/80 shadow-sm mb-1">
                     <?php else: ?>
                         <div
-                            class="w-14 h-14 mx-auto rounded-full bg-white/80 flex items-center justify-center text-brand-900 text-lg font-bold shadow-sm mb-1.5">
+                            class="w-14 h-14 mx-auto rounded-full bg-white/80 flex items-center justify-center text-brand-600 text-md font-bold shadow-sm mb-1.5">
                             <?= htmlspecialchars($initials ?: '?') ?>
                         </div>
                     <?php endif; ?>

@@ -106,7 +106,7 @@ if ($venueId > 0 && $eventId > 0) {
         </div>
         <p id="noVenueMessage" class="hidden mb-6 text-sm text-slate-500">No venues found for your search.</p>
 
-        <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div id="venueGrid" class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <?php foreach ($venues as $v): ?>
                 <div class="venue-card bg-white rounded-[1.5rem] shadow-sm border <?= ($selectedVenueId == $v['id']) ? 'border-purple-500 ring-2 ring-purple-200' : 'border-slate-100' ?> flex flex-col transition hover:shadow-lg hover:border-purple-200"
                     data-name="<?= htmlspecialchars($v['name']) ?>">

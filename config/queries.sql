@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS venues (
 -- Packages Table
 CREATE TABLE IF NOT EXISTS packages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name ENUM('Silver','Gold','Diamond') NOT NULL,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

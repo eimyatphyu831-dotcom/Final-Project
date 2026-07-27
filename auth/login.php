@@ -68,7 +68,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <?php if (isset($success)): ?>
-
     <script>
         Swal.fire({
             icon: 'success',
@@ -79,7 +78,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             showConfirmButton: false
         });
     </script>
-
 <?php endif; ?>
 
 <?php include '../includes/header.php'; ?>
@@ -104,10 +102,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </style>
 
 <div class="flex-grow w-full flex items-center justify-center py-12">
-
     <div
         class="w-full max-w-2xl bg-white rounded-2xl overflow-hidden shadow-lg border border-slate-200/60 flex flex-col md:flex-row min-h-[440px] md:min-h-[420px]">
-
         <div class="w-full md:w-2/5 relative bg-purple-950 min-h-[140px] md:min-h-full">
             <img src="../assets/images/login.png" alt="Luxury Event Greenhouse Setting"
                 class="absolute inset-0 w-full h-full object-cover object-center mix-blend-normal">
@@ -115,23 +111,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <div class="w-full md:w-3/5 bg-white flex flex-col justify-center p-5 sm:p-6 md:p-8">
             <div class="w-full max-w-[260px] mx-auto flex flex-col justify-center">
-
-
                 <?php if (!empty($message)): ?>
                     <p style="color:red; font-size:11px; text-align:center; margin-bottom:8px;">
                         <?= $message ?>
                     </p>
                 <?php endif; ?>
+
                 <div class="flex flex-col items-center mb-4 text-center">
                     <div class="w-6 h-6 rounded bg-brand-200 flex items-center justify-center">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-white font-bold"></i>
                     </div>
-                    <!-- <span class="text-md font-bold tracking-tight text-purple-400">EventPro</span> -->
                     <h1 class="text-lg font-bold text-slate-900 tracking-tight mt-1">Welcome Back</h1>
                     <p class="text-[11px] text-slate-500 mt-0.5">Access your event dashboard</p>
                 </div>
 
-                <form action="#" method="POST" class="space-y-3">
+                <!-- Added ID to form for JS targeting -->
+                <form id="loginForm" action="#" method="POST" class="space-y-3">
                     <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
 
                     <div>
@@ -147,9 +142,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </svg>
                             </div>
                             <input type="email" id="email" name="email" required autocomplete="email"
-                                placeholder="alex@gmail.com" required
+                                placeholder="alex@gmail.com"
                                 class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                         </div>
+                        <!-- Custom Error Message Container -->
+                        <p id="email-error" class="text-red-500 text-[10px] mt-1 hidden"></p>
                     </div>
 
                     <div>
@@ -187,8 +184,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="checkbox" id="remember_me" name="remember_me" required
                             class="h-3 w-3 rounded border-slate-300 text-purple-600 focus:ring-purple-500/20 accent-purple-600 cursor-pointer">
                         <label for="remember_me"
-                            class="ml-1.5 text-[10px] text-slate-500 select-none cursor-pointer leading-none">Remember
-                            for 30 days</label>
+                            class="ml-1.5 text-[10px] text-slate-500 select-none cursor-pointer leading-none">Remember me</label>
+                            
                     </div>
 
                     <button type="submit"
@@ -213,21 +210,67 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </div>
 
-<!-- <footer class="w-full py-2.5 text-center">
-        <p class="text-[10px] text-slate-400 tracking-wide font-normal">
-            &copy; 2026 EventPlanning. All rights reserved.
-        </p>
-    </footer> -->
-<?php
-include '../includes/footer.php';
-?>
+<?php include '../includes/footer.php'; ?>
 
 <script>
+    // Toggle Password Visibility
     document.getElementById('toggle-mask-btn')?.addEventListener('click', function () {
         const field = document.getElementById('password');
         if (field) {
             field.type = field.type === 'password' ? 'text' : 'password';
             field.focus();
         }
+    });
+
+    // Email Validation Script
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('email-error');
+
+        // Standard email regex pattern
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        function validateEmail() {
+            const emailValue = emailInput.value.trim();
+
+            if (emailValue === '') {
+                emailError.textContent = 'Email address is required.';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500', 'focus:border-red-500');
+                emailInput.classList.remove('border-slate-200', 'focus:border-purple-600');
+                return false;
+            } else if (!emailRegex.test(emailValue)) {
+                emailError.textContent = 'Please enter a valid email format (e.g., alex@gmail.com).';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500', 'focus:border-red-500');
+                emailInput.classList.remove('border-slate-200', 'focus:border-purple-600');
+                return false;
+            } else {
+                emailError.textContent = '';
+                emailError.classList.add('hidden');
+                emailInput.classList.remove('border-red-500', 'focus:border-red-500');
+                emailInput.classList.add('border-slate-200', 'focus:border-purple-600');
+                return true;
+            }
+        }
+
+        // Validate on blur (when user clicks out of the input)
+        emailInput.addEventListener('blur', validateEmail);
+
+        // Live validate as they type IF they already made a mistake
+        emailInput.addEventListener('input', function () {
+            if (!emailError.classList.contains('hidden')) {
+                validateEmail();
+            }
+        });
+
+        // Prevent form submission if email is invalid
+        form.addEventListener('submit', function (e) {
+            if (!validateEmail()) {
+                e.preventDefault(); // Stop the form from submitting
+                emailInput.focus();
+            }
+        });
     });
 </script>

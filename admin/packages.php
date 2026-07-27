@@ -151,6 +151,12 @@ if ($epsRes) {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        * { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen overflow-hidden">
@@ -286,7 +292,7 @@ if ($epsRes) {
                                         <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-2">Package Name</label>
                                     <!-- Replaced Select Dropdown with a standard Input Field -->
-                                <input type="text" name="name" id="packageName" placeholder="Enter package name" required readonly
+                                <input type="text" name="name" id="packageName" placeholder="Enter package name" required
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50  text-sm">
                             </div>
                             <div>
@@ -397,9 +403,9 @@ if ($epsRes) {
                         document.getElementById('modalSubtitle').textContent = 'Update ' + pkg.name + ' package details';
                         document.getElementById('modalSubmitText').textContent = 'Update Package';
 
-                        // Lock fields back to read-only when editing
-                        document.getElementById('packageName').setAttribute('readonly', true);
-                        document.getElementById('packageDescription').setAttribute('readonly', true);
+                        // Make fields editable when editing
+                        document.getElementById('packageName').removeAttribute('readonly');
+                        document.getElementById('packageDescription').removeAttribute('readonly');
 
                         // Set venue prices
                         const prices = vpData[pkg.id] || {};

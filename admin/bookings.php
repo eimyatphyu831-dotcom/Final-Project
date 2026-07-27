@@ -9,8 +9,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
 require_once '../includes/auto_complete_bookings.php';
-$statusFilter = $_GET['status'] ?? 'all';
-$message = '';
+ $statusFilter = $_GET['status'] ?? 'all';
+ $message = '';
 
 // AJAX handler for confirm/cancel (no page reload)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
@@ -116,8 +116,8 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 }
 
 // Fetch from DB
-$bookings = [];
-$query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
+ $bookings = [];
+ $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
                   b.time_slot_id, ts.slot_name AS time_slot_name,
                   u.name AS customer_name, u.email,
                   e.event_name,
@@ -134,13 +134,13 @@ $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.pay
            LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
            LEFT JOIN teams t ON b.team_id = t.id
            ORDER BY b.created_at DESC";
-$result = $conn->query($query);
+ $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
     $bookings = $result->fetch_all(MYSQLI_ASSOC);
 }
 
 // Fallback if no data
-$hasData = !empty($bookings);
+ $hasData = !empty($bookings);
 if (!$hasData) {
     $bookings = [
         ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
@@ -148,12 +148,12 @@ if (!$hasData) {
 }
 
 // Pagination
-$bPage = isset($_GET['b_page']) ? max(1, (int)$_GET['b_page']) : 1;
-$bPerPage = 8;
-$bTotal = $hasData ? count($bookings) : 0;
-$bTotalPages = ceil($bTotal / $bPerPage);
-$bOffset = ($bPage - 1) * $bPerPage;
-$paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $bookings;
+ $bPage = isset($_GET['b_page']) ? max(1, (int)$_GET['b_page']) : 1;
+ $bPerPage = 8;
+ $bTotal = $hasData ? count($bookings) : 0;
+ $bTotalPages = ceil($bTotal / $bPerPage);
+ $bOffset = ($bPage - 1) * $bPerPage;
+ $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $bookings;
 ?>
 
 <!DOCTYPE html>
@@ -444,6 +444,16 @@ $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $b
                         <span class="text-gray-500">Date</span>
                         <span class="font-semibold text-gray-800" id="viewDate"></span>
                     </div>
+                    <!-- NEW: Time Slot Field -->
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Time Slot</span>
+                        <span class="font-semibold text-gray-800" id="viewTimeSlot"></span>
+                    </div>
+                    <!-- NEW: Assigned Team Field -->
+                    <div class="flex justify-between border-b border-gray-100 pb-1">
+                        <span class="text-gray-500">Assigned Team</span>
+                        <span class="font-semibold text-gray-800" id="viewTeam"></span>
+                    </div>
                     <div class="flex justify-between border-b border-gray-100 pb-1">
                         <span class="text-gray-500">Payment</span>
                         <span class="font-semibold text-gray-800" id="viewPayment"></span>
@@ -494,6 +504,11 @@ $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $b
             document.getElementById('viewEvent').textContent = event;
             document.getElementById('viewPackage').textContent = pkg;
             document.getElementById('viewVenue').textContent = venue;
+            
+            // NEW: Populating Time Slot and Assigned Team
+            document.getElementById('viewTimeSlot').textContent = slot;
+            document.getElementById('viewTeam').textContent = team;
+            
             document.getElementById('viewDate').textContent = date;
             document.getElementById('viewPayment').textContent = payment;
             document.getElementById('viewCost').textContent = cost + ' MMK';

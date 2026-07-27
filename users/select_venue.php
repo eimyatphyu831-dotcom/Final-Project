@@ -152,7 +152,7 @@ include "../includes/header.php";
                 <p class="text-sm text-gray-400">There are no venues for this event yet.</p>
             </div>
         <?php else: ?>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <?php foreach ($venues as $v): ?>
                     <div
                         class="bg-white rounded-[1.5rem] shadow-sm border <?= ($selectedVenueId == $v['id']) ? 'border-purple-500 ring-2 ring-purple-200' : 'border-slate-100' ?> flex flex-col transition hover:shadow-lg hover:border-purple-200">

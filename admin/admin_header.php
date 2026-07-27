@@ -54,7 +54,7 @@ $pageInfo = $pageTitles[$currentPage] ?? ['title' => 'Admin', 'subtitle' => ''];
 </style>
 <header class="bg-white border-b border-gray-100 px-4 sm:px-8 py-3 flex items-center justify-between sticky top-0 z-20">
     <div class="flex items-center gap-3 flex-1">
-        <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-gray-700 mr-2">
+        <button onclick="closeSidebar()" class="lg:hidden text-gray-500 hover:text-gray-700 mr-2">
             <i class="fa-solid fa-bars text-xl"></i>
         </button>
         <div>
