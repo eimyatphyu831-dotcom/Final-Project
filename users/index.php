@@ -314,7 +314,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Right View All -->
             <a href="viewvenues.php"
-                class="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10">
+                class="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 shrink-0 transition z-10 mt-20">
                 View All
                 <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
