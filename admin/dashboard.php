@@ -288,7 +288,9 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         </div>
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Revenue (MMK)</p>
-                            <p class="text-2xl font-bold text-gray-600"><?= number_format($totalRevenue) ?></h3>
+                            <p class="text-2xl font-bold text-gray-600">
+                                <?= number_format($totalRevenue / 1000000, 2) ?> M
+                            </p>
                         </div>
                     </div>
                     <div

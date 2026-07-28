@@ -63,19 +63,47 @@ $username = $_SESSION['user_name'] ?? '';
             opacity: 0;
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
-        .page-animate.fade-up { transform: translateY(40px); }
-        .page-animate.fade-left { transform: translateX(-60px); }
-        .page-animate.fade-right { transform: translateX(60px); }
-        .page-animate.scale-up { transform: scale(0.9); }
+
+        .page-animate.fade-up {
+            transform: translateY(40px);
+        }
+
+        .page-animate.fade-left {
+            transform: translateX(-60px);
+        }
+
+        .page-animate.fade-right {
+            transform: translateX(60px);
+        }
+
+        .page-animate.scale-up {
+            transform: scale(0.9);
+        }
+
         .page-animate.visible {
             opacity: 1;
             transform: translateY(0) translateX(0) scale(1);
         }
-        .page-animate.delay-1 { transition-delay: 0.15s; }
-        .page-animate.delay-2 { transition-delay: 0.3s; }
-        .page-animate.delay-3 { transition-delay: 0.45s; }
-        .page-animate.delay-4 { transition-delay: 0.6s; }
-        .page-animate.delay-5 { transition-delay: 0.75s; }
+
+        .page-animate.delay-1 {
+            transition-delay: 0.15s;
+        }
+
+        .page-animate.delay-2 {
+            transition-delay: 0.3s;
+        }
+
+        .page-animate.delay-3 {
+            transition-delay: 0.45s;
+        }
+
+        .page-animate.delay-4 {
+            transition-delay: 0.6s;
+        }
+
+        .page-animate.delay-5 {
+            transition-delay: 0.75s;
+        }
 
         /* Stagger Children */
         .stagger-children .stagger-child {
@@ -83,6 +111,7 @@ $username = $_SESSION['user_name'] ?? '';
             transform: translateY(30px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
+
         .stagger-children.visible .stagger-child {
             opacity: 1;
             transform: translateY(0);
@@ -94,11 +123,24 @@ $username = $_SESSION['user_name'] ?? '';
             transform: translateY(30px);
             animation: heroFadeIn 0.9s ease-out forwards;
         }
-        .hero-fade.d1 { animation-delay: 0.2s; }
-        .hero-fade.d2 { animation-delay: 0.45s; }
-        .hero-fade.d3 { animation-delay: 0.7s; }
+
+        .hero-fade.d1 {
+            animation-delay: 0.2s;
+        }
+
+        .hero-fade.d2 {
+            animation-delay: 0.45s;
+        }
+
+        .hero-fade.d3 {
+            animation-delay: 0.7s;
+        }
+
         @keyframes heroFadeIn {
-            to { opacity: 1; transform: translateY(0); }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1,
@@ -197,71 +239,168 @@ $username = $_SESSION['user_name'] ?? '';
         html.dark .bg-purple-50 {
             background-color: var(--bg-secondary) !important;
         }
+
         html.dark .bg-\[#f7f5fa\],
         html.dark .venue-card,
         html.dark .event-card {
             background-color: var(--bg-card) !important;
         }
+
         html.dark .text-slate-500,
         html.dark .text-slate-400 {
             color: var(--text-secondary) !important;
         }
+
         html.dark .text-slate-700,
         html.dark .text-slate-900 {
             color: var(--text-primary) !important;
         }
+
         html.dark .text-brand-900 {
             color: var(--text-primary) !important;
         }
+
         html.dark .text-brand-600 {
             color: #b8a5d6 !important;
         }
+
         html.dark .border-slate-200,
         html.dark .border-slate-100,
         html.dark .border-slate-200\/60,
         html.dark .border-purple-200 {
             border-color: var(--border-color) !important;
         }
+
         html.dark .text-purple-500,
         html.dark .text-purple-400 {
             color: #b8a5d6 !important;
         }
+
         html.dark .bg-purple-400 {
             background-color: #5a4a7a !important;
         }
-        html.dark .text-orange-700 { color: #fbbf24 !important; }
-        html.dark .text-orange-400 { color: #f59e0b !important; }
-        html.dark .text-orange-500 { color: #f59e0b !important; }
-        html.dark .text-blue-700 { color: #93c5fd !important; }
-        html.dark .text-blue-400 { color: #60a5fa !important; }
-        html.dark .text-blue-500 { color: #60a5fa !important; }
-        html.dark .text-blue-600 { color: #60a5fa !important; }
-        html.dark .border-orange-400 { border-color: #b45309 !important; }
+
+        html.dark .text-orange-700 {
+            color: #fbbf24 !important;
+        }
+
+        html.dark .text-orange-400 {
+            color: #f59e0b !important;
+        }
+
+        html.dark .text-orange-500 {
+            color: #f59e0b !important;
+        }
+
+        html.dark .text-blue-700 {
+            color: #93c5fd !important;
+        }
+
+        html.dark .text-blue-400 {
+            color: #60a5fa !important;
+        }
+
+        html.dark .text-blue-500 {
+            color: #60a5fa !important;
+        }
+
+        html.dark .text-blue-600 {
+            color: #60a5fa !important;
+        }
+
+        html.dark .border-orange-400 {
+            border-color: #b45309 !important;
+        }
+
         html.dark .border-blue-400,
-        html.dark .border-blue-300 { border-color: #1e40af !important; }
-        html.dark .border-gray-400 { border-color: var(--border-color) !important; }
-        html.dark .border-gray-300 { border-color: var(--border-color) !important; }
-        html.dark .bg-gray-50 { background-color: #0f1a30 !important; }
-        html.dark .bg-orange-100 { background-color: #451a03 !important; }
-        html.dark .bg-blue-100 { background-color: #1e3a5f !important; }
-        html.dark .bg-blue-50 { background-color: #0f1a30 !important; }
-        html.dark .bg-orange-400 { background-color: #92400e !important; }
-        html.dark .bg-blue-400 { background-color: #1e40af !important; }
-        html.dark .text-gray-700 { color: var(--text-primary) !important; }
-        html.dark .text-gray-900 { color: var(--text-primary) !important; }
-        html.dark .text-gray-400 { color: var(--text-secondary) !important; }
-        html.dark .text-gray-600 { color: var(--text-secondary) !important; }
-        html.dark .hover\:bg-gray-700:hover { background-color: #2d3a5c !important; }
-        html.dark .border-gray-400 { border-color: var(--border-color) !important; }
-        html.dark .bg-white.rounded-3xl { background-color: var(--bg-card) !important; }
+        html.dark .border-blue-300 {
+            border-color: #1e40af !important;
+        }
+
+        html.dark .border-gray-400 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark .border-gray-300 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #0f1a30 !important;
+        }
+
+        html.dark .bg-orange-100 {
+            background-color: #451a03 !important;
+        }
+
+        html.dark .bg-blue-100 {
+            background-color: #1e3a5f !important;
+        }
+
+        html.dark .bg-blue-50 {
+            background-color: #0f1a30 !important;
+        }
+
+        html.dark .bg-orange-400 {
+            background-color: #92400e !important;
+        }
+
+        html.dark .bg-blue-400 {
+            background-color: #1e40af !important;
+        }
+
+        html.dark .text-gray-700 {
+            color: var(--text-primary) !important;
+        }
+
+        html.dark .text-gray-900 {
+            color: var(--text-primary) !important;
+        }
+
+        html.dark .text-gray-400 {
+            color: var(--text-secondary) !important;
+        }
+
+        html.dark .text-gray-600 {
+            color: var(--text-secondary) !important;
+        }
+
+        html.dark .hover\:bg-gray-700:hover {
+            background-color: #2d3a5c !important;
+        }
+
+        html.dark .border-gray-400 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark .bg-white.rounded-3xl {
+            background-color: var(--bg-card) !important;
+        }
 
         /* index.php dark mode */
-        html.dark .bg-slate-50 { background-color: #0f1a30 !important; }
-        html.dark .text-slate-600 { color: var(--text-secondary) !important; }
-        html.dark .border-slate-50\/50 { border-color: var(--border-color) !important; }
-        html.dark .bg-brand-50 { background-color: rgba(195, 177, 225, 0.08) !important; }
-        html.dark .text-brand-900 { color: var(--text-primary) !important; }
-        html.dark .bg-\[\#f6f3fa\] { background-color: var(--bg-secondary) !important; }
+        html.dark .bg-slate-50 {
+            background-color: #0f1a30 !important;
+        }
+
+        html.dark .text-slate-600 {
+            color: var(--text-secondary) !important;
+        }
+
+        html.dark .border-slate-50\/50 {
+            border-color: var(--border-color) !important;
+        }
+
+        html.dark .bg-brand-50 {
+            background-color: rgba(195, 177, 225, 0.08) !important;
+        }
+
+        html.dark .text-brand-900 {
+            color: var(--text-primary) !important;
+        }
+
+        html.dark .bg-\[\#f6f3fa\] {
+            background-color: var(--bg-secondary) !important;
+        }
     </style>
 </head>
 
@@ -296,39 +435,31 @@ $username = $_SESSION['user_name'] ?? '';
     try {
         if (isset($conn) && $conn instanceof mysqli) {
             $evRes = $conn->query("SELECT DISTINCT LOWER(event_name) AS event_name FROM events ORDER BY event_name ASC");
-            if ($evRes) $navEvents = $evRes->fetch_all(MYSQLI_ASSOC);
+            if ($evRes)
+                $navEvents = $evRes->fetch_all(MYSQLI_ASSOC);
         }
     } catch (Error $e) {
         $navEvents = [];
     }
     ?>
-    
+
     <!-- HEADER & NAVIGATION SYSTEM  -->
-        
+
     <header class="w-full bg-[#f3f1f6] backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
-            <div class="flex items-center gap-2 font-bold text-xl text-brand-900">
+            <!-- Logo + Site Name (always visible) -->
+            <a href="../users/index.php" class="flex items-center gap-2 font-bold text-xl text-brand-900 shrink-0">
                 <div class="w-8 h-8 rounded-lg bg-brand-200 flex items-center justify-center">
                     <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
-
                 </div>
                 <span class="text-brand-600 font-bold font-sans-serif text-2xl">EventPro</span>
-            </div>
+            </a>
 
-            <!-- Mobile Hamburger -->
-            <button id="mobileMenuToggle" class="md:hidden text-brand-600 hover:text-brand-900 p-2" aria-label="Toggle menu">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-
-            <div class="hidden md:flex items-center gap-8">
-
+            <!-- Desktop Navigation (unchanged, hidden on mobile/tablet) -->
+            <div class="hidden lg:flex items-center gap-8">
                 <nav class="flex items-center gap-8 text-md font-medium text-brand-900">
-
                     <a href="../users/index.php"
                         class="<?= navLinkClass('index.php', $currentPage, $navGroups) ?>">Home</a>
-
                     <div class="relative group">
                         <a href="../users/events.php"
                             class="<?= navLinkClass('events.php', $currentPage, $navGroups) ?> flex items-center gap-1">
@@ -338,238 +469,291 @@ $username = $_SESSION['user_name'] ?? '';
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </a>
-                            <div
-                                class="absolute left-0 mt-2 w-44 bg-white dark:bg-[#1e2a45] rounded-xl shadow-lg border border-slate-100 dark:border-[#2a3a5c] py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <?php foreach ($navEvents as $ev): $ename = htmlspecialchars(ucfirst($ev['event_name'])); ?>
+                        <div
+                            class="absolute left-0 mt-2 w-44 bg-white dark:bg-[#1e2a45] rounded-xl shadow-lg border border-slate-100 dark:border-[#2a3a5c] py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <?php foreach ($navEvents as $ev):
+                                $ename = htmlspecialchars(ucfirst($ev['event_name'])); ?>
                                 <a href="../users/viewdetails.php?type=<?= htmlspecialchars($ev['event_name']) ?>"
                                     class="block px-4 py-2 text-sm text-brand-900 dark:text-gray-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition"><?= $ename ?></a>
-                                <?php endforeach; ?>
-                                <hr class="border-slate-100 dark:border-[#2a3a5c] my-1">
-                                <a href="../users/viewevents.php"
-                                    class="block px-4 py-2 text-sm text-brand-600 dark:text-[#b8a5d6] font-semibold hover:bg-brand-50 dark:hover:bg-[#16213e] transition">View
-                                    All</a>
-                            </div>
+                            <?php endforeach; ?>
+                            <hr class="border-slate-100 dark:border-[#2a3a5c] my-1">
+                            <a href="../users/viewevents.php"
+                                class="block px-4 py-2 text-sm text-brand-600 dark:text-[#b8a5d6] font-semibold hover:bg-brand-50 dark:hover:bg-[#16213e] transition">View
+                                All</a>
+                        </div>
                     </div>
-
                     <a href="../users/services.php"
                         class="<?= navLinkClass('services.php', $currentPage, $navGroups) ?>">Services</a>
-
                     <a href="../users/venues.php"
                         class="<?= navLinkClass('venues.php', $currentPage, $navGroups) ?>">Venues</a>
-
-                     <a href="../users/about.php"
+                    <a href="../users/about.php"
                         class="<?= navLinkClass('about.php', $currentPage, $navGroups) ?>">About</a>
-
                     <a href="../users/reviews.php"
                         class="<?= navLinkClass('reviews.php', $currentPage, $navGroups) ?>">Reviews</a>
-
                     <a href="../users/contact.php"
                         class="<?= navLinkClass('contact.php', $currentPage, $navGroups) ?>">Contact</a>
-
                 </nav>
-
-
             </div>
-            <!-- <div class="hidden md:flex items-center gap-4">
-                <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900  transition">Sign In</a>
-                <a href="../auth/register.php" class="bg-brand-200 hover:bg-brand-900 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">Get Started</a>
-            </div> -->
 
-            <?php
-            if (session_status() == PHP_SESSION_NONE) {
-                session_start();
-            }
-            $userProfileImage = '';
-            if (isset($_SESSION['user_id'])) {
-                include_once __DIR__ . '/../config/db.php';
-                $q = $conn->query("SELECT image FROM users WHERE id = {$_SESSION['user_id']}");
-                if ($q && $row = $q->fetch_assoc()) $userProfileImage = $row['image'];
-            }
-            ?>
-
-            <div class="hidden md:flex items-center gap-4">
-
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                 <!-- Dark Mode Toggle -->
                 <button id="themeToggle"
                     class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-brand-50 transition"
                     aria-label="Toggle theme">
-                    <svg class="theme-moon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    <svg class="theme-moon w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
                     </svg>
-                    <svg class="theme-sun w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    <svg class="theme-sun w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
                     </svg>
                 </button>
 
-                <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')): ?>
+                <?php
+                if (session_status() == PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $userProfileImage = '';
+                if (isset($_SESSION['user_id'])) {
+                    include_once __DIR__ . '/../config/db.php';
+                    $q = $conn->query("SELECT image FROM users WHERE id = {$_SESSION['user_id']}");
+                    if ($q && $row = $q->fetch_assoc())
+                        $userProfileImage = $row['image'];
+                }
+                ?>
 
-                    <!-- Notification Bell -->
-                    <div class="relative" id="notifDropdown">
-                        <button id="notifToggle"
-                            class="relative p-2 rounded-full hover:bg-brand-50 transition cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-900" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <span id="notifBadge"
-                                class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 hidden">
-                            </span>
-                        </button>
-
-                        <div id="notifMenu"
-                            class="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-lg border border-slate-100 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right z-50">
-                            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                                <h4 class="text-sm font-semibold text-brand-900">Notifications</h4>
-                                <button id="markAllRead"
-                                    class="text-xs text-brand-600 hover:text-brand-900 transition cursor-pointer">Mark all
-                                    read</button>
-                            </div>
-                            <div id="notifList" class="max-h-80 overflow-y-auto divide-y divide-slate-50">
-                                <div class="p-6 text-center text-sm text-gray-400">Loading...</div>
-                            </div>
-                            <div class="border-t border-slate-100 p-2">
-                                <a href="../users/notifications.php"
-                                    class="block text-center text-xs text-brand-600 hover:text-brand-900 py-2 transition font-medium">View
-                                    all notifications</a>
+                <!-- Desktop-only user actions (unchanged) -->
+                <div class="hidden lg:flex items-center gap-4">
+                    <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')): ?>
+                        <!-- Notification Bell -->
+                        <div class="relative" id="notifDropdown">
+                            <button id="notifToggle"
+                                class="relative p-2 rounded-full hover:bg-brand-50 transition cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-900" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                <span id="notifBadge"
+                                    class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 hidden"></span>
+                            </button>
+                            <div id="notifMenu"
+                                class="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white rounded-xl shadow-lg border border-slate-100 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right z-50">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                                    <h4 class="text-sm font-semibold text-brand-900">Notifications</h4>
+                                    <button id="markAllRead"
+                                        class="text-xs text-brand-600 hover:text-brand-900 transition cursor-pointer">Mark
+                                        all read</button>
+                                </div>
+                                <div id="notifList" class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                                    <div class="p-6 text-center text-sm text-gray-400">Loading...</div>
+                                </div>
+                                <div class="border-t border-slate-100 p-2">
+                                    <a href="../users/notifications.php"
+                                        class="block text-center text-xs text-brand-600 hover:text-brand-900 py-2 transition font-medium">View
+                                        all notifications</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="relative" id="userDropdown">
-                        <button id="dropdownToggle"
-                            class="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-brand-50 transition">
-                            <div class="w-9 h-9 rounded-full bg-brand-200 flex items-center justify-center overflow-hidden">
-                                <?php if ($userProfileImage): ?>
-                                    <img src="../uploads/profiles/<?= htmlspecialchars($userProfileImage) ?>?t=<?= time() ?>" class="w-full h-full object-cover">
-                                <?php else: ?>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none"
+                        <!-- User Dropdown -->
+                        <div class="relative" id="userDropdown">
+                            <button id="dropdownToggle"
+                                class="flex items-center gap-3 cursor-pointer p-1 pr-3 rounded-full hover:bg-brand-50 transition">
+                                <div
+                                    class="w-9 h-9 rounded-full bg-brand-200 flex items-center justify-center overflow-hidden">
+                                    <?php if ($userProfileImage): ?>
+                                        <img src="../uploads/profiles/<?= htmlspecialchars($userProfileImage) ?>?t=<?= time() ?>"
+                                            class="w-full h-full object-cover">
+                                    <?php else: ?>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    <?php endif; ?>
+                                </div>
+                                <span
+                                    class="font-semibold text-brand-900 text-sm"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="w-4 h-4 text-gray-400 transition-transform duration-200" id="dropdownArrow"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div id="dropdownMenu"
+                                class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right">
+                                <div class="px-4 py-3 border-b border-slate-100">
+                                    <p class="text-xs text-gray-500">Signed in as</p>
+                                    <p class="text-sm font-semibold text-brand-900 truncate">
+                                        <?= htmlspecialchars($_SESSION['user_name']) ?></p>
+                                    <p class="text-xs text-gray-400 truncate">
+                                        <?= htmlspecialchars($_SESSION['user_email'] ?? '') ?></p>
+                                </div>
+                                <a href="../users/profile.php"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                <?php endif; ?>
+                                    My Profile
+                                </a>
+                                <a href="../users/my_bookings.php"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    My Bookings
+                                </a>
+                                <a href="../users/my_reviews.php"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                    My Reviews
+                                </a>
+                                <hr class="border-slate-100 my-1">
+                                <a href="../auth/logout.php"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Logout
+                                </a>
                             </div>
-                            <span class="font-semibold text-brand-900 text-sm">
-                                <?= htmlspecialchars($_SESSION['user_name']) ?>
-                            </span>
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="w-4 h-4 text-gray-400 transition-transform duration-200" id="dropdownArrow"
-                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-
-                        <div id="dropdownMenu"
-                            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right">
-                            <div class="px-4 py-3 border-b border-slate-100">
-                                <p class="text-xs text-gray-500">Signed in as</p>
-                                <p class="text-sm font-semibold text-brand-900 truncate">
-                                    <?= htmlspecialchars($_SESSION['user_name']) ?>
-                                </p>
-                                <p class="text-xs text-gray-400 truncate">
-                                    <?= htmlspecialchars($_SESSION['user_email'] ?? '') ?>
-                                </p>
-                            </div>
-                            <a href="../users/profile.php"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                My Profile
-                            </a>
-                            <a href="../users/my_bookings.php"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                                My Bookings
-                            </a>
-                            <a href="../users/my_reviews.php"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-900 hover:bg-brand-50 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-600" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                </svg>
-                                My Reviews
-                            </a>
-                            <hr class="border-slate-100 my-1">
-                            <a href="../auth/logout.php"
-                                class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                                Logout
-                            </a>
                         </div>
-                    </div>
+                    <?php else: ?>
+                        <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition font-medium">Sign
+                            In</a>
+                        <a href="../auth/register.php"
+                            class="bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">Get
+                            Started</a>
+                    <?php endif; ?>
+                </div>
 
-                <?php else: ?>
-
-                    <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition font-medium">
-                        Sign In
-                    </a>
-
-                    <a href="../auth/register.php"
-                        class="bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">
-                        Get Started
-                    </a>
-
-                <?php endif; ?>
-
+                <!-- Mobile Hamburger (visible on phone/tablet, hidden on desktop) -->
+                <button id="mobileMenuToggle" type="button"
+                    class="lg:hidden text-brand-600 hover:text-brand-900 p-2 relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-50 transition"
+                    aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileMenu">
+                    <svg id="hamburgerIcon" class="w-6 h-6 transition-all duration-200 absolute" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="closeIcon" class="w-6 h-6 absolute opacity-0 scale-0 pointer-events-none transition-all duration-200"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="fixed inset-0 z-[60] hidden md:hidden">
-        <div id="mobileOverlay" class="fixed inset-0 bg-black/50"></div>
-        <div class="top-0 left-0 right-0 bg-white dark:bg-[#1a1a2e] shadow-2xl overflow-y-auto  pb-6" id="mobilePanel" style="top: 3.5rem;">
-            <nav class="p-4 space-y-1">
-                <a href="../users/index.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Home</a>
-                <a href="../users/events.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Events</a>
-                <a href="../users/services.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Services</a>
-                <a href="../users/venues.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Venues</a>
-                <a href="../users/about.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">About</a>
-                <a href="../users/contact.php" class="block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Contact</a>
+    <!-- Mobile Slide-Down Sidebar Menu -->
+    <div id="mobileMenu" class="fixed inset-0 z-[60] lg:hidden pointer-events-none" aria-hidden="true">
+        <!-- Overlay (starts below header so the header stays visible & usable) -->
+        <div id="mobileOverlay"
+            class="fixed top-14 left-0 right-0 bottom-0 bg-black/30 opacity-0 transition-opacity duration-300 ease-in-out">
+        </div>
+
+        <!-- Sliding Panel (slides down from beneath the header) -->
+        <div id="mobilePanel"
+            class="fixed top-14 left-0 right-0 bg-white dark:bg-[#1a1a2e] shadow-2xl overflow-y-auto max-h-[calc(100vh-3.5rem)] -translate-y-[calc(100%+3.5rem)] transition-transform duration-300 ease-out">
+            <nav class="p-4 space-y-1" aria-label="Mobile navigation">
+                <a href="../users/index.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['index.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">Home</a>
+                <div class="space-y-1">
+                    <button type="button" data-nav-toggle
+                        class="mobile-link w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['events.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">
+                        <span>Events</span>
+                        <svg class="w-3.5 h-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="mobileEventsSubmenu" class="overflow-hidden max-h-0 transition-all duration-200 ease-in-out">
+                        <div class="pl-4 space-y-1">
+                            <?php foreach ($navEvents as $ev): $ename = htmlspecialchars(ucfirst($ev['event_name'])); ?>
+                            <a href="../users/viewdetails.php?type=<?= htmlspecialchars($ev['event_name']) ?>" data-nav-link
+                                class="mobile-link block px-4 py-2 rounded-lg text-sm text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition"><?= $ename ?></a>
+                            <?php endforeach; ?>
+                            <a href="../users/viewevents.php" data-nav-link
+                                class="mobile-link block px-4 py-2 rounded-lg text-sm font-semibold text-brand-600 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">View All</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="../users/services.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['services.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">Services</a>
+                <a href="../users/venues.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['venues.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">Venues</a>
+                <a href="../users/about.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['about.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">About</a>
+                <a href="../users/reviews.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['reviews.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">Reviews</a>
+                <a href="../users/contact.php" data-nav-link
+                    class="mobile-link block px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition <?= in_array($currentPage, $navGroups['contact.php'], true) ? 'bg-brand-50 dark:bg-[#16213e] text-brand-600' : '' ?>">Contact</a>
             </nav>
             <hr class="border-slate-100 dark:border-[#2a3a5c] mx-4">
             <div class="p-4 space-y-3">
                 <?php if (isset($_SESSION['user_id']) && (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')): ?>
-                    <a href="../users/my_bookings.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
-                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <a href="../users/my_bookings.php" data-nav-link
+                        class="mobile-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
                         My Bookings
                     </a>
-                    <a href="../users/profile.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
-                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <a href="../users/profile.php" data-nav-link
+                        class="mobile-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                         My Profile
                     </a>
-                    <a href="../users/reviews.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
-                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                    <a href="../users/my_reviews.php" data-nav-link
+                        class="mobile-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand-900 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">
+                        <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
                         My Reviews
                     </a>
-                    <a href="../auth/logout.php" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-[#2a1020] transition">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <a href="../auth/logout.php" data-nav-link
+                        class="mobile-link flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-[#2a1020] transition">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
                         Logout
                     </a>
                 <?php else: ?>
-                    <a href="../auth/login.php" class="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 border border-slate-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Sign In</a>
-                    <a href="../auth/register.php" class="block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white transition">Get Started</a>
+                    <a href="../auth/login.php" data-nav-link
+                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 border border-slate-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Sign
+                        In</a>
+                    <a href="../auth/register.php" data-nav-link
+                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white transition">Get
+                        Started</a>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 
     <script>
-
-
             (function () {
                 const toggle = document.getElementById('notifToggle');
                 const menu = document.getElementById('notifMenu');
@@ -692,6 +876,7 @@ $username = $_SESSION['user_name'] ?? '';
                     }
                 }, 30000);
             })();
+
         (function () {
             const toggle = document.getElementById('dropdownToggle');
             const menu = document.getElementById('dropdownMenu');
@@ -764,18 +949,145 @@ $username = $_SESSION['user_name'] ?? '';
 
         window.addEventListener('load', renderLucideIcons);
 
-        // Mobile Menu Toggle
+        // Mobile Menu Toggle - Slide Down Animation
         (function () {
             const toggle = document.getElementById('mobileMenuToggle');
             const menu = document.getElementById('mobileMenu');
+            const panel = document.getElementById('mobilePanel');
             const overlay = document.getElementById('mobileOverlay');
+            const hamburgerIcon = document.getElementById('hamburgerIcon');
+            const closeIcon = document.getElementById('closeIcon');
+            if (!toggle || !menu || !panel || !overlay) return;
 
-            function openMenu() { if (menu) menu.classList.remove('hidden'); }
-            function closeMenu() { if (menu) menu.classList.add('hidden'); }
+            let isOpen = false;
+            let savedScrollY = 0;
 
-            if (toggle) toggle.addEventListener('click', openMenu);
-            if (overlay) overlay.addEventListener('click', closeMenu);
-            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+            function openMenu() {
+                if (isOpen) return;
+                isOpen = true;
+
+                // Save scroll position before locking
+                savedScrollY = window.scrollY;
+
+                // Make overlay + panel interactive (container stays pointer-events-none so header stays clickable)
+                menu.setAttribute('aria-hidden', 'false');
+                toggle.setAttribute('aria-expanded', 'true');
+                overlay.classList.add('pointer-events-auto');
+                panel.classList.add('pointer-events-auto');
+
+                // Force reflow so transition runs from hidden state
+                void menu.offsetHeight;
+
+                // Slide panel down + fade overlay in
+                panel.classList.remove('-translate-y-[calc(100%+3.5rem)]');
+                overlay.classList.remove('opacity-0');
+                overlay.classList.add('opacity-100');
+
+                // Swap hamburger -> close icon
+                if (hamburgerIcon && closeIcon) {
+                    hamburgerIcon.classList.remove('opacity-100', 'scale-100');
+                    hamburgerIcon.classList.add('opacity-0', 'scale-0');
+                    closeIcon.classList.remove('opacity-0', 'scale-0', 'pointer-events-none');
+                    closeIcon.classList.add('opacity-100', 'scale-100');
+                }
+
+                // Lock body scroll but preserve current scroll position
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${savedScrollY}px`;
+                document.body.style.left = '0';
+                document.body.style.right = '0';
+                document.body.style.width = '100%';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMenu() {
+                if (!isOpen) return;
+                isOpen = false;
+
+                // Slide panel up + fade overlay out
+                panel.classList.add('-translate-y-[calc(100%+3.5rem)]');
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+
+                // Swap close -> hamburger icon
+                if (hamburgerIcon && closeIcon) {
+                    closeIcon.classList.remove('opacity-100', 'scale-100');
+                    closeIcon.classList.add('opacity-0', 'scale-0', 'pointer-events-none');
+                    hamburgerIcon.classList.remove('opacity-0', 'scale-0');
+                    hamburgerIcon.classList.add('opacity-100', 'scale-100');
+                }
+
+                toggle.setAttribute('aria-expanded', 'false');
+                menu.setAttribute('aria-hidden', 'true');
+
+                // Disable pointer events on overlay + panel immediately so header is usable during close animation
+                overlay.classList.remove('pointer-events-auto');
+                panel.classList.remove('pointer-events-auto');
+
+                // Restore body scroll after the transition completes
+                setTimeout(function () {
+                    document.body.style.position = '';
+                    document.body.style.top = '';
+                    document.body.style.left = '';
+                    document.body.style.right = '';
+                    document.body.style.width = '';
+                    document.body.style.overflow = '';
+                    window.scrollTo(0, savedScrollY);
+                }, 300);
+            }
+
+            function toggleMenu() {
+                if (isOpen) closeMenu(); else openMenu();
+            }
+
+            // Toggle button
+            toggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                toggleMenu();
+            });
+
+            // Click overlay to close
+            overlay.addEventListener('click', closeMenu);
+
+            // Escape key closes
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && isOpen) closeMenu();
+            });
+
+            // Close menu when any nav link is clicked (improves UX)
+            menu.querySelectorAll('[data-nav-link]').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    closeMenu();
+                });
+            });
+
+            // Events submenu accordion toggle
+            document.querySelectorAll('[data-nav-toggle]').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var submenu = this.nextElementSibling;
+                    var icon = this.querySelector('svg');
+                    if (submenu.classList.contains('max-h-0')) {
+                        submenu.classList.remove('max-h-0');
+                        submenu.classList.add('max-h-[500px]');
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        submenu.classList.add('max-h-0');
+                        submenu.classList.remove('max-h-[500px]');
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+
+            // Auto-close when resizing up to desktop
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1024 && isOpen) {
+                    closeMenu();
+                }
+            });
+
+            // Expose for debugging if needed
+            window.__closeMobileMenu = closeMenu;
         })();
 
         // Scroll Animations

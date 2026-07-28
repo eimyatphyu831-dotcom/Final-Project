@@ -372,7 +372,7 @@ function activeMenu($page)
     }
 
     body.sidebar-collapsed #sidebar {
-        width: 5rem !important;
+        width: 4rem !important;
     }
 
     .sidebar-collapsed .sidebar-text,
@@ -493,7 +493,7 @@ function activeMenu($page)
 
     /* Main content margin adjustment via body class */
     body.sidebar-collapsed .lg\:ml-56 {
-        margin-left: 5rem !important;
+        margin-left: 4rem !important;
     }
 
     /* Collapse toggle button */
@@ -520,11 +520,11 @@ function activeMenu($page)
     }
 </style>
 
+<div id="sidebarOverlay"
+    class="fixed inset-0 z-40 bg-black/30 lg:hidden hidden pointer-events-auto" onclick="toggleSidebar()"></div>
+
 <aside id="sidebar"
     class="bg-sidebar text-gray-500 flex flex-col h-screen fixed left-0 top-0 z-50 -translate-x-full lg:translate-x-0">
-
-    <!-- OVERLAY for mobile -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
     <!-- TOP WRAPPER -->
     <div class="flex flex-col flex-1 overflow-hidden">
