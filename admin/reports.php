@@ -353,7 +353,7 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
     <div class="flex h-screen">
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div class="flex-1 flex flex-col lg:ml-56">
             <?php include 'admin_header.php'; ?>
 
             <main class="flex-1 p-6 space-y-6 overflow-y-auto">

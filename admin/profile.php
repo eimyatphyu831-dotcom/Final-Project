@@ -157,7 +157,7 @@ $avatar = $admin['profile_image']
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col ml-64">
+        <div class="flex-1 flex flex-col ml-56">
 
             <?php include 'admin_header.php'; ?>
 

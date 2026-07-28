@@ -367,7 +367,7 @@ function activeMenu($page)
 
     /* ---- SIDEBAR COLLAPSE ---- */
     #sidebar {
-        width: 16rem;
+        width: 14rem;
         transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
     }
 
@@ -492,7 +492,7 @@ function activeMenu($page)
     }
 
     /* Main content margin adjustment via body class */
-    body.sidebar-collapsed .lg\:ml-64 {
+    body.sidebar-collapsed .lg\:ml-56 {
         margin-left: 5rem !important;
     }
 

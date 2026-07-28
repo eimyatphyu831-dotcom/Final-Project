@@ -162,7 +162,7 @@ if ($epsRes) {
 <body class="bg-gray-100 min-h-screen overflow-hidden">
     <div class="flex h-screen">
         <?php include 'sidebar.php'; ?>
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div class="flex-1 flex flex-col lg:ml-56">
             <?php include 'admin_header.php'; ?>
             <main class="flex-1 p-6 overflow-y-auto">
 

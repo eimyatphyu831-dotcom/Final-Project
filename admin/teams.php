@@ -128,7 +128,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div class="flex-1 flex flex-col lg:ml-56">
 
             <?php include 'admin_header.php'; ?>
 

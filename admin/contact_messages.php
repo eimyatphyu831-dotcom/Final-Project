@@ -148,7 +148,7 @@ $stmt->close();
 
         <?php include 'sidebar.php'; ?>
 
-        <div class="flex-1 flex flex-col lg:ml-64">
+        <div class="flex-1 flex flex-col lg:ml-56">
 
             <?php include 'admin_header.php'; ?>
 
