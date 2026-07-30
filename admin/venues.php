@@ -287,21 +287,34 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                 ?>
                 <?php if ($vTotalPages > 1): ?>
                 <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
-                    <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $vPage ?> of <?= $vTotalPages ?></span>
+                    <a href="?v_page=1<?= $vQueryStr ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-angles-left mr-1"></i> First
+                    </a>
                     <a href="?v_page=<?= max(1, $vPage-1) ?><?= $vQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                        <i class="fa-solid fa-chevron-left"></i>
                     </a>
-                    <?php for ($i = 1; $i <= $vTotalPages; $i++): ?>
-                    <a href="?v_page=<?= $i ?><?= $vQueryStr ?>"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $vPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <?= $i ?>
-                    </a>
-                    <?php endfor; ?>
+                    <span class="text-xs text-gray-500 font-medium">Page <?= $vPage ?> of <?= $vTotalPages ?></span>
                     <a href="?v_page=<?= min($vTotalPages, $vPage+1) ?><?= $vQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage >= $vTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                        <i class="fa-solid fa-chevron-right"></i>
                     </a>
+                    <a href="?v_page=<?= $vTotalPages ?><?= $vQueryStr ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage >= $vTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Last <i class="fa-solid fa-angles-right ml-1"></i>
+                    </a>
+                    <form method="GET" class="flex items-center gap-1 ml-2">
+                        <label class="text-xs text-gray-500 font-medium">Page:</label>
+                        <input type="number" name="v_page" min="1" max="<?= $vTotalPages ?>" value="<?= $vPage ?>"
+                            class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                        <?php if ($filterEventId > 0): ?>
+                        <input type="hidden" name="event_id" value="<?= $filterEventId ?>">
+                        <?php endif; ?>
+                        <?php if ($search !== ''): ?>
+                        <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                        <?php endif; ?>
+                    </form>
                 </div>
                 <?php endif; ?>
             </div>

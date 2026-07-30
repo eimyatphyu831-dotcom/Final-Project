@@ -366,20 +366,31 @@ if ($vResult)
 
                 <?php if ($eTotalPages > 1): ?>
                 <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                    <a href="?e_page=1<?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-angles-left mr-1"></i> First
+                    </a>
                     <a href="?e_page=<?= max(1, $ePage-1) ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                        <i class="fa-solid fa-chevron-left"></i>
                     </a>
-                    <?php for ($i = 1; $i <= $eTotalPages; $i++): ?>
-                    <a href="?e_page=<?= $i ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $ePage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <?= $i ?>
-                    </a>
-                    <?php endfor; ?>
+                    <span class="text-xs text-gray-500 font-medium">Page <?= $ePage ?> of <?= $eTotalPages ?></span>
                     <a href="?e_page=<?= min($eTotalPages, $ePage+1) ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage >= $eTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                        <i class="fa-solid fa-chevron-right"></i>
                     </a>
+                    <a href="?e_page=<?= $eTotalPages ?><?= $searchEvent ? '&search='.urlencode($searchEvent) : '' ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $ePage >= $eTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Last <i class="fa-solid fa-angles-right ml-1"></i>
+                    </a>
+                    <form method="GET" class="flex items-center gap-1 ml-2">
+                        <label class="text-xs text-gray-500 font-medium">Page:</label>
+                        <input type="number" name="e_page" min="1" max="<?= $eTotalPages ?>" value="<?= $ePage ?>"
+                            class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                        <?php if ($searchEvent): ?>
+                        <input type="hidden" name="search" value="<?= htmlspecialchars($searchEvent) ?>">
+                        <?php endif; ?>
+                    </form>
                 </div>
                 <?php endif; ?>
 

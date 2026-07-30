@@ -364,22 +364,32 @@ $paginatedCustomers = array_slice($customers, $cOffset, $cPerPage);
 
                     <?php if ($cTotalPages > 1): ?>
                     <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
-                        <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $cPage ?> of <?= $cTotalPages ?></span>
                         <?php $cQueryStr = $search ? '&search=' . urlencode($search) : ''; ?>
+                        <a href="?c_page=1<?= $cQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <i class="fa-solid fa-angles-left mr-1"></i> First
+                        </a>
                         <a href="?c_page=<?= max(1, $cPage-1) ?><?= $cQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                            <i class="fa-solid fa-chevron-left"></i>
                         </a>
-                        <?php for ($i = 1; $i <= $cTotalPages; $i++): ?>
-                        <a href="?c_page=<?= $i ?><?= $cQueryStr ?>"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $cPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            <?= $i ?>
-                        </a>
-                        <?php endfor; ?>
+                        <span class="text-xs text-gray-500 font-medium">Page <?= $cPage ?> of <?= $cTotalPages ?></span>
                         <a href="?c_page=<?= min($cTotalPages, $cPage+1) ?><?= $cQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage >= $cTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                            <i class="fa-solid fa-chevron-right"></i>
                         </a>
+                        <a href="?c_page=<?= $cTotalPages ?><?= $cQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $cPage >= $cTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            Last <i class="fa-solid fa-angles-right ml-1"></i>
+                        </a>
+                        <form method="GET" class="flex items-center gap-1 ml-2">
+                            <label class="text-xs text-gray-500 font-medium">Page:</label>
+                            <input type="number" name="c_page" min="1" max="<?= $cTotalPages ?>" value="<?= $cPage ?>"
+                                class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                            <?php if ($search): ?>
+                            <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                            <?php endif; ?>
+                        </form>
                     </div>
                     <?php endif; ?>
                 </div>

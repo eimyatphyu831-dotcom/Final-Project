@@ -205,21 +205,28 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
 
                 <?php if ($sTotalPages > 1): ?>
                 <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100 bg-white rounded-2xl mt-4">
-                    <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $sPage ?> of <?= $sTotalPages ?></span>
+                    <a href="?s_page=1"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        <i class="fa-solid fa-angles-left mr-1"></i> First
+                    </a>
                     <a href="?s_page=<?= max(1, $sPage-1) ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                        <i class="fa-solid fa-chevron-left"></i>
                     </a>
-                    <?php for ($i = 1; $i <= $sTotalPages; $i++): ?>
-                    <a href="?s_page=<?= $i ?>"
-                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $sPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        <?= $i ?>
-                    </a>
-                    <?php endfor; ?>
+                    <span class="text-xs text-gray-500 font-medium">Page <?= $sPage ?> of <?= $sTotalPages ?></span>
                     <a href="?s_page=<?= min($sTotalPages, $sPage+1) ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage >= $sTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                        Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                        <i class="fa-solid fa-chevron-right"></i>
                     </a>
+                    <a href="?s_page=<?= $sTotalPages ?>"
+                        class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage >= $sTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                        Last <i class="fa-solid fa-angles-right ml-1"></i>
+                    </a>
+                    <form method="GET" class="flex items-center gap-1 ml-2">
+                        <label class="text-xs text-gray-500 font-medium">Page:</label>
+                        <input type="number" name="s_page" min="1" max="<?= $sTotalPages ?>" value="<?= $sPage ?>"
+                            class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                    </form>
                 </div>
                 <?php endif; ?>
 

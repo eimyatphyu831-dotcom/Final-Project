@@ -119,6 +119,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
  $bookings = [];
  $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
                   b.time_slot_id, ts.slot_name AS time_slot_name,
+                  CONCAT(TIME_FORMAT(ts.start_time, '%H:%i'), ' - ', TIME_FORMAT(ts.end_time, '%H:%i')) AS time_slot_range,
                   u.name AS customer_name, u.email,
                   e.event_name,
                   p.name AS package_name,
@@ -143,7 +144,7 @@ if ($result && $result->num_rows > 0) {
  $hasData = !empty($bookings);
 if (!$hasData) {
     $bookings = [
-        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "team_name" => ""]
+        ["id" => 0, "customer_name" => "—", "email" => "", "event_name" => "—", "package_name" => "—", "venue_name" => "—", "event_date" => "—", "total_cost" => "0", "status" => "", "created_at" => "", "payment_name" => "—", "time_slot_name" => "", "time_slot_range" => "—", "team_name" => ""]
     ];
 }
 
@@ -301,7 +302,7 @@ if (!$hasData) {
                                         <td class="p-2">
                                             <div class="flex justify-center items-center gap-2">
                                                 <button type="button"
-                                                    onclick="openViewModal(<?= $b['id'] ?>, '<?= htmlspecialchars($b['customer_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['email'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['package_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['venue_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['time_slot_name'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['team_name'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_date'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['payment_name'] ?? '—', ENT_QUOTES) ?>', '<?= number_format($b['total_cost']) ?>', '<?= htmlspecialchars($b['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['receipt_image'] ?? '', ENT_QUOTES) ?>')"
+                                                    onclick="openViewModal(<?= $b['id'] ?>, '<?= htmlspecialchars($b['customer_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['email'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['package_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['venue_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['time_slot_range'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['team_name'] ?? '—', ENT_QUOTES) ?>', '<?= htmlspecialchars($b['event_date'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['payment_name'] ?? '—', ENT_QUOTES) ?>', '<?= number_format($b['total_cost']) ?>', '<?= htmlspecialchars($b['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($b['receipt_image'] ?? '', ENT_QUOTES) ?>')"
                                                     class="inline-flex items-center gap-1 px-1.5 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-200 transition">
                                                     <i class="fa-solid fa-eye"></i>
                                                     View
@@ -344,25 +345,35 @@ if (!$hasData) {
 
                     <?php if ($bTotalPages > 1): ?>
                     <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
-                        <span class="text-xs text-gray-500 font-medium mr-2">Page: <?= $bPage ?> of <?= $bTotalPages ?></span>
                         <?php
                         $bQueryStr = '';
                         if ($statusFilter !== 'all') $bQueryStr = '&status=' . urlencode($statusFilter);
                         ?>
+                        <a href="?b_page=1<?= $bQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            <i class="fa-solid fa-angles-left mr-1"></i> First
+                        </a>
                         <a href="?b_page=<?= max(1, $bPage-1) ?><?= $bQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            <i class="fa-solid fa-chevron-left mr-1"></i> Prev
+                            <i class="fa-solid fa-chevron-left"></i>
                         </a>
-                        <?php for ($i = 1; $i <= $bTotalPages; $i++): ?>
-                        <a href="?b_page=<?= $i ?><?= $bQueryStr ?>"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $i == $bPage ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            <?= $i ?>
-                        </a>
-                        <?php endfor; ?>
+                        <span class="text-xs text-gray-500 font-medium">Page <?= $bPage ?> of <?= $bTotalPages ?></span>
                         <a href="?b_page=<?= min($bTotalPages, $bPage+1) ?><?= $bQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage >= $bTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
-                            Next <i class="fa-solid fa-chevron-right ml-1"></i>
+                            <i class="fa-solid fa-chevron-right"></i>
                         </a>
+                        <a href="?b_page=<?= $bTotalPages ?><?= $bQueryStr ?>"
+                            class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage >= $bTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                            Last <i class="fa-solid fa-angles-right ml-1"></i>
+                        </a>
+                        <form method="GET" class="flex items-center gap-1 ml-2">
+                            <label class="text-xs text-gray-500 font-medium">Page:</label>
+                            <input type="number" name="b_page" min="1" max="<?= $bTotalPages ?>" value="<?= $bPage ?>"
+                                class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                            <?php if ($statusFilter !== 'all'): ?>
+                            <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
+                            <?php endif; ?>
+                        </form>
                     </div>
                     <?php endif; ?>
                 </div>

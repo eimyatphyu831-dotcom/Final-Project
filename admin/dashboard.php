@@ -345,7 +345,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                                                 <td class="py-3.5">
                                                     <span
                                                         class="px-2.5 py-1 text-xs font-medium rounded-lg
-                                                  <?= $rb['status'] === 'Confirmed' ? 'text-emerald-600 bg-emerald-50' : ($rb['status'] === 'Cancelled' ? 'text-rose-600 bg-rose-50' : 'text-amber-600 bg-amber-50') ?>">
+                                                  <?= $rb['status'] === 'Confirmed' ? 'text-emerald-600 bg-emerald-50' : ($rb['status'] === 'Cancelled' ? 'text-rose-600 bg-rose-50' : ($rb['status'] === 'Completed' ? 'text-blue-400 bg-blue-200' : 'text-amber-600 bg-amber-50')) ?>">
                                                         <?= $rb['status'] ?>
                                                     </span>
                                                 </td>
