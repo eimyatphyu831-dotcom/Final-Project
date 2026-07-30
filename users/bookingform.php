@@ -335,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .pm-card.selected {
-            border-color: var(--pm-color, #205fb0ff);
+            border-color: var(--pm-color, #50b7e0ff);
             border-width: 3px;
             background: var(--pm-bg, #ede9fe);
             box-shadow: 0 4px 16px var(--pm-shadow, rgba(124, 58, 237, 0.3));
@@ -502,9 +502,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Payment
                                     Method</label>
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    <?php foreach ($paymentMethods as $pm): 
-                                        // Since 'color' isn't in the DB schema provided, using default purple theme color
-                                        $pmColor = '#7c3aed'; 
+                                    <?php 
+                                        $pmColorMap = [
+                                            'kbzpay' => '#50b7e0ff',
+                                            'ayapay' => '#d35d5dff',
+                                            'wavepay' => '#FEF08A',
+                                            'cbpay' => '#3B82F6',
+                                        ];
+                                        foreach ($paymentMethods as $pm): 
+                                        $pmNameKey = strtolower(str_replace([' ', '_', '-'], '', $pm['payment_name']));
+                                        $pmColor = $pmColorMap[$pmNameKey] ?? '#6b7280'; 
                                     ?>
                                         <div class="pm-card rounded-lg border border-gray-300 p-1 text-center w-15 h-13 flex flex-col items-center justify-center cursor-pointer"
                                             data-id="<?= $pm['id'] ?>"
@@ -733,6 +740,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const qrSrc = el.dataset.qr || '<?= $kpayQr ?>';
             const account = el.dataset.account || '';
             const phone = el.dataset.phone || '';
+            const pmColor = el.dataset.color || '#7c3aed';
 
             document.getElementById('summaryPmName').textContent = pmName;
             document.getElementById('summaryAccountName').textContent = account;
@@ -743,6 +751,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('modalAccountName').textContent = account;
             document.getElementById('modalPhone').textContent = phone;
             document.getElementById('qrImage').src = qrSrc;
+
+            document.getElementById('summaryQrSection').style.backgroundColor = pmColor;
         }
 
         function copyPhone(btn) {
@@ -843,6 +853,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const qrSrc = kpayCard.dataset.qr || '<?= $kpayQr ?>';
                     const account = kpayCard.dataset.account || '';
                     const phone = kpayCard.dataset.phone || '';
+                    const pmColor = kpayCard.dataset.color || '#7c3aed';
 
                     document.getElementById('summaryPmName').textContent = pmName;
                     document.getElementById('summaryAccountName').textContent = account;
@@ -853,6 +864,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('modalAccountName').textContent = account;
                     document.getElementById('modalPhone').textContent = phone;
                     document.getElementById('qrImage').src = qrSrc;
+
+                    document.getElementById('summaryQrSection').style.backgroundColor = pmColor;
                 }
             }
 
@@ -871,6 +884,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
 
             function updateSlotAvailability(selectedDate) {
+                const today = new Date().toISOString().split('T')[0];
+                const isToday = selectedDate === today;
+
                 const venueTaken = bookedSlots[selectedDate] || [];
                 const teamsAssigned = assignedTeamsByDate[selectedDate] || [];
                 const isDateFull = teamsAssigned.length >= totalTeams;
@@ -878,7 +894,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 const slotErrorMsg = document.getElementById('slotErrorMessage');
 
-                if (alreadyBooked) {
+                if (isToday) {
+                    slotErrorMsg.textContent = 'You cannot book an event for today. Please select a future date.';
+                    slotErrorMsg.classList.remove('hidden');
+                } else if (alreadyBooked) {
                     slotErrorMsg.textContent = 'You have already booked this event on this date.';
                     slotErrorMsg.classList.remove('hidden');
                 } else if (isDateFull) {
@@ -893,7 +912,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const label = r.closest('.slot-option');
                     const unavailableMsg = label.querySelector('.slot-unavailable-msg');
                     const isVenueBooked = venueTaken.includes(id);
-                    const isUnavailable = isVenueBooked || isDateFull || alreadyBooked;
+                    const isUnavailable = isVenueBooked || isDateFull || alreadyBooked || isToday;
 
                     // Reset unavailable message
                     if (unavailableMsg) {
@@ -902,7 +921,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
 
                     if (isVenueBooked || isDateFull) {
-                        unavailableMsg.textContent = 'Unavailable Team';
+                        unavailableMsg.textContent = 'Unavailable Time';
                         unavailableMsg.classList.remove('hidden');
                     }
 
