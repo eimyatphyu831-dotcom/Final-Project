@@ -289,7 +289,7 @@ for ($i = 1; $i <= $daysInLastMonth; $i++) {
                         <div class="space-y-1">
                             <p class="text-xs text-gray-400 font-medium">Revenue (MMK)</p>
                             <p class="text-2xl font-bold text-gray-600">
-                                <?= number_format($totalRevenue / 1000000, 2) ?> M
+                                <?= number_format($totalRevenue)?>
                             </p>
                         </div>
                     </div>
