@@ -318,7 +318,7 @@ function handleBooking(url) {
     const params = new URLSearchParams(url.split('?')[1] || '');
     const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
 
-    // 1. If no venue/package is selected, SHOW THE MODAL instead of redirecting instantly
+    //  If no venue/package is selected, SHOW THE MODAL instead of redirecting instantly
     if (!hasVenueAndPackage) {
         showModal(
             'Selection Required',
@@ -333,7 +333,7 @@ function handleBooking(url) {
         return;
     }
 
-    // 2. If venue/package ARE selected, but user is not logged in, show Login Modal
+    // If venue/package ARE selected, but user is not logged in, show Login Modal
     if (!isLoggedIn) {
         const bookingUrl = encodeURIComponent(url);
         showModal(
@@ -348,7 +348,7 @@ function handleBooking(url) {
         return;
     }
 
-    // 3. If everything is fine, go straight to booking form
+    // If everything is fine, go straight to booking form
     window.location.href = url;
 
     }
