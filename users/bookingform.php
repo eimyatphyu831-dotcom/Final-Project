@@ -534,7 +534,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
 
                             <!-- Payment QR Scan -->
-                            <div class="bg-purple-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center"
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm text-center"
                                 id="summaryQrSection">
                                 <p class="text-xs font-bold text-gray-500 uppercase mb-2">Scan to Pay with <span
                                         id="summaryPmName"><?= htmlspecialchars($kpayName) ?></span></p>
@@ -720,6 +720,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         let selectedPm = null;
 
+        function normalizeHex(color) {
+            if (!color) return null;
+            color = color.trim().replace('#', '');
+            if (color.length === 3 || color.length === 4) {
+                color = color.split('').map(c => c + c).join('');
+            }
+            if (color.length === 4 || color.length === 8) {
+                color = color.slice(0, 6);
+            }
+            return /^[0-9a-fA-F]{6}$/.test(color) ? '#' + color : null;
+        }
+
         function selectPayment(el) {
             document.querySelectorAll('.pm-card').forEach(c => {
                 c.classList.remove('selected');
@@ -728,7 +740,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 c.style.removeProperty('--pm-shadow');
             });
             el.classList.add('selected');
-            const color = el.dataset.color || '#7c3aed';
+            const color = normalizeHex(el.dataset.color) || '#7c3aed';
             const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
             el.style.setProperty('--pm-color', color);
             el.style.setProperty('--pm-bg', `rgba(${r},${g},${b},0.2)`);
@@ -751,8 +763,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('modalAccountName').textContent = account;
             document.getElementById('modalPhone').textContent = phone;
             document.getElementById('qrImage').src = qrSrc;
-
-            document.getElementById('summaryQrSection').style.backgroundColor = pmColor;
         }
 
         function copyPhone(btn) {
@@ -864,8 +874,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('modalAccountName').textContent = account;
                     document.getElementById('modalPhone').textContent = phone;
                     document.getElementById('qrImage').src = qrSrc;
-
-                    document.getElementById('summaryQrSection').style.backgroundColor = pmColor;
                 }
             }
 
