@@ -55,6 +55,12 @@ if ($teamIdCol && $teamIdCol->num_rows === 0) {
     $conn->query("ALTER TABLE bookings ADD FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL ON UPDATE CASCADE");
 }
 
+// guest_count column
+ $guestCountCol = $conn->query("SHOW COLUMNS FROM bookings LIKE 'guest_count'");
+if ($guestCountCol && $guestCountCol->num_rows === 0) {
+    $conn->query("ALTER TABLE bookings ADD COLUMN guest_count INT NOT NULL DEFAULT 0 AFTER package_id");
+}
+
 // Create reviews table
  $conn->query("CREATE TABLE IF NOT EXISTS reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -102,6 +108,7 @@ if ($r && $row = $r->fetch_assoc())
  $venueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
  $packageId = isset($_GET['package_id']) ? (int) $_GET['package_id'] : 0;
  $totalCost = isset($_GET['total']) ? (float) $_GET['total'] : 0;
+ $guestCount = isset($_GET['guests']) ? (int) $_GET['guests'] : 0;
 
  $eventImage = '../assets/images/slide1.png';
  $eventName = '—';
@@ -224,10 +231,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vid = (int) ($_POST['venue_id'] ?? 0);
     $pid = (int) ($_POST['package_id'] ?? 0);
     $total = (float) ($_POST['total_cost'] ?? 0);
+    $guestCount = (int) ($_POST['guest_count'] ?? 0);
     $paymentMethodId = !empty($_POST['paymentmethods_id']) ? (int) $_POST['paymentmethods_id'] : 0;
 
     if ($eid > 0 && $vid > 0 && $pid > 0 && $event_date && $time_slot_id > 0 && isset($timeSlotMap[$time_slot_id])) {
         $slotName = $slotNames[$time_slot_id];
+
+        // Validate guest count against venue capacity
+        $venueCap = 0;
+        $capRes = $conn->query("SELECT capacity FROM venues WHERE id=$vid");
+        if ($capRes && $capRow = $capRes->fetch_assoc()) {
+            $venueCap = (int) $capRow['capacity'];
+        }
+
+        // Recompute total as per-guest price x guest count (authoritative, ignores posted total)
+        $perGuest = 0;
+        $priceRes = $conn->prepare("SELECT price FROM venue_packages WHERE venue_id = ? AND package_id = ? LIMIT 1");
+        $priceRes->bind_param("ii", $vid, $pid);
+        $priceRes->execute();
+        $priceRow = $priceRes->get_result()->fetch_assoc();
+        $priceRes->close();
+        if ($priceRow) {
+            $perGuest = (float) $priceRow['price'];
+        }
+        $total = $perGuest * $guestCount;
+
+        if ($guestCount <= 0) {
+            $message = 'Please provide the number of guests.';
+        } else if ($venueCap > 0 && $guestCount > $venueCap) {
+            $message = "This venue can hold up to {$venueCap} guests.";
+        } else if ($perGuest <= 0) {
+            $message = 'This package has no price configured for the selected venue.';
+        } else {
 
         // Handle receipt upload
         $receiptPath = null;
@@ -284,8 +319,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message = "No service team is available on this date. Please choose another date.";
                     } else {
                         // Step 5: Venue slot and team are available — assign team, save
-                        $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, time_slot_id, team_id, event_date, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
-                        $stmt->bind_param("iiiiiisdis", $userId, $eid, $vid, $pid, $time_slot_id, $teamId, $event_date, $total, $paymentMethodId, $receiptPath);
+                        $stmt = $conn->prepare("INSERT INTO bookings (user_id, event_id, venue_id, package_id, guest_count, time_slot_id, team_id, event_date, total_cost, status, paymentmethods_id, receipt_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?, ?)");
+                        $stmt->bind_param("iiiiiiisdis", $userId, $eid, $vid, $pid, $guestCount, $time_slot_id, $teamId, $event_date, $total, $paymentMethodId, $receiptPath);
                         if ($stmt->execute()) {
                             $bookingId = $stmt->insert_id;
                             $stmt->close();
@@ -305,6 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             }
+        }
         }
     } else {
         $message = 'Missing required fields.';
@@ -425,6 +461,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="hidden" name="venue_id" value="<?= $venueId ?>">
                             <input type="hidden" name="package_id" value="<?= $packageId ?>">
                             <input type="hidden" name="total_cost" value="<?= $totalCost ?>">
+                            <input type="hidden" name="guest_count" value="<?= $guestCount ?>">
                             <input type="hidden" name="paymentmethods_id" id="payment_method_id" value="">
 
 
@@ -633,6 +670,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <span
                                         class="font-medium text-gray-800"><?= htmlspecialchars($venueName ?? '') ?></span>
                                 </div>
+                                <?php if ($guestCount > 0): ?>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-500 w-16 text-xs">Guests</span>
+                                        <span class="font-medium text-gray-800"><?= number_format($guestCount) ?></span>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="flex items-center gap-2">
                                     <span class="text-gray-500 w-16 text-xs">Package</span>
                                     <span class="font-medium text-gray-800"><?= htmlspecialchars($packageName) ?></span>

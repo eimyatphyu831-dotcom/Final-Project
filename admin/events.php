@@ -11,6 +11,9 @@ require_once '../config/db.php';
 $action = $_GET['action'] ?? 'list';
 $editEvent = null;
 $editGallery = [];
+$viewEvent = null;
+$viewGallery = [];
+$viewVenues = [];
 $searchEvent = $_GET['search'] ?? '';
 
 $queryParams = [];
@@ -78,6 +81,35 @@ if ($action === 'edit' && isset($_GET['id'])) {
     $stmt->execute();
     $result = $stmt->get_result();
     $editGallery = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+// VIEW - fetch event data
+$viewEvent = null;
+$viewGallery = [];
+if ($action === 'view' && isset($_GET['id'])) {
+    $id = (int) $_GET['id'];
+    $stmt = $conn->prepare("SELECT * FROM events WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $viewEvent = $result->fetch_assoc();
+    $stmt->close();
+
+    // Fetch gallery images for view modal
+    $stmt = $conn->prepare("SELECT * FROM event_gallery WHERE event_id=? ORDER BY id ASC");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $viewGallery = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // Fetch venues for this event
+    $stmt = $conn->prepare("SELECT name, address, capacity FROM venues WHERE event_id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $viewVenues = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 }
 
@@ -340,6 +372,10 @@ if ($vResult)
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
+                                            <a href="events.php?action=view&id=<?= $event['id'] ?>"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                                                <i class="fa-solid fa-eye mr-1"></i> View
+                                            </a>
                                             <a href="events.php?action=edit&id=<?= $event['id'] ?>"
                                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                                 <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
@@ -393,6 +429,52 @@ if ($vResult)
                     </form>
                 </div>
                 <?php endif; ?>
+
+                <!-- View Modal -->
+                <div id="viewModal"
+                    class="modal-overlay <?= $action === 'view' && $viewEvent ? '' : 'hidden' ?>">
+                    <div class="modal-content relative max-w-xl">
+                        <div class="text-center mb-4">
+                            <h2 class="text-lg font-bold text-gray-800">Event Details</h2>
+                            <p class="text-xs text-gray-500 mt-0.5">Full details of the event</p>
+                            <button onclick="closeModal()"
+                                class="text-gray-400 hover:text-gray-600 text-lg leading-none absolute top-3 right-3">&times;</button>
+                        </div>
+                        <?php if ($viewEvent): ?>
+                            <div class="space-y-4">
+                                <div class="flex justify-center">
+                                    <img src="<?= $viewEvent['image'] ?>" class="w-48 h-48 rounded-xl object-cover shadow">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <div><span class="font-semibold text-gray-600">Name</span>
+                                        <p class="text-gray-800"><?= htmlspecialchars($viewEvent['event_name']) ?></p>
+                                    </div>
+                                    <div><span class="font-semibold text-gray-600">Gallery Images</span>
+                                        <p class="text-gray-800"><?= count($viewGallery) ?> images</p>
+                                    </div>
+                                    <div class="col-span-2"><span class="font-semibold text-gray-600">Description</span>
+                                        <p class="text-gray-800"><?= htmlspecialchars($viewEvent['description']) ?></p>
+                                    </div>
+                                   
+                                </div>
+                                <?php if (!empty($viewGallery)): ?>
+                                    <div>
+                                        <span class="font-semibold text-gray-600 text-sm">Gallery</span>
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            <?php foreach ($viewGallery as $photo): ?>
+                                                <img src="<?= $photo['image_path'] ?>" class="w-16 h-16 rounded-lg object-cover border">
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="text-center pt-2">
+                                    <button onclick="closeModal()"
+                                        class="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition">Close</button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
                 <!-- Modal overlay -->
                 <div id="eventModal"

@@ -413,7 +413,7 @@ $username = $_SESSION['user_name'] ?? '';
         'events.php' => ['events.php', 'viewevents.php', 'viewdetails.php'],
         'reviews.php' => ['reviews.php'],
         'services.php' => ['services.php'],
-        'venues.php' => ['venues.php', 'viewvenues.php'],
+        'venues.php' => ['venues.php', 'viewvenues.php','select_venue.php'],
         'about.php' => ['about.php'],
         'contact.php' => ['contact.php'],
     ];

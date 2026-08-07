@@ -41,15 +41,11 @@ CREATE TABLE IF NOT EXISTS event_gallery (
 -- Venues Table
 CREATE TABLE IF NOT EXISTS venues (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    event_id INT NOT NULL,
     name VARCHAR(50) NOT NULL,
     address VARCHAR(50) NOT NULL,
     capacity INT NOT NULL,
     image_path varchar(200),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (event_id) REFERENCES events(id)
-        ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- Packages Table

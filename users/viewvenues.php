@@ -4,29 +4,28 @@ require_once '../config/db.php';
 $isLoggedIn = isset($_SESSION['user_id']);
 
 $eventId = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 0;
-$selectedVenueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
+ $selectedVenueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
+ $guestCount = isset($_GET['guests']) ? (int) $_GET['guests'] : 0;
 
-if ($eventId > 0) {
-    $result = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id WHERE v.event_id = $eventId ORDER BY e.event_name ASC, v.name ASC");
-    $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
-} else {
-    $result = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY e.event_name ASC, v.name ASC");
-    $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
-}
+$result = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY e.event_name ASC, v.name ASC");
+$venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Selected venue packages
 $selectedVenue = null;
 $packages = [];
 $venueId = $selectedVenueId;
 
-if ($venueId > 0 && $eventId > 0) {
+if ($venueId > 0) {
     $stmt = $conn->prepare("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id WHERE v.id=?");
     $stmt->bind_param("i", $venueId);
     $stmt->execute();
     $selectedVenue = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if ($selectedVenue) {
+    // When no event is chosen, book under the selected venue's own event
+    $eventId = $eventId > 0 ? $eventId : (int) ($selectedVenue['event_id'] ?? 0);
+
+    if ($selectedVenue && $eventId > 0) {
         $allPkgs = $conn->query("SELECT p.id, p.name, p.description FROM packages p ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond')");
         $allPackages = $allPkgs ? $allPkgs->fetch_all(MYSQLI_ASSOC) : [];
 
@@ -56,17 +55,28 @@ if ($venueId > 0 && $eventId > 0) {
 
         foreach ($allPackages as $pkg) {
             $pid = $pkg['id'];
-            $price = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
+            $perGuest = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
+            $totalPrice = $perGuest * $guestCount;
             $packages[] = [
                 'id' => $pid,
                 'name' => $pkg['name'],
-                'price' => $price,
-                'price_formatted' => $price > 0 ? number_format($price) . ' MMK' : '---',
+                'price' => $totalPrice,
+                'per_guest_price' => $perGuest,
+                'price_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
                 'services' => $pkgServices[$pid] ?? []
             ];
         }
     }
 }
+
+$hasGuestCount = $guestCount > 0;
+$exceedsCapacity = false;
+if ($selectedVenue) {
+    $capacity = (int) ($selectedVenue['capacity'] ?? 0);
+    $exceedsCapacity = $hasGuestCount && $guestCount > $capacity;
+}
+$canShowPackages = $selectedVenue && $hasGuestCount && !$exceedsCapacity && !empty($packages);
+$needsGuestCount = $selectedVenue && !$hasGuestCount;
 
 ?>
 <?php include '../includes/header.php'; ?>
@@ -128,12 +138,12 @@ if ($venueId > 0 && $eventId > 0) {
                                 $eventKey = strtolower(trim($v['event_name']));
                                 $badgeClass = $badges[$eventKey] ?? 'bg-purple-400 text-white';
                             ?>
-                            <div class="flex py-1 w-full">
+                            <!-- <div class="flex py-1 w-full">
                                 <span
                                     class="block w-max px-3 py-1 text-[10px] text-center font-semibold rounded-lg <?= $badgeClass ?>">
                                     <?= htmlspecialchars($v['event_name']) ?>
                                 </span>
-                            </div>
+                            </div> -->
                         <?php endif; ?>
                         <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mb-3">
                             <div class="flex items-start gap-1 text-xs text-slate-400 mt-1 font-medium">
@@ -143,10 +153,10 @@ if ($venueId > 0 && $eventId > 0) {
                             <span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5"></i>
                                 <?= number_format($v['capacity']) ?> </span>
                         </div>
-                        <a href="?event_id=<?= $v['event_id'] ?>&venue_id=<?= $v['id'] ?>"
+                        <!-- <a href="?event_id=<?= $eventId ?: $v['event_id'] ?>&venue_id=<?= $v['id'] ?>"
                             class="mb-4 w-full py-2 rounded-xl text-center text-xs font-semibold transition <?= ($selectedVenueId == $v['id']) ? 'bg-brand-700 text-white' : 'border border-brand-600 bg-brand-600 hover:bg-brand-700 text-white' ?>">
                             <?= ($selectedVenueId == $v['id']) ? 'Selected' : 'Select' ?>
-                        </a>
+                        </a> -->
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -154,7 +164,75 @@ if ($venueId > 0 && $eventId > 0) {
     </div>
 </section>
 
-<?php if ($selectedVenue && !empty($packages)): ?>
+<?php if ($selectedVenue): ?>
+    <!-- Guest Count Input Section -->
+    <section id="guestCountSection" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-[1.5rem] shadow-sm border border-purple-100 p-6">
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="users" class="w-5 h-5 text-brand-600"></i>
+                        Number of Guests
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Enter your estimated guest count for
+                        <span class="font-semibold text-slate-700"><?= htmlspecialchars($selectedVenue['name']) ?></span>
+                        (capacity: up to <?= number_format($selectedVenue['capacity'] ?? 0) ?> guests)
+                    </p>
+                </div>
+                <form method="get" action="viewvenues.php" class="flex items-end gap-3">
+                    <input type="hidden" name="event_id" value="<?= $eventId ?>">
+                    <input type="hidden" name="venue_id" value="<?= $selectedVenue['id'] ?>">
+                    <div>
+                        <label for="guestsInput" class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Guests</label>
+                        <input type="number" name="guests" id="guestsInput" min="1"
+                            max="<?= (int) ($selectedVenue['capacity'] ?? 99999) ?>"
+                            value="<?= $guestCount > 0 ? $guestCount : '' ?>"
+                            placeholder="e.g. 150"
+                            class="w-40 px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 text-sm"
+                            required>
+                    </div>
+                    <button type="submit"
+                        class="px-6 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition">
+                        Show Packages
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <?php if ($exceedsCapacity): ?>
+        <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <div class="bg-red-50 border border-red-200 rounded-[1.5rem] p-6 text-center">
+                <i data-lucide="alert-triangle" class="w-10 h-10 text-red-400 mx-auto mb-2"></i>
+                <h3 class="text-lg font-bold text-red-700">Guest Count Exceeds Capacity</h3>
+                <p class="text-sm text-red-500 mt-1">
+                    <span class="font-semibold"><?= htmlspecialchars($selectedVenue['name']) ?></span> can hold up to
+                    <?= number_format((int) $selectedVenue['capacity']) ?> guests, but you entered <?= number_format($guestCount) ?>.
+                    Please reduce the guest count or select a different venue.
+                </p>
+                <a href="?event_id=<?= $eventId ?>&venue_id=<?= $selectedVenue['id'] ?>"
+                    class="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-red-600 hover:text-red-700 transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Adjust Guest Count
+                </a>
+            </div>
+        </section>
+    <?php elseif ($needsGuestCount): ?>
+        <!-- <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <div class="bg-brand-50 border border-brand-100 rounded-[1.5rem] p-6 text-center">
+                <i data-lucide="users" class="w-10 h-10 text-brand-400 mx-auto mb-2"></i>
+                <h3 class="text-lg font-bold text-brand-700">Enter Your Guest Count</h3>
+                <p class="text-sm text-slate-500 mt-1">
+                    Enter the number of guests above to see the available packages for
+                    <span class="font-semibold text-slate-700"><?= htmlspecialchars($selectedVenue['name']) ?></span>.
+                </p>
+            </div>
+        </section> -->
+    <?php endif; ?>
+<?php endif; ?>
+
+<?php if ($canShowPackages): ?>
     <!-- Packages Section -->
     <section id="packagesSection" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 bg-purple-50">
         <div class="text-center mb-8">
@@ -178,10 +256,12 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <h4 class="text-xl font-bold text-gray-900 mb-3">
                         <?= $packages[0]['price_formatted'] ?>
-                        <?php if ($packages[0]['price'] > 0): ?>
-                            <span class="text-xs text-gray-400 font-normal">/event</span>
-                        <?php endif; ?>
                     </h4>
+                    <?php if ($packages[0]['price'] > 0): ?>
+                        <p class="text-[10px] text-gray-400 -mt-2 mb-3">
+                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK
+                        </p>
+                    <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">
                         <p class="text-[10px] font-semibold text-gray-500 mb-2">Included Services</p>
                         <ul class="space-y-1 text-xs text-gray-600">
@@ -196,7 +276,7 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <?php if ($packages[0]['price'] > 0): ?>
                         <button type="button"
-                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[0]['id'] ?>&total=<?= $packages[0]['price'] ?>')"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[0]['id'] ?>&total=<?= $packages[0]['price'] ?>&guests=<?= $guestCount ?>')"
                             class="mt-4 w-full py-2 rounded-xl border border-gray-300 bg-gray-50 text-gray-700 font-semibold text-xs hover:bg-gray-700 hover:text-white transition">
                             Select Package
                         </button>
@@ -224,10 +304,12 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <h4 class="text-xl font-bold text-gray-900 mb-3">
                         <?= $packages[1]['price_formatted'] ?>
-                        <?php if ($packages[1]['price'] > 0): ?>
-                            <span class="text-xs text-gray-400 font-normal">/event</span>
-                        <?php endif; ?>
                     </h4>
+                    <?php if ($packages[1]['price'] > 0): ?>
+                        <p class="text-[10px] text-orange-400 -mt-2 mb-3">
+                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK
+                        </p>
+                    <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">
                         <p class="text-[10px] font-semibold text-orange-500 mb-2">Included Services</p>
                         <ul class="space-y-1 text-xs text-orange-500">
@@ -242,7 +324,7 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <?php if ($packages[1]['price'] > 0): ?>
                         <button type="button"
-                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[1]['id'] ?>&total=<?= $packages[1]['price'] ?>')"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[1]['id'] ?>&total=<?= $packages[1]['price'] ?>&guests=<?= $guestCount ?>')"
                             class="mt-4 w-full py-2 rounded-xl bg-orange-400 text-white font-semibold text-xs hover:bg-orange-500 hover:shadow-md transition">
                             Select Package
                         </button>
@@ -267,10 +349,12 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <h4 class="text-xl font-bold text-gray-900 mb-3">
                         <?= $packages[2]['price_formatted'] ?>
-                        <?php if ($packages[2]['price'] > 0): ?>
-                            <span class="text-xs text-gray-400 font-normal">/event</span>
-                        <?php endif; ?>
                     </h4>
+                    <?php if ($packages[2]['price'] > 0): ?>
+                        <p class="text-[10px] text-blue-400 -mt-2 mb-3">
+                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK
+                        </p>
+                    <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">
                         <p class="text-[10px] font-semibold text-blue-500 mb-2">Included Services</p>
                         <ul class="space-y-1 text-xs text-blue-400">
@@ -285,7 +369,7 @@ if ($venueId > 0 && $eventId > 0) {
                     </div>
                     <?php if ($packages[2]['price'] > 0): ?>
                         <button type="button"
-                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[2]['id'] ?>&total=<?= $packages[2]['price'] ?>')"
+                            onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[2]['id'] ?>&total=<?= $packages[2]['price'] ?>&guests=<?= $guestCount ?>')"
                             class="mt-4 w-full py-2 rounded-xl border border-blue-300 bg-blue-50 text-blue-600 font-semibold text-xs hover:bg-blue-500 hover:text-white transition">
                             Select Package
                         </button>
@@ -385,7 +469,7 @@ if ($venueId > 0 && $eventId > 0) {
 
     <?php if ($selectedVenueId > 0): ?>
         document.addEventListener('DOMContentLoaded', function () {
-            const section = document.getElementById('packagesSection');
+            const section = document.getElementById('packagesSection') || document.getElementById('guestCountSection');
             if (section) {
                 setTimeout(() => {
                     section.scrollIntoView({ behavior: 'smooth', block: 'start' });

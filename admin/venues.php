@@ -218,7 +218,6 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                             <th class="text-center px-6 py-4 font-semibold text-gray-600 w-12">No.</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Image</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Name</th>
-                            <th class="text-left px-6 py-4 font-semibold text-gray-600">Event</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Address</th>
                             <th class="text-left px-6 py-4 font-semibold text-gray-600">Capacity</th>
                             <!-- <th class="text-left px-6 py-4 font-semibold text-gray-600">Price</th> -->
@@ -235,11 +234,6 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                                         class="w-14 h-14 rounded-lg object-cover">
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-800"><?= $v['name'] ?></td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
-                                        <?= htmlspecialchars($v['event_name'] ?? '—') ?>
-                                    </span>
-                                </td>
                                 <td class="px-6 py-4 text-gray-500"><?= $v['address'] ?></td>
                                 <td class="px-6 py-4 text-gray-500">
                                     <div class="inline-flex items-center gap-1">
@@ -269,7 +263,7 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                             </tr>
                         <?php endforeach; ?>
                         <tr class="no-results hidden">
-                            <td colspan="7" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
+                            <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
                         </tr>
                     </tbody>
                 </table>

@@ -306,7 +306,7 @@ if ($epsRes) {
                             <!-- Venue Pricing -->
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Venue Prices (MMK)
+                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Price Per Guest (MMK)
                                 </label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-3 border border-gray-100 rounded-xl bg-gray-50/50">
                                     <?php if (!empty($venuesList)): ?>
