@@ -62,7 +62,7 @@ $stmt->close();
 $totalPhotos = $gallery->num_rows;
 
 //   Get max capacity from venues for this event
-$capResult = $conn->query("SELECT MAX(capacity) AS max_cap FROM venues WHERE event_id = $id");
+$capResult = $conn->query("SELECT MAX(capacity) AS max_cap FROM venues");
 $maxCapacity = $capResult ? (int) $capResult->fetch_assoc()['max_cap'] : 0;
 
 //   Get average rating from reviews for this event

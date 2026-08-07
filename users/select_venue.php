@@ -38,7 +38,7 @@ $packages = [];
 $venueId = $selectedVenueId;
 
 if ($venueId > 0) {
-    $stmt = $conn->prepare("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id WHERE v.id=?");
+    $stmt = $conn->prepare("SELECT v.* FROM venues v WHERE v.id=?");
     $stmt->bind_param("i", $venueId);
     $stmt->execute();
     $selectedVenue = $stmt->get_result()->fetch_assoc();

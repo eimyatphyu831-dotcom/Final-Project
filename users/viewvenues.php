@@ -7,7 +7,7 @@ $eventId = isset($_GET['event_id']) ? (int) $_GET['event_id'] : 0;
  $selectedVenueId = isset($_GET['venue_id']) ? (int) $_GET['venue_id'] : 0;
  $guestCount = isset($_GET['guests']) ? (int) $_GET['guests'] : 0;
 
-$result = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY e.event_name ASC, v.name ASC");
+$result = $conn->query("SELECT v.* FROM venues v ORDER BY v.name ASC");
 $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Selected venue packages
@@ -16,7 +16,7 @@ $packages = [];
 $venueId = $selectedVenueId;
 
 if ($venueId > 0) {
-    $stmt = $conn->prepare("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id WHERE v.id=?");
+    $stmt = $conn->prepare("SELECT v.* FROM venues v WHERE v.id=?");
     $stmt->bind_param("i", $venueId);
     $stmt->execute();
     $selectedVenue = $stmt->get_result()->fetch_assoc();

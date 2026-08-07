@@ -2,7 +2,7 @@
 session_start();
 require_once '../config/db.php';
 
-$result = $conn->query("SELECT e.*, GROUP_CONCAT(DISTINCT v.name SEPARATOR ', ') AS venue_name FROM events e LEFT JOIN venues v ON v.event_id = e.id GROUP BY e.id ORDER BY e.id DESC LIMIT 3");
+$result = $conn->query("SELECT * FROM events e ORDER BY e.id DESC LIMIT 3");
 $allevents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 $badges = [

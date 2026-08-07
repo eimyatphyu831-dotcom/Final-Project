@@ -2,7 +2,7 @@
 session_start();
 require_once '../config/db.php';
 
-$vResult = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY v.name ASC limit 2");
+$vResult = $conn->query("SELECT * FROM venues v ORDER BY v.name ASC limit 2");
 $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 <?php include '../includes/header.php'; ?>

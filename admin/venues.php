@@ -83,17 +83,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($editId > 0) {
         if ($imagePath) {
-            $stmt = $conn->prepare("UPDATE venues SET name=?, address=?, capacity=?, image_path=?, event_id=? WHERE id=?");
-            $stmt->bind_param("ssisii", $name, $address, $capacity, $imagePath, $eventId, $editId);
+            $stmt = $conn->prepare("UPDATE venues SET name=?, address=?, capacity=?, image_path=? WHERE id=?");
+            $stmt->bind_param("ssisi", $name, $address, $capacity, $imagePath, $editId);
         } else {
-            $stmt = $conn->prepare("UPDATE venues SET name=?, address=?, capacity=?, event_id=? WHERE id=?");
-            $stmt->bind_param("ssiii", $name, $address, $capacity, $price, $eventId, $editId);
+            $stmt = $conn->prepare("UPDATE venues SET name=?, address=?, capacity=? WHERE id=?");
+            $stmt->bind_param("ssii", $name, $address, $capacity, $editId);
         }
         $stmt->execute();
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("INSERT INTO venues (name, address, capacity,  image_path, event_id) VALUES ( ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssisi", $name, $address, $capacity,  $imagePath, $eventId);
+        $stmt = $conn->prepare("INSERT INTO venues (name, address, capacity, image_path) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssis", $name, $address, $capacity, $imagePath);
         $stmt->execute();
         $stmt->close();
     }
@@ -102,9 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-// Fetch venues with event name (optionally filtered by event)
-$eventFilter = $filterEventId > 0 ? "WHERE v.event_id = $filterEventId" : "";
-$result = $conn->query("SELECT v.*, COALESCE(e.event_name, '—') AS event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id $eventFilter ORDER BY v.id");
+// Fetch venues
+$result = $conn->query("SELECT v.* FROM venues v ORDER BY v.id");
 $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Pagination
@@ -390,28 +389,6 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                             <input type="text" name="name" required
                                 value="<?= $action === 'edit' && $editVenue ? htmlspecialchars($editVenue['name']) : '' ?>"
                                 class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Event</label>
-                            <?php if ($filterEventId > 0 && $action !== 'edit'): ?>
-                                <?php foreach ($eventsList as $ev): ?>
-                                    <?php if ($ev['id'] == $filterEventId): ?>
-                                        <div class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-100 text-gray-600 text-sm"><?= htmlspecialchars($ev['event_name']) ?></div>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                            <select name="event_id" required
-                                class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
-                                <option value="">— Select Event —</option>
-                                <?php foreach ($eventsList as $ev): ?>
-                                    <option value="<?= $ev['id'] ?>"
-                                    <?= ($action === 'edit' && $editVenue && $editVenue['event_id'] == $ev['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($ev['event_name']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <?php endif; ?>
                         </div>
 
                         <div>

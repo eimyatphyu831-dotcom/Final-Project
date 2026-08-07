@@ -5,11 +5,11 @@ require_once '../config/db.php';
 
 
 //View all events (JOIN with venues)
-$result = $conn->query("SELECT e.*, GROUP_CONCAT(DISTINCT v.name SEPARATOR ', ') AS venue_name FROM events e LEFT JOIN venues v ON v.event_id = e.id GROUP BY e.id ORDER BY e.id DESC LIMIT 3");
+$result = $conn->query("SELECT * FROM events e ORDER BY e.id DESC LIMIT 3");
 $allevents = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
-// Get venues with event name
-$vResult = $conn->query("SELECT v.*, e.event_name FROM venues v LEFT JOIN events e ON v.event_id = e.id ORDER BY v.name ASC LIMIT 2");
+// Get venues
+$vResult = $conn->query("SELECT * FROM venues v ORDER BY v.name ASC LIMIT 2");
 $venues = $vResult ? $vResult->fetch_all(MYSQLI_ASSOC) : [];
 
 // Fetch reviews

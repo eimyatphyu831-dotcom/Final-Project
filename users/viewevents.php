@@ -4,7 +4,7 @@ require_once '../config/db.php';
 
 $filterType = isset($_GET['type']) ? strtolower(trim($_GET['type'])) : 'all';
 
-$sql = "SELECT e.*, GROUP_CONCAT(DISTINCT v.name SEPARATOR ', ') AS venue_name FROM events e LEFT JOIN venues v ON v.event_id = e.id";
+$sql = "SELECT e.* FROM events e";
 if ($filterType !== 'all') {
     $filterTypeSafe = $conn->real_escape_string($filterType);
     $sql .= " WHERE LOWER(e.event_name) = '$filterTypeSafe'";

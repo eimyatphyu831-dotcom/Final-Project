@@ -104,13 +104,7 @@ if ($action === 'view' && isset($_GET['id'])) {
     $viewGallery = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    // Fetch venues for this event
-    $stmt = $conn->prepare("SELECT name, address, capacity FROM venues WHERE event_id=?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $viewVenues = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    $viewVenues = [];
 }
 
 // POST - create or update
@@ -137,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             move_uploaded_file($_FILES['dynamic_venue_image']['tmp_name'], $uploadDir . $filename);
             $vImg = '../assets/images/' . $filename;
         }
-        $stmt = $conn->prepare("INSERT INTO venues (name, address, capacity, price, image_path) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssids", $dynamicVenueName, $vAddr, $vCap, $vPrice, $vImg);
+        $stmt = $conn->prepare("INSERT INTO venues (name, address, capacity, image_path) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssis", $dynamicVenueName, $vAddr, $vCap, $vImg);
         $stmt->execute();
         $venueId = $stmt->insert_id;
         $stmt->close();
@@ -202,15 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $searchFilter = $searchEvent !== '' ? "WHERE e.event_name LIKE '%" . $conn->real_escape_string($searchEvent) . "%'" : "";
 $result = $conn->query("
 SELECT 
-    e.*,
-    GROUP_CONCAT(v.name SEPARATOR ', ') AS venue_name,
-    GROUP_CONCAT(v.address SEPARATOR ', ') AS venue_address,
-    GROUP_CONCAT(v.capacity SEPARATOR ', ') AS venue_capacity
+    e.*
 FROM events e
-LEFT JOIN venues v 
-    ON v.event_id = e.id
 $searchFilter
-GROUP BY e.id
 ORDER BY e.id
 ");
 $events = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
