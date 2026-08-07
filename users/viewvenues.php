@@ -41,14 +41,16 @@ if ($venueId > 0) {
         }
         $svcRes->close();
 
-        $vpRes = $conn->prepare("SELECT package_id, price FROM venue_packages WHERE venue_id=?");
+        $vpRes = $conn->prepare("SELECT package_id, price, base_price FROM venue_packages WHERE venue_id=?");
         $vpRes->bind_param("i", $venueId);
         $vpRes->execute();
         $vpResult = $vpRes->get_result();
         $vpPrices = [];
+        $vpBasePrices = [];
         if ($vpResult) {
             while ($row = $vpResult->fetch_assoc()) {
                 $vpPrices[$row['package_id']] = $row['price'];
+                $vpBasePrices[$row['package_id']] = $row['base_price'];
             }
         }
         $vpRes->close();
@@ -56,11 +58,13 @@ if ($venueId > 0) {
         foreach ($allPackages as $pkg) {
             $pid = $pkg['id'];
             $perGuest = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
-            $totalPrice = $perGuest * $guestCount;
+            $basePrice = isset($vpBasePrices[$pid]) ? (float) $vpBasePrices[$pid] : 0;
+            $totalPrice = $basePrice + ($perGuest * $guestCount);
             $packages[] = [
                 'id' => $pid,
                 'name' => $pkg['name'],
                 'price' => $totalPrice,
+                'base_price' => $basePrice,
                 'per_guest_price' => $perGuest,
                 'price_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
                 'services' => $pkgServices[$pid] ?? []
@@ -259,7 +263,7 @@ $needsGuestCount = $selectedVenue && !$hasGuestCount;
                     </h4>
                     <?php if ($packages[0]['price'] > 0): ?>
                         <p class="text-[10px] text-gray-400 -mt-2 mb-3">
-                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK
+                            Base <?= number_format($packages[0]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK
                         </p>
                     <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">
@@ -307,7 +311,7 @@ $needsGuestCount = $selectedVenue && !$hasGuestCount;
                     </h4>
                     <?php if ($packages[1]['price'] > 0): ?>
                         <p class="text-[10px] text-orange-400 -mt-2 mb-3">
-                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK
+                            Base <?= number_format($packages[1]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK
                         </p>
                     <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">
@@ -352,7 +356,7 @@ $needsGuestCount = $selectedVenue && !$hasGuestCount;
                     </h4>
                     <?php if ($packages[2]['price'] > 0): ?>
                         <p class="text-[10px] text-blue-400 -mt-2 mb-3">
-                            <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK
+                            Base <?= number_format($packages[2]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK
                         </p>
                     <?php endif; ?>
                     <div class="border-t pt-3 flex-grow">

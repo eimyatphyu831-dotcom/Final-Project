@@ -62,14 +62,16 @@ if ($venueId > 0) {
             $svcRes->close();
         }
 
-        $vpRes = $conn->prepare("SELECT package_id, price FROM venue_packages WHERE venue_id=?");
+        $vpRes = $conn->prepare("SELECT package_id, price, base_price FROM venue_packages WHERE venue_id=?");
         $vpRes->bind_param("i", $venueId);
         $vpRes->execute();
         $vpResult = $vpRes->get_result();
         $vpPrices = [];
+        $vpBasePrices = [];
         if ($vpResult) {
             while ($row = $vpResult->fetch_assoc()) {
                 $vpPrices[$row['package_id']] = $row['price'];
+                $vpBasePrices[$row['package_id']] = $row['base_price'];
             }
         }
         $vpRes->close();
@@ -77,13 +79,26 @@ if ($venueId > 0) {
         foreach ($allPackages as $pkg) {
             $pid = $pkg['id'];
             $perGuest = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
-            $totalPrice = $perGuest * $guestCount;
+            $basePrice = isset($vpBasePrices[$pid]) ? (float) $vpBasePrices[$pid] : 0;
+            $discountRate = 0;
+            if (strcasecmp($pkg['name'], 'Silver') === 0) $discountRate = 0.02;
+            elseif (strcasecmp($pkg['name'], 'Gold') === 0) $discountRate = 0.05;
+            elseif (strcasecmp($pkg['name'], 'Diamond') === 0) $discountRate = 0.10;
+            $totalPrice = $basePrice + ($perGuest * $guestCount);
+            $discount = $totalPrice * $discountRate;
+            $finalPrice = $totalPrice - $discount;
             $packages[] = [
                 'id' => $pid,
                 'name' => $pkg['name'],
-                'price' => $totalPrice,
+                'price' => $finalPrice,
+                'original_price' => $totalPrice,
+                'base_price' => $basePrice,
                 'per_guest_price' => $perGuest,
-                'price_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
+                'discount_rate' => $discountRate,
+                'discount' => $discount,
+                'price_formatted' => $perGuest > 0 ? number_format($finalPrice) . ' MMK' : '---',
+                'original_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
+                'discount_rate_formatted' => $discountRate > 0 ? '-' . ($discountRate * 100) . '% OFF' : '',
                 'services' => $pkgServices[$pid] ?? []
             ];
         }
@@ -272,13 +287,17 @@ include "../includes/header.php";
                                     <p class="text-[10px] text-gray-400">Basic Package</p>
                                 </div>
                             </div>
-                            <h4 class="text-xl font-bold text-gray-900 mb-3">
-                                <?= $packages[0]['price_formatted'] ?>
-                            </h4>
                             <?php if ($packages[0]['price'] > 0): ?>
-                                <p class="text-[10px] text-gray-400 -mt-2 mb-3">
-                                    <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK
-                                </p>
+                                <div class="mb-3">
+                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[0]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK</p>
+                                    <div class="flex items-center gap-2 flex-wrap mt-1">
+                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[0]['original_formatted'] ?></span>
+                                        <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full"><?= $packages[0]['discount_rate_formatted'] ?></span>
+                                        <h4 class="text-lg font-bold text-gray-900 leading-none"><?= $packages[0]['price_formatted'] ?></h4>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?= $packages[0]['price_formatted'] ?></h4>
                             <?php endif; ?>
                             <div class="border-t pt-3 flex-grow">
                                 <p class="text-[10px] font-semibold text-gray-500 mb-2">Included Services</p>
@@ -320,13 +339,17 @@ include "../includes/header.php";
                                     <p class="text-[10px] text-orange-400">Premium Package</p>
                                 </div>
                             </div>
-                            <h4 class="text-xl font-bold text-gray-900 mb-3">
-                                <?= $packages[1]['price_formatted'] ?>
-                            </h4>
                             <?php if ($packages[1]['price'] > 0): ?>
-                                <p class="text-[10px] text-orange-400 -mt-2 mb-3">
-                                    <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK
-                                </p>
+                                <div class="mb-3">
+                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[1]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK</p>
+                                    <div class="flex items-center gap-2 flex-wrap mt-1">
+                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[1]['original_formatted'] ?></span>
+                                        <span class="text-[9px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full"><?= $packages[1]['discount_rate_formatted'] ?></span>
+                                        <h4 class="text-lg font-bold text-orange-700 leading-none"><?= $packages[1]['price_formatted'] ?></h4>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?= $packages[1]['price_formatted'] ?></h4>
                             <?php endif; ?>
                             <div class="border-t pt-3 flex-grow">
                                 <p class="text-[10px] font-semibold text-orange-500 mb-2">Included Services</p>
@@ -365,13 +388,17 @@ include "../includes/header.php";
                                     <p class="text-[10px] text-blue-400">Luxury Package</p>
                                 </div>
                             </div>
-                            <h4 class="text-xl font-bold text-gray-900 mb-3">
-                                <?= $packages[2]['price_formatted'] ?>
-                            </h4>
                             <?php if ($packages[2]['price'] > 0): ?>
-                                <p class="text-[10px] text-blue-400 -mt-2 mb-3">
-                                    <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK
-                                </p>
+                                <div class="mb-3">
+                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[2]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK</p>
+                                    <div class="flex items-center gap-2 flex-wrap mt-1">
+                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[2]['original_formatted'] ?></span>
+                                        <span class="text-[9px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full"><?= $packages[2]['discount_rate_formatted'] ?></span>
+                                        <h4 class="text-lg font-bold text-blue-700 leading-none"><?= $packages[2]['price_formatted'] ?></h4>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <h4 class="text-xl font-bold text-gray-900 mb-3"><?= $packages[2]['price_formatted'] ?></h4>
                             <?php endif; ?>
                             <div class="border-t pt-3 flex-grow">
                                 <p class="text-[10px] font-semibold text-blue-500 mb-2">Included Services</p>

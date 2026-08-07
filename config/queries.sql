@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS venue_packages (
   venue_id INT,
   package_id INT,
   price DECIMAL(10,2),
+  base_price DECIMAL(10,2) DEFAULT 0,
 
   FOREIGN KEY (venue_id) REFERENCES venues(id)
   ON DELETE CASCADE ON UPDATE CASCADE,

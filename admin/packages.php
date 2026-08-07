@@ -32,11 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (isset($_POST['venue_price'])) {
             $conn->query("DELETE FROM venue_packages WHERE package_id=$editId");
-            $stmt = $conn->prepare("INSERT INTO venue_packages (venue_id, package_id, price) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO venue_packages (venue_id, package_id, price, base_price) VALUES (?, ?, ?, ?)");
             foreach ($_POST['venue_price'] as $venueId => $price) {
+                $base_price = isset($_POST['venue_base_price'][$venueId]) ? (float) $_POST['venue_base_price'][$venueId] : 0;
                 $price = (float)$price;
                 if ($price > 0) {
-                    $stmt->bind_param("iid", $venueId, $editId, $price);
+                    $stmt->bind_param("iidd", $venueId, $editId, $price, $base_price);
                     $stmt->execute();
                 }
             }
@@ -62,11 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
 
         if (isset($_POST['venue_price'])) {
-            $stmt = $conn->prepare("INSERT INTO venue_packages (venue_id, package_id, price) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO venue_packages (venue_id, package_id, price, base_price) VALUES (?, ?, ?, ?)");
             foreach ($_POST['venue_price'] as $venueId => $price) {
+                $base_price = isset($_POST['venue_base_price'][$venueId]) ? (float) $_POST['venue_base_price'][$venueId] : 0;
                 $price = (float)$price;
                 if ($price > 0) {
-                    $stmt->bind_param("iid", $venueId, $newId, $price);
+                    $stmt->bind_param("iidd", $venueId, $newId, $price, $base_price);
                     $stmt->execute();
                 }
             }
@@ -97,10 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  $servicesList = $conn->query("SELECT id, service_name FROM services ORDER BY service_name")->fetch_all(MYSQLI_ASSOC);
 
  $vpData = [];
- $vpRes = $conn->query("SELECT venue_id, package_id, price FROM venue_packages");
+ $vpRes = $conn->query("SELECT venue_id, package_id, price, base_price FROM venue_packages");
 if ($vpRes) {
     while ($row = $vpRes->fetch_assoc()) {
-        $vpData[$row['package_id']][$row['venue_id']] = $row['price'];
+        $vpData[$row['package_id']][$row['venue_id']] = ['price' => $row['price'], 'base_price' => $row['base_price']];
     }
 }
 
@@ -193,8 +195,10 @@ if ($epsRes) {
                         }
                         $minPrice = 0;
                         if (isset($vpData[$p['id']])) {
-                            $prices = array_values($vpData[$p['id']]);
-                            $minPrice = min($prices);
+                            $prices = array_map(function ($v) {
+                                return $v['price'];
+                            }, array_values($vpData[$p['id']]));
+                            if ($prices) $minPrice = min($prices);
                         }
                     ?>
                         <div class="pkg-card <?= $c['bg'] ?> border <?= $c['border'] ?> rounded-2xl p-6 relative overflow-hidden">
@@ -306,17 +310,24 @@ if ($epsRes) {
                             <!-- Venue Pricing -->
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Price Per Guest (MMK)
+                                    <i class="fa-solid fa-location-dot mr-1 text-purple-500"></i> Venue Pricing (Base + Per Guest, MMK)
                                 </label>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-3 border border-gray-100 rounded-xl bg-gray-50/50">
                                     <?php if (!empty($venuesList)): ?>
                                         <?php foreach ($venuesList as $v): ?>
-                                            <div class="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100">
-                                                <label class="text-xs text-gray-600 truncate flex-1"><?= htmlspecialchars($v['name']) ?></label>
-                                                <input type="number" name="venue_price[<?= $v['id'] ?>]" min="0" step="0.01"
-                                                    data-venue-id="<?= $v['id'] ?>"
-                                                    placeholder="0"
-                                                    class="venue-price w-24 px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-xs text-right">
+                                            <div class="bg-white rounded-lg px-3 py-2 border border-gray-100">
+                                                <label class="text-xs text-gray-600 truncate block mb-1"><?= htmlspecialchars($v['name']) ?></label>
+                                                <div class="flex items-center gap-1">
+                                                    <input type="number" name="venue_base_price[<?= $v['id'] ?>]" min="0" step="0.01"
+                                                        data-venue-id="<?= $v['id'] ?>"
+                                                        placeholder="Base"
+                                                        class="venue-base-price w-24 px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-xs text-right">
+                                                    <span class="text-[10px] text-gray-400">+</span>
+                                                    <input type="number" name="venue_price[<?= $v['id'] ?>]" min="0" step="0.01"
+                                                        data-venue-id="<?= $v['id'] ?>"
+                                                        placeholder="Guest"
+                                                        class="venue-price w-24 px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-purple-400 bg-white text-xs text-right">
+                                                </div>
                                             </div>
                                         <?php endforeach; ?>
                                     <?php else: ?>
@@ -386,6 +397,7 @@ if ($epsRes) {
                         document.getElementById('packageDescription').removeAttribute('readonly');
 
                         document.querySelectorAll('.venue-price').forEach(inp => inp.value = '');
+                        document.querySelectorAll('.venue-base-price').forEach(inp => inp.value = '');
                         document.querySelectorAll('.service-checkbox').forEach(cb => cb.checked = false);
 
                         document.getElementById('packageModal').classList.remove('hidden');
@@ -411,7 +423,11 @@ if ($epsRes) {
                         const prices = vpData[pkg.id] || {};
                         document.querySelectorAll('.venue-price').forEach(inp => {
                             const vid = inp.dataset.venueId;
-                            inp.value = prices[vid] || '';
+                            inp.value = prices[vid]?.price || '';
+                        });
+                        document.querySelectorAll('.venue-base-price').forEach(inp => {
+                            const vid = inp.dataset.venueId;
+                            inp.value = prices[vid]?.base_price || '';
                         });
 
                         // Set service checkboxes
