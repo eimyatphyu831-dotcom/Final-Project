@@ -360,7 +360,7 @@ if ($vResult)
                                     </td>
                                    <td class="px-6 py-4">
     <div class="flex items-center justify-center gap-2">
-        <a href="events.php?action=view&id=<?= $event['id'] ?>"
+        <a href="#" onclick="openEventView(<?= $event['id'] ?>); return false;"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
                                             <i class="fa-solid fa-eye mr-1"></i>
                                             <span>View</span>
@@ -430,7 +430,7 @@ if ($vResult)
                         <div class="text-center mb-3">
                             <h2 class="text-lg font-bold text-gray-800">Event Details</h2>
                             <p class="text-xs text-gray-500 mt-0.5">Full details of the event</p>
-                            <button onclick="closeModal()"
+                            <button onclick="closeViewModal()"
                                 class="text-gray-400 hover:text-gray-600 text-lg leading-none absolute top-3 right-3">&times;</button>
                         </div>
                         <?php if ($viewEvent): ?>
@@ -461,7 +461,7 @@ if ($vResult)
                                     </div>
                                 <?php endif; ?>
                                 <div class="text-right pt-1">
-                                    <button onclick="closeModal()"
+                                    <button onclick="closeViewModal()"
                                         class="px-4 py-1 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition">Close</button>
                                 </div>
                             </div>
@@ -609,6 +609,27 @@ if ($vResult)
                         }
                     }
                     document.addEventListener('DOMContentLoaded', toggleDynamicVenue);
+
+                    function openEventView(id) {
+                        fetch('events.php?action=view&id=' + id)
+                            .then(r => r.text())
+                            .then(html => {
+                                const doc = new DOMParser().parseFromString(html, 'text/html');
+                                const modal = doc.getElementById('viewModal');
+                                const target = document.getElementById('viewModal');
+                                if (modal && target) {
+                                    target.outerHTML = modal.outerHTML;
+                                }
+                                const fresh = document.getElementById('viewModal');
+                                if (fresh) fresh.classList.remove('hidden');
+                            })
+                            .catch(() => { });
+                    }
+
+                    function closeViewModal() {
+                        const m = document.getElementById('viewModal');
+                        if (m) m.classList.add('hidden');
+                    }
 
                     function closeModal() {
                         window.location.href = 'events.php<?= $redirectQuery ?>';

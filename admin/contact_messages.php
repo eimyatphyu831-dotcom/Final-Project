@@ -178,6 +178,7 @@ $mIndexBase = $search ? 0 : $offset;
                     </div>
                 <?php endif; ?>
 
+                <div id="viewModalWrapper">
                 <?php if ($viewMessage): ?>
                     <div id="viewModal"
                         class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 py-10">
@@ -185,7 +186,7 @@ $mIndexBase = $search ? 0 : $offset;
                             class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 w-full max-w-2xl mx-4 relative">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-semibold text-gray-800">Message Details</h3>
-                                <a href="contact_messages.php<?= $search ? "?search=$search" : '' ?>"
+                                <a href="#" onclick="closeMessageView(); return false;"
                                     class="text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></a>
                             </div>
 
@@ -234,12 +235,13 @@ $mIndexBase = $search ? 0 : $offset;
                                         <i class="fa-solid fa-envelope mr-1"></i> Mark as Unread
                                     </a>
                                 <?php endif; ?>
-                                <a href="contact_messages.php<?= $search ? "?search=$search" : '' ?>"
+                                <a href="#" onclick="closeMessageView(); return false;"
                                     class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-sm hover:bg-gray-300 transition-all ml-auto">Close</a>
                             </div>
                         </div>
                     </div>
                 <?php endif; ?>
+                </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                     <div class="overflow-x-auto">
@@ -294,7 +296,7 @@ $mIndexBase = $search ? 0 : $offset;
                                     <td class="p-3 text-center">
                                         <div class="flex justify-center items-center gap-1.5">
 
-                                            <a href="contact_messages.php?view=<?= $m['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                            <a href="#" onclick="openMessageView(<?= $m['id'] ?>); return false;"
                                                 class="inline-flex items-center gap-0.5 px-1 py-1 bg-blue-200 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
                                                 <i class="fa-solid fa-eye"></i>
                                                 View
@@ -370,6 +372,23 @@ $mIndexBase = $search ? 0 : $offset;
     </div>
 
     <script>
+    function openMessageView(id) {
+        fetch('contact_messages.php?view=' + id)
+            .then(r => r.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const wrapper = doc.getElementById('viewModalWrapper');
+                const target = document.getElementById('viewModalWrapper');
+                if (wrapper && target) target.innerHTML = wrapper.innerHTML;
+            })
+            .catch(() => {});
+    }
+
+    function closeMessageView() {
+        const wrapper = document.getElementById('viewModalWrapper');
+        if (wrapper) wrapper.innerHTML = '';
+    }
+
     (function () {
         const form = document.getElementById('searchForm');
         const input = document.getElementById('searchInput');

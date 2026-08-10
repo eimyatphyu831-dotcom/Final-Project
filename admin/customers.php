@@ -183,6 +183,7 @@ if ($search) {
                     </div>
                 <?php endif; ?>
 
+                <div id="viewModalWrapper">
                 <?php if ($viewUser): ?>
                     <div id="viewModal"
                         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -190,7 +191,7 @@ if ($search) {
                             class="bg-white rounded-2xl shadow-xl border border-gray-200 p-4 w-full max-w-xl mx-4 relative">
                             <div class="flex items-center justify-between mb-3">
                                 <h3 class="text-sm font-semibold text-gray-800">Customer Details</h3>
-                                <a href="customers.php<?= $search ? "?search=$search" : '' ?>"
+                                <a href="#" onclick="closeCustomerView(); return false;"
                                     class="text-gray-400 hover:text-gray-600 text-lg"><i class="fa-solid fa-xmark"></i></a>
                             </div>
 
@@ -291,12 +292,13 @@ if ($search) {
                             <?php endif; ?>
 
                             <div class="flex justify-end pt-2 mt-3 border-t border-gray-100">
-                                <a href="customers.php<?= $search ? "?search=$search" : '' ?>"
+                                <a href="#" onclick="closeCustomerView(); return false;"
                                     class="px-3 py-1 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all text-xs">Close</a>
                             </div>
                         </div>
                     </div>
                 <?php endif; ?>
+                </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                     <div class="overflow-x-auto">
@@ -340,7 +342,7 @@ if ($search) {
                                     <td class="p-3">
                                         <div class="flex justify-center items-center gap-2">
 
-                                            <a href="customers.php?view=<?= $c['id'] ?><?= $search ? "&search=$search" : '' ?>"
+                                            <a href="#" onclick="openCustomerView(<?= $c['id'] ?>); return false;"
                                                 class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-xs hover:bg-blue-400 transition">
                                                 <i class="fa-solid fa-eye"></i>
                                                 View
@@ -410,6 +412,23 @@ if ($search) {
     </div>
 
 <script>
+    function openCustomerView(id) {
+        fetch('customers.php?view=' + id)
+            .then(r => r.text())
+            .then(html => {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const wrapper = doc.getElementById('viewModalWrapper');
+                const target = document.getElementById('viewModalWrapper');
+                if (wrapper && target) target.innerHTML = wrapper.innerHTML;
+            })
+            .catch(() => {});
+    }
+
+    function closeCustomerView() {
+        const wrapper = document.getElementById('viewModalWrapper');
+        if (wrapper) wrapper.innerHTML = '';
+    }
+
     (function () {
         const form = document.getElementById('searchForm');
         const input = document.getElementById('searchInput');

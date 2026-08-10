@@ -289,9 +289,9 @@ include "../includes/header.php";
                             </div>
                             <?php if ($packages[0]['price'] > 0): ?>
                                 <div class="mb-3">
-                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[0]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK</p>
+                                    <!-- <p class="text-[10px] text-gray-400">Base <?= number_format($packages[0]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[0]['per_guest_price']) ?> MMK</p> -->
                                     <div class="flex items-center gap-2 flex-wrap mt-1">
-                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[0]['original_formatted'] ?></span>
+                                        <span class="text-[12px] text-gray-400 line-through"><?= $packages[0]['original_formatted'] ?></span>
                                         <span class="text-[9px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full"><?= $packages[0]['discount_rate_formatted'] ?></span>
                                         <h4 class="text-lg font-bold text-gray-900 leading-none"><?= $packages[0]['price_formatted'] ?></h4>
                                     </div>
@@ -341,9 +341,9 @@ include "../includes/header.php";
                             </div>
                             <?php if ($packages[1]['price'] > 0): ?>
                                 <div class="mb-3">
-                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[1]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK</p>
+                                    <!-- <p class="text-[10px] text-gray-400">Base <?= number_format($packages[1]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[1]['per_guest_price']) ?> MMK</p> -->
                                     <div class="flex items-center gap-2 flex-wrap mt-1">
-                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[1]['original_formatted'] ?></span>
+                                        <span class="text-[12px] text-gray-400 line-through"><?= $packages[1]['original_formatted'] ?></span>
                                         <span class="text-[9px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full"><?= $packages[1]['discount_rate_formatted'] ?></span>
                                         <h4 class="text-lg font-bold text-orange-700 leading-none"><?= $packages[1]['price_formatted'] ?></h4>
                                     </div>
@@ -390,9 +390,9 @@ include "../includes/header.php";
                             </div>
                             <?php if ($packages[2]['price'] > 0): ?>
                                 <div class="mb-3">
-                                    <p class="text-[10px] text-gray-400">Base <?= number_format($packages[2]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK</p>
+                                    <!-- <p class="text-[10px] text-gray-400">Base <?= number_format($packages[2]['base_price']) ?> MMK + <?= number_format($guestCount) ?> guests × <?= number_format($packages[2]['per_guest_price']) ?> MMK</p> -->
                                     <div class="flex items-center gap-2 flex-wrap mt-1">
-                                        <span class="text-[11px] text-gray-400 line-through"><?= $packages[2]['original_formatted'] ?></span>
+                                        <span class="text-[12px] text-gray-400 line-through"><?= $packages[2]['original_formatted'] ?></span>
                                         <span class="text-[9px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full"><?= $packages[2]['discount_rate_formatted'] ?></span>
                                         <h4 class="text-lg font-bold text-blue-700 leading-none"><?= $packages[2]['price_formatted'] ?></h4>
                                     </div>
