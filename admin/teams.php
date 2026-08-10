@@ -184,7 +184,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                         </tbody>
                         <tfoot>
                             <tr class="bg-gray-50 border-t border-gray-200">
-                                <td colspan="3" class="px-6 py-3 text-sm text-gray-500 font-medium">Total: <span class="font-semibold text-gray-700"><?= count($teams) ?></span> teams</td>
+                                <td colspan="3" class="px-6 py-3 text-sm text-gray-500 font-medium">Total: <span class="font-semibold text-gray-700" id="totalCount"><?= count($teams) ?></span> teams</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -252,6 +252,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                             if (match) visible++;
                         });
                         document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+                        document.getElementById('totalCount').textContent = visible;
                     });
                 </script>
 

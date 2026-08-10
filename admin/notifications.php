@@ -83,7 +83,7 @@ $stmt->close();
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="bg-purple-100 text-gray-700 px-3 py-1.5 rounded-full text-xs font-semibold">
-                           Total: <?= count($notifications) ?> 
+                           Total: <span id="totalCount"><?= count($notifications) ?></span>
                         </span>
                         <button id="clearAllBtn"
                             class="text-sm text-purple-600 hover:text-purple-800 font-medium cursor-pointer">
@@ -133,10 +133,13 @@ $stmt->close();
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('notifSearch').addEventListener('input', function () {
                 const q = this.value.toLowerCase();
+                let visible = 0;
                 document.querySelectorAll('.notif-item').forEach(item => {
                     const text = item.textContent.toLowerCase();
                     item.style.display = text.includes(q) ? '' : 'none';
+                    if (text.includes(q)) visible++;
                 });
+                document.getElementById('totalCount').textContent = visible;
             });
 
             document.querySelectorAll('.notif-item').forEach(el => {

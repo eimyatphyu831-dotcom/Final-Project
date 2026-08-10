@@ -292,7 +292,7 @@ if ($vResult)
         .modal-content {
             background: #fff;
             border-radius: 1rem;
-            padding: 1.5rem;
+            padding: 1rem 1.5rem 1.5rem;
             width: 100%;
             max-width: 480px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -358,23 +358,28 @@ if ($vResult)
                                             <i class="fa-solid fa-image"></i> <?= $gc ?>
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="events.php?action=view&id=<?= $event['id'] ?>"
-                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
-                                                <i class="fa-solid fa-eye mr-1"></i> View
-                                            </a>
-                                            <a href="events.php?action=edit&id=<?= $event['id'] ?>"
-                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
-                                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
-                                            </a>
-                                            <a href="events.php?delete=<?= $event['id'] ?><?= $searchEvent ? '&search=' . urlencode($searchEvent) : '' ?>"
-                                                onclick="return confirm('Delete this event?')"
-                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
-                                                <i class="fa-solid fa-trash-can mr-1"></i> Delete
-                                            </a>
-                                        </div>
-                                    </td>
+                                   <td class="px-6 py-4">
+    <div class="flex items-center justify-center gap-2">
+        <a href="events.php?action=view&id=<?= $event['id'] ?>"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
+                                            <i class="fa-solid fa-eye mr-1"></i>
+                                            <span>View</span>
+                                        </a>
+                                
+                                        <a href="events.php?action=edit&id=<?= $event['id'] ?>"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
+                                            <i class="fa-solid fa-pen-to-square mr-1"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                
+                                        <a href="events.php?delete=<?= $event['id'] ?><?= $searchEvent ? '&search=' . urlencode($searchEvent) : '' ?>"
+                                            onclick="return confirm('Delete this event?')"
+                                            class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
+                                            <i class="fa-solid fa-trash-can mr-1"></i>
+                                            <span>Delete</span>
+                                        </a>
+                                    </div>
+                                </td>
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="no-results hidden">
@@ -422,16 +427,16 @@ if ($vResult)
                 <div id="viewModal"
                     class="modal-overlay <?= $action === 'view' && $viewEvent ? '' : 'hidden' ?>">
                     <div class="modal-content relative max-w-xl">
-                        <div class="text-center mb-4">
+                        <div class="text-center mb-3">
                             <h2 class="text-lg font-bold text-gray-800">Event Details</h2>
                             <p class="text-xs text-gray-500 mt-0.5">Full details of the event</p>
                             <button onclick="closeModal()"
                                 class="text-gray-400 hover:text-gray-600 text-lg leading-none absolute top-3 right-3">&times;</button>
                         </div>
                         <?php if ($viewEvent): ?>
-                            <div class="space-y-4">
+                            <div class="space-y-3">
                                 <div class="flex justify-center">
-                                    <img src="<?= $viewEvent['image'] ?>" class="w-48 h-48 rounded-xl object-cover shadow">
+                                    <img src="<?= $viewEvent['image'] ?>" class="w-40 h-40 rounded-xl object-cover shadow">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 text-sm">
                                     <div><span class="font-semibold text-gray-600">Name</span>
@@ -450,14 +455,14 @@ if ($vResult)
                                         <span class="font-semibold text-gray-600 text-sm">Gallery</span>
                                         <div class="flex flex-wrap gap-2 mt-1">
                                             <?php foreach ($viewGallery as $photo): ?>
-                                                <img src="<?= $photo['image_path'] ?>" class="w-16 h-16 rounded-lg object-cover border">
-                                            <?php endforeach; ?>
+                                        <img src="<?= $photo['image_path'] ?>" class="w-14 h-14 rounded-lg object-cover border">
+                                        <?php endforeach; ?>
                                         </div>
                                     </div>
                                 <?php endif; ?>
-                                <div class="text-center pt-2">
+                                <div class="text-right pt-1">
                                     <button onclick="closeModal()"
-                                        class="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition">Close</button>
+                                        class="px-4 py-1 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition">Close</button>
                                 </div>
                             </div>
                         <?php endif; ?>

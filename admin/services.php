@@ -197,14 +197,13 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                             </tr>
                         </tbody>
                     </table>
-                </div>
 
-                <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
-                    Total: <span class="font-semibold text-gray-700"><?= $sTotal ?></span> services
-                </div>
+                    <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
+                        Total: <span class="font-semibold text-gray-700" id="totalCount"><?= $sTotal ?></span> services
+                    </div>
 
-                <?php if ($sTotalPages > 1): ?>
-                <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100 bg-white rounded-2xl mt-4">
+                    <?php if ($sTotalPages > 1): ?>
+                    <div class="flex justify-center items-center gap-2 px-6 py-3 border-t border-gray-100">
                     <a href="?s_page=1"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-angles-left mr-1"></i> First
@@ -227,8 +226,9 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                         <input type="number" name="s_page" min="1" max="<?= $sTotalPages ?>" value="<?= $sPage ?>"
                             class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
                     </form>
+                    </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
 
                 <!-- Add/Edit Modal -->
                 <div id="serviceModal"
@@ -293,6 +293,7 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                             if (match) visible++;
                         });
                         document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+                        document.getElementById('totalCount').textContent = visible;
                     });
                 </script>
 

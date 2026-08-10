@@ -340,7 +340,7 @@ if (!$hasData) {
                     </div>
 
                     <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
-                        Total: <span class="font-semibold text-gray-700"><?= $bTotal ?></span> bookings
+                        Total: <span class="font-semibold text-gray-700" id="totalCount"><?= $bTotal ?></span> bookings
                     </div>
 
                     <?php if ($bTotalPages > 1): ?>
@@ -507,6 +507,7 @@ if (!$hasData) {
                 if (match) visible++;
             });
             document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+            document.getElementById('totalCount').textContent = visible;
         });
 
         function openViewModal(id, customer, email, event, pkg, venue, slot, team, date, payment, cost, status, receipt) {
