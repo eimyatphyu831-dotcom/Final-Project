@@ -79,13 +79,13 @@ $stmt->execute();
 $totalMessages = $stmt->get_result()->fetch_assoc()['total'];
 $stmt->close();
 
-$totalPages = ceil($totalMessages / $limit);
+$totalPages = $search ? 1 : ceil($totalMessages / $limit);
 
 // --- FETCH MESSAGES ---
 if ($search) {
     $like = "%$search%";
-    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages WHERE name LIKE ? OR email LIKE ? OR message LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
-    $stmt->bind_param("sssii", $like, $like, $like, $limit, $offset);
+    $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages WHERE name LIKE ? OR email LIKE ? OR message LIKE ? ORDER BY created_at DESC");
+    $stmt->bind_param("sss", $like, $like, $like);
 } else {
     $stmt = $conn->prepare("SELECT id, name, email, event_type, message, is_read, created_at FROM contact_messages ORDER BY created_at DESC LIMIT ? OFFSET ?");
     $stmt->bind_param("ii", $limit, $offset);
@@ -95,6 +95,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $messages = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+$mIndexBase = $search ? 0 : $offset;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -155,12 +156,15 @@ $stmt->close();
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div class="relative flex-1 max-w-sm">
-                        <i
-                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchInput" placeholder="Search messages..."
+                    <form method="GET" class="relative flex-1 max-w-sm" id="searchForm">
+                        <button type="submit" aria-label="Search"
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <input type="text" id="searchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search messages..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </div>
+                    </form>
                 </div>
 
                 <?php if ($message): ?>
@@ -255,13 +259,7 @@ $stmt->close();
 
                         <tbody id="tableBody">
 
-                            <?php if (empty($messages)): ?>
-                                <tr>
-                                    <td colspan="7" class="p-8 text-center text-gray-400">No messages yet.</td>
-                                </tr>
-                            <?php endif; ?>
-
-                            <?php $mIndex = $offset; ?>
+                            <?php $mIndex = $mIndexBase; ?>
                             <?php foreach ($messages as $m): $mIndex++; ?>
                                 <tr class="border-t hover:bg-gray-50 <?= !$m['is_read'] ? 'bg-purple-50/50' : '' ?>">
 
@@ -321,7 +319,7 @@ $stmt->close();
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                            <tr class="no-results hidden">
+                            <tr class="no-results <?= empty($messages) ? '' : 'hidden' ?>">
                                     <td colspan="7" class="p-6 text-center text-gray-400 text-sm">No messages found matching
                                     your search.</td>
                             </tr>
@@ -335,7 +333,7 @@ $stmt->close();
                         </div>
 
                         <?php if ($totalPages > 1): ?>
-                        <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                        <div id="pagination" class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
                             <a href="?page=1<?= $search ? "&search=$search" : '' ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $page <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 <i class="fa-solid fa-angles-left mr-1"></i> First
@@ -372,19 +370,47 @@ $stmt->close();
     </div>
 
     <script>
-        document.getElementById('searchInput')?.addEventListener('input', function () {
-            const q = this.value.toLowerCase();
-            let visible = 0;
-            document.querySelectorAll('#tableBody tr').forEach(row => {
-                if (row.classList.contains('no-results')) return;
-                const match = row.textContent.toLowerCase().includes(q);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
-            document.getElementById('totalCount').textContent = visible;
+    (function () {
+        const form = document.getElementById('searchForm');
+        const input = document.getElementById('searchInput');
+        const tbody = document.getElementById('tableBody');
+        const totalEl = document.getElementById('totalCount');
+        const pagination = document.getElementById('pagination');
+        if (!form || !input || !tbody) return;
+
+        let timer;
+
+        function doSearch() {
+            const params = new URLSearchParams();
+            const q = input.value.trim();
+            if (q) params.set('search', q);
+
+            fetch('contact_messages.php' + (params.toString() ? '?' + params.toString() : ''))
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const nt = doc.getElementById('tableBody');
+                    const ntc = doc.getElementById('totalCount');
+                    const np = doc.getElementById('pagination');
+                    if (nt) tbody.innerHTML = nt.innerHTML;
+                    if (ntc && totalEl) totalEl.textContent = ntc.textContent;
+                    if (np) { if (pagination) { pagination.innerHTML = np.innerHTML; pagination.style.display = ''; } }
+                    else if (pagination) pagination.style.display = 'none';
+                })
+                .catch(() => {});
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(doSearch, 400);
         });
-    </script>
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            doSearch();
+        });
+    })();
+</script>
 </body>
 
 </html>

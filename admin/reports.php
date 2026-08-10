@@ -93,7 +93,7 @@ $eventMonthLabels = array_column($recentMonths ?? [], 'label');
 
 // --- Approved & Paid Bookings ---
 // FIX: Include 'Completed' status
-$approvedBookings = $conn->query("
+$approvedBookingsAll = $conn->query("
     SELECT b.id, b.created_at, b.total_cost, u.name AS customer_name,
            e.event_name, p.name AS package_name
     FROM bookings b
@@ -103,6 +103,15 @@ $approvedBookings = $conn->query("
     WHERE b.status IN ('Confirmed', 'Completed') AND DATE(b.created_at) >= '$sd' AND DATE(b.created_at) <= '$ed'
     ORDER BY b.created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
+
+// --- Approved & Paid Pagination ---
+$approvedBookings = $approvedBookingsAll;
+$apLimit = 8;
+$apPage = isset($_GET['ap_page']) ? max(1, (int) $_GET['ap_page']) : 1;
+$apOffset = ($apPage - 1) * $apLimit;
+$apTotal = count($approvedBookingsAll);
+$apTotalPages = max(1, ceil($apTotal / $apLimit));
+$approvedBookings = array_slice($approvedBookingsAll, $apOffset, $apLimit);
 
 // --- Excel Export ---
 if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
@@ -147,7 +156,7 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
     $xlsx->writeRow([' Approved & Paid Bookings '], ['section' => true]);
     $xlsx->writeRow([]);
     $xlsx->writeRow(['Date', 'Customer Name', 'Event', 'Package', 'Amount (MMK)'], ['header' => true]);
-    foreach ($approvedBookings as $ab) {
+    foreach ($approvedBookingsAll as $ab) {
         $xlsx->writeRow([
             date('Y-m-d', strtotime($ab['created_at'])),
             $ab['customer_name'],
@@ -157,7 +166,7 @@ if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
         ], ['bordered' => true]);
     }
     $xlsx->writeRow([]);
-    $xlsx->writeRow(['', '', '', 'Total', array_sum(array_column($approvedBookings, 'total_cost'))], ['total' => true]);
+    $xlsx->writeRow(['', '', '', 'Total', array_sum(array_column($approvedBookingsAll, 'total_cost'))], ['total' => true]);
 
     $xlsx->output('Revenue_Report_' . $startDate . '_to_' . $endDate . '.xlsx');
 }
@@ -200,7 +209,7 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
     $xlsx->writeRow(['Approved & Paid Bookings - ' . $startDate . ' to ' . $endDate], ['section' => true]);
     $xlsx->writeRow([]);
     $xlsx->writeRow(['Date', 'Customer Name', 'Event', 'Package', 'Amount (MMK)'], ['header' => true]);
-    foreach ($approvedBookings as $ab) {
+    foreach ($approvedBookingsAll as $ab) {
         $xlsx->writeRow([
             date('Y-m-d', strtotime($ab['created_at'])),
             $ab['customer_name'],
@@ -210,7 +219,7 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
         ], ['bordered' => true]);
     }
     $xlsx->writeRow([]);
-    $xlsx->writeRow(['', '', '', 'Total', array_sum(array_column($approvedBookings, 'total_cost'))], ['total' => true]);
+    $xlsx->writeRow(['', '', '', 'Total', array_sum(array_column($approvedBookingsAll, 'total_cost'))], ['total' => true]);
 
     $xlsx->output('Approved_Payments_' . $startDate . '_to_' . $endDate . '.xlsx');
 }
@@ -546,24 +555,27 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="text-xs font-semibold text-gray-400 border-b border-gray-100">
-                                        <th class="pb-3 font-medium">Date</th>
+                                        <th class="pb-3 font-medium">No.</th>
                                         <th class="pb-3 font-medium">Customer Name</th>
                                         <th class="pb-3 font-medium">Event</th>
                                         <th class="pb-3 font-medium">Package</th>
+                                         <th class="pb-3 font-medium">Date</th>
                                         <th class="pb-3 font-medium text-right">Amount (MMK)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-sm text-gray-700 divide-y divide-gray-50">
-                                    <?php foreach ($approvedBookings as $ab): ?>
+                                    <?php $abIndex = $apOffset; ?>
+                                    <?php foreach ($approvedBookings as $ab): $abIndex++; ?>
                                         <tr class="hover:bg-gray-50/50">
-                                            <td class="py-3 text-gray-600"><?= date('Y-m-d', strtotime($ab['created_at'])) ?>
-                                            </td>
+                                            <td class="py-3 text-gray-500 text-center"><?= $abIndex ?></td>
                                             <td class="py-3 font-semibold text-gray-800">
                                                 <?= htmlspecialchars($ab['customer_name']) ?>
                                             </td>
                                             <td class="py-3 text-gray-600"><?= htmlspecialchars($ab['event_name']) ?></td>
                                             <td class="py-3"><span
                                                     class="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs font-semibold rounded-full"><?= htmlspecialchars($ab['package_name']) ?></span>
+                                            </td>
+                                            <td class="py-3 text-gray-600"><?= date('Y-m-d', strtotime($ab['created_at'])) ?>
                                             </td>
                                             <td class="py-3 text-right font-medium text-gray-800">
                                                 <?= number_format($ab['total_cost']) ?>
@@ -572,22 +584,56 @@ if (isset($_GET['export_approved']) && $_GET['export_approved'] === '1') {
                                     <?php endforeach; ?>
                                     <?php if (empty($approvedBookings)): ?>
                                         <tr>
-                                            <td colspan="5" class="py-4 text-center text-gray-400 text-sm">No approved bookings
+                                            <td colspan="6" class="py-4 text-center text-gray-400 text-sm">No approved bookings
                                                 found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
                                 <tfoot>
                                     <tr class="border-t border-gray-200 font-bold text-gray-800">
-                                        <td colspan="4" class="py-3">Total</td>
+                                        <td colspan="5" class="py-3">Total</td>
                                         <td class="py-3 text-right">
-                                            <?= number_format(array_sum(array_column($approvedBookings, 'total_cost'))) ?>
+                                            <?= number_format(array_sum(array_column($approvedBookingsAll, 'total_cost'))) ?>
                                             MMK
                                         </td>
                                     </tr>
                                 </tfoot>
                             </table>
                         </div>
+                        <?php if ($apTotalPages > 1): ?>
+                            <?php
+                            $base = "?report=revenue&start_date=$startDate&end_date=$endDate";
+                            $apPrev = max(1, $apPage - 1);
+                            $apNext = min($apTotalPages, $apPage + 1);
+                            ?>
+                            <div class="flex flex-wrap justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                                <a href="<?= $base ?>&ap_page=1"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $apPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                    <i class="fa-solid fa-angles-left mr-1"></i> First
+                                </a>
+                                <a href="<?= $base ?>&ap_page=<?= $apPrev ?>"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $apPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
+                                <span class="text-xs text-gray-500 font-medium">Page <?= $apPage ?> of <?= $apTotalPages ?></span>
+                                <a href="<?= $base ?>&ap_page=<?= $apNext ?>"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $apPage >= $apTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
+                                <a href="<?= $base ?>&ap_page=<?= $apTotalPages ?>"
+                                    class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $apPage >= $apTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
+                                    Last <i class="fa-solid fa-angles-right ml-1"></i>
+                                </a>
+                                <form method="GET" class="flex items-center gap-1 ml-2">
+                                    <label class="text-xs text-gray-500 font-medium">Page:</label>
+                                    <input type="number" name="ap_page" min="1" max="<?= $apTotalPages ?>" value="<?= $apPage ?>"
+                                        class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                                    <input type="hidden" name="report" value="revenue">
+                                    <input type="hidden" name="start_date" value="<?= $startDate ?>">
+                                    <input type="hidden" name="end_date" value="<?= $endDate ?>">
+                                </form>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- ===================== EVENT POPULARITY FORECAST ===================== -->

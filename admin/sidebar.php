@@ -425,8 +425,9 @@ function activeMenu($page)
 
     .sidebar-collapsed .sidebar-link {
         justify-content: center;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+        align-items: center;
+        height: 2.5rem;
+        padding: 0;
         gap: 0;
         position: relative;
         width: 100%;
@@ -444,7 +445,9 @@ function activeMenu($page)
 
     .sidebar-collapsed #sidebar .bottom-area a {
         justify-content: center;
-        padding: 0.5rem;
+        align-items: center;
+        height: 2.5rem;
+        padding: 0;
         gap: 0;
         width: 100%;
     }
