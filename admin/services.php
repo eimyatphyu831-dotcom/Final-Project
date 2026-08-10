@@ -11,6 +11,11 @@ require_once '../config/db.php';
 $action = $_GET['action'] ?? 'list';
 $serviceId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $editService = null;
+$search = $_GET['search'] ?? '';
+
+$queryParams = [];
+if ($search !== '') $queryParams['search'] = $search;
+$redirectQuery = $queryParams ? '?' . http_build_query($queryParams) : '';
 
 // DELETE
 if ($action === 'delete' && $serviceId > 0) {
@@ -18,7 +23,7 @@ if ($action === 'delete' && $serviceId > 0) {
     $stmt->bind_param("i", $serviceId);
     $stmt->execute();
     $stmt->close();
-    header("Location: services.php");
+    header("Location: services.php$redirectQuery");
     exit();
 }
 
@@ -53,20 +58,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 
-    header("Location: services.php");
+    header("Location: services.php$redirectQuery");
     exit();
 }
 
 // Fetch all services
-$services = $conn->query("SELECT * FROM services ORDER BY id")->fetch_all(MYSQLI_ASSOC);
+$searchFilter = $search !== '' ? "WHERE service_name LIKE '%" . $conn->real_escape_string($search) . "%'" : "";
+$services = $conn->query("SELECT * FROM services $searchFilter ORDER BY id")->fetch_all(MYSQLI_ASSOC);
 
 // Pagination
-$sPage = isset($_GET['s_page']) ? max(1, (int)$_GET['s_page']) : 1;
-$sPerPage = 8;
 $sTotal = count($services);
-$sTotalPages = ceil($sTotal / $sPerPage);
-$sOffset = ($sPage - 1) * $sPerPage;
-$paginatedServices = array_slice($services, $sOffset, $sPerPage);
+if ($search !== '') {
+    $sTotalPages = 1;
+    $sOffset = 0;
+    $paginatedServices = $services;
+} else {
+    $sPage = isset($_GET['s_page']) ? max(1, (int)$_GET['s_page']) : 1;
+    $sPerPage = 8;
+    $sTotalPages = ceil($sTotal / $sPerPage);
+    $sOffset = ($sPage - 1) * $sPerPage;
+    $paginatedServices = array_slice($services, $sOffset, $sPerPage);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -147,11 +159,15 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div class="relative flex-1 max-w-sm">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="serviceSearch" placeholder="Search services..."
+                    <form method="GET" class="relative flex-1 max-w-sm" id="searchForm">
+                        <button type="submit" aria-label="Search"
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <input type="text" id="serviceSearch" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search services..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </div>
+                    </form>
                     <div class="flex gap-3">
                         <a href="services.php?action=add"
                             class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
@@ -192,7 +208,7 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
-                            <tr class="no-results hidden">
+                            <tr class="no-results <?= empty($services) ? '' : 'hidden' ?>">
                                 <td colspan="3" class="px-6 py-10 text-center text-gray-400 text-sm">No services found matching your search.</td>
                             </tr>
                         </tbody>
@@ -203,21 +219,22 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                     </div>
 
                     <?php if ($sTotalPages > 1): ?>
-                    <div class="flex justify-center items-center gap-2 px-6 py-3 border-t border-gray-100">
-                    <a href="?s_page=1"
+                    <div id="pagination" class="flex justify-center items-center gap-2 px-6 py-3 border-t border-gray-100">
+                    <?php $sQueryStr = $search !== '' ? '&search=' . urlencode($search) : ''; ?>
+                    <a href="?s_page=1<?= $sQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-angles-left mr-1"></i> First
                     </a>
-                    <a href="?s_page=<?= max(1, $sPage-1) ?>"
+                    <a href="?s_page=<?= max(1, $sPage-1) ?><?= $sQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-chevron-left"></i>
                     </a>
                     <span class="text-xs text-gray-500 font-medium">Page <?= $sPage ?> of <?= $sTotalPages ?></span>
-                    <a href="?s_page=<?= min($sTotalPages, $sPage+1) ?>"
+                    <a href="?s_page=<?= min($sTotalPages, $sPage+1) ?><?= $sQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage >= $sTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-chevron-right"></i>
                     </a>
-                    <a href="?s_page=<?= $sTotalPages ?>"
+                    <a href="?s_page=<?= $sTotalPages ?><?= $sQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $sPage >= $sTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         Last <i class="fa-solid fa-angles-right ml-1"></i>
                     </a>
@@ -225,6 +242,9 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                         <label class="text-xs text-gray-500 font-medium">Page:</label>
                         <input type="number" name="s_page" min="1" max="<?= $sTotalPages ?>" value="<?= $sPage ?>"
                             class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                        <?php if ($search !== ''): ?>
+                        <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                        <?php endif; ?>
                     </form>
                     </div>
                     <?php endif; ?>
@@ -274,7 +294,7 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                 </div>
 
                 <script>
-                    function closeModal() { window.location.href = 'services.php'; }
+                    function closeModal() { window.location.href = 'services.php<?= $redirectQuery ?>'; }
 
                     <?php if ($action === 'add' || $action === 'edit'): ?>
                         document.addEventListener('DOMContentLoaded', function () {
@@ -282,19 +302,47 @@ $paginatedServices = array_slice($services, $sOffset, $sPerPage);
                             if (m) m.classList.remove('hidden');
                         });
                     <?php endif; ?>
+                </script>
 
-                    document.getElementById('serviceSearch').addEventListener('input', function () {
-                        const q = this.value.toLowerCase();
-                        let visible = 0;
-                        document.querySelectorAll('#tableBody tr').forEach(row => {
-                            if (row.classList.contains('no-results')) return;
-                            const match = row.textContent.toLowerCase().includes(q);
-                            row.style.display = match ? '' : 'none';
-                            if (match) visible++;
+                <script>
+                    (function () {
+                        const form = document.getElementById('searchForm');
+                        const input = document.getElementById('serviceSearch');
+                        const tbody = document.getElementById('tableBody');
+                        const totalEl = document.getElementById('totalCount');
+                        const pagination = document.getElementById('pagination');
+                        if (!form || !input || !tbody) return;
+
+                        let timer;
+
+                        function doSearch() {
+                            const q = input.value.trim();
+
+                            fetch('services.php' + (q ? '?search=' + encodeURIComponent(q) : ''))
+                                .then(r => r.text())
+                                .then(html => {
+                                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                                    const nt = doc.getElementById('tableBody');
+                                    const ntc = doc.getElementById('totalCount');
+                                    const np = doc.getElementById('pagination');
+                                    if (nt) tbody.innerHTML = nt.innerHTML;
+                                    if (ntc && totalEl) totalEl.textContent = ntc.textContent;
+                                    if (np) { if (pagination) { pagination.innerHTML = np.innerHTML; pagination.style.display = ''; } }
+                                    else if (pagination) pagination.style.display = 'none';
+                                })
+                                .catch(() => {});
+                        }
+
+                        input.addEventListener('input', function () {
+                            clearTimeout(timer);
+                            timer = setTimeout(doSearch, 400);
                         });
-                        document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
-                        document.getElementById('totalCount').textContent = visible;
-                    });
+
+                        form.addEventListener('submit', function (e) {
+                            e.preventDefault();
+                            doSearch();
+                        });
+                    })();
                 </script>
 
             </main>

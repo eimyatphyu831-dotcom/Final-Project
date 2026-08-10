@@ -9,7 +9,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
 require_once '../includes/auto_complete_bookings.php';
- $statusFilter = $_GET['status'] ?? 'all';
+$statusFilter = $_GET['status'] ?? 'all';
+ $search = $_GET['search'] ?? '';
  $message = '';
 
 // AJAX handler for confirm/cancel (no page reload)
@@ -117,6 +118,15 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
 // Fetch from DB
  $bookings = [];
+ $whereClauses = [];
+ if ($statusFilter !== 'all') {
+     $whereClauses[] = "b.status = '" . $conn->real_escape_string($statusFilter) . "'";
+ }
+ if ($search !== '') {
+     $like = '%' . $conn->real_escape_string($search) . '%';
+     $whereClauses[] = "(u.name LIKE '$like' OR u.email LIKE '$like' OR e.event_name LIKE '$like' OR v.name LIKE '$like' OR p.name LIKE '$like' OR t.name LIKE '$like')";
+ }
+ $whereSql = $whereClauses ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
  $query = "SELECT b.id, b.event_date, b.total_cost, b.status, b.created_at, b.paymentmethods_id, b.receipt_image,
                   b.time_slot_id, ts.slot_name AS time_slot_name,
                   CONCAT(TIME_FORMAT(ts.start_time, '%H:%i'), ' - ', TIME_FORMAT(ts.end_time, '%H:%i')) AS time_slot_range,
@@ -134,6 +144,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
            LEFT JOIN time_slots ts ON b.time_slot_id = ts.id
            LEFT JOIN payment_methods pm ON b.paymentmethods_id = pm.id
            LEFT JOIN teams t ON b.team_id = t.id
+           $whereSql
            ORDER BY b.created_at DESC";
  $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
@@ -149,12 +160,18 @@ if (!$hasData) {
 }
 
 // Pagination
- $bPage = isset($_GET['b_page']) ? max(1, (int)$_GET['b_page']) : 1;
- $bPerPage = 8;
  $bTotal = $hasData ? count($bookings) : 0;
- $bTotalPages = ceil($bTotal / $bPerPage);
- $bOffset = ($bPage - 1) * $bPerPage;
- $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $bookings;
+ if ($search !== '') {
+    $bTotalPages = $hasData ? 1 : 0;
+    $bOffset = 0;
+    $paginatedBookings = $bookings;
+ } else {
+    $bPage = isset($_GET['b_page']) ? max(1, (int)$_GET['b_page']) : 1;
+    $bPerPage = 8;
+    $bTotalPages = ceil($bTotal / $bPerPage);
+    $bOffset = ($bPage - 1) * $bPerPage;
+    $paginatedBookings = $hasData ? array_slice($bookings, $bOffset, $bPerPage) : $bookings;
+ }
 ?>
 
 <!DOCTYPE html>
@@ -218,12 +235,18 @@ if (!$hasData) {
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div class="relative flex-1 max-w-sm">
-                        <i
-                            class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="bookingSearch" placeholder="Search bookings..."
+                    <form method="GET" class="relative flex-1 max-w-sm" id="searchForm">
+                        <button type="submit" aria-label="Search"
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <input type="text" id="bookingSearch" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search bookings..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </div>
+                        <?php if ($statusFilter !== 'all'): ?>
+                        <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
+                        <?php endif; ?>
+                    </form>
                     <div class="flex items-center gap-3">
                         <?php if ($message): ?>
                             <span
@@ -242,6 +265,9 @@ if (!$hasData) {
                                 <option value="Cancelled" <?= $statusFilter == 'Cancelled' ? 'selected' : '' ?>>Cancelled
                                 </option>
                             </select>
+                            <?php if ($search !== ''): ?>
+                            <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                            <?php endif; ?>
                         </form>
                     </div>
                 </div>
@@ -329,7 +355,7 @@ if (!$hasData) {
                                     </tr>
 
                                 <?php endforeach; ?>
-                                <tr class="no-results hidden">
+                                <tr class="no-results <?= $hasData ? 'hidden' : '' ?>">
                                     <td colspan="7" class="p-6 text-center text-gray-400 text-sm">No bookings found
                                         matching
                                         your search.</td>
@@ -344,10 +370,11 @@ if (!$hasData) {
                     </div>
 
                     <?php if ($bTotalPages > 1): ?>
-                    <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                    <div id="pagination" class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
                         <?php
                         $bQueryStr = '';
-                        if ($statusFilter !== 'all') $bQueryStr = '&status=' . urlencode($statusFilter);
+                        if ($statusFilter !== 'all') $bQueryStr .= '&status=' . urlencode($statusFilter);
+                        if ($search !== '') $bQueryStr .= '&search=' . urlencode($search);
                         ?>
                         <a href="?b_page=1<?= $bQueryStr ?>"
                             class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $bPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
@@ -372,6 +399,9 @@ if (!$hasData) {
                                 class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
                             <?php if ($statusFilter !== 'all'): ?>
                             <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
+                            <?php endif; ?>
+                            <?php if ($search !== ''): ?>
+                            <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
                             <?php endif; ?>
                         </form>
                     </div>
@@ -497,18 +527,48 @@ if (!$hasData) {
     </div>
 
     <script>
-        document.getElementById('bookingSearch').addEventListener('input', function () {
-            const q = this.value.toLowerCase();
-            let visible = 0;
-            document.querySelectorAll('#tableBody tr').forEach(row => {
-                if (row.classList.contains('no-results')) return;
-                const match = row.textContent.toLowerCase().includes(q);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
+        (function () {
+            const form = document.getElementById('searchForm');
+            const input = document.getElementById('bookingSearch');
+            const tbody = document.getElementById('tableBody');
+            const totalEl = document.getElementById('totalCount');
+            const pagination = document.getElementById('pagination');
+            if (!form || !input || !tbody) return;
+
+            let timer;
+
+            function doSearch() {
+                const q = input.value.trim();
+                const st = form.querySelector('input[name="status"]');
+                const params = [];
+                if (q) params.push('search=' + encodeURIComponent(q));
+                if (st && st.value) params.push('status=' + encodeURIComponent(st.value));
+
+                fetch('bookings.php' + (params.length ? '?' + params.join('&') : ''))
+                    .then(r => r.text())
+                    .then(html => {
+                        const doc = new DOMParser().parseFromString(html, 'text/html');
+                        const nt = doc.getElementById('tableBody');
+                        const ntc = doc.getElementById('totalCount');
+                        const np = doc.getElementById('pagination');
+                        if (nt) tbody.innerHTML = nt.innerHTML;
+                        if (ntc && totalEl) totalEl.textContent = ntc.textContent;
+                        if (np) { if (pagination) { pagination.innerHTML = np.innerHTML; pagination.style.display = ''; } }
+                        else if (pagination) pagination.style.display = 'none';
+                    })
+                    .catch(() => {});
+            }
+
+            input.addEventListener('input', function () {
+                clearTimeout(timer);
+                timer = setTimeout(doSearch, 400);
             });
-            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
-            document.getElementById('totalCount').textContent = visible;
-        });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                doSearch();
+            });
+        })();
 
         function openViewModal(id, customer, email, event, pkg, venue, slot, team, date, payment, cost, status, receipt) {
             document.getElementById('viewCustomer').textContent = customer;

@@ -390,7 +390,7 @@ if ($vResult)
                 </div>
 
                 <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
-                    Total: <span class="font-semibold text-gray-700"><?= $eTotal ?></span> events
+                    Total: <span class="font-semibold text-gray-700" id="totalCount"><?= $eTotal ?></span> events
                 </div>
 
                 <?php if ($eTotalPages > 1): ?>
@@ -639,6 +639,7 @@ if ($vResult)
                 if (match) visible++;
             });
             document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+            document.getElementById('totalCount').textContent = visible;
         });
     </script>
 </body>

@@ -103,16 +103,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Fetch venues
-$result = $conn->query("SELECT v.* FROM venues v ORDER BY v.id");
+$searchFilter = '';
+if ($search !== '') {
+    $like = '%' . $conn->real_escape_string($search) . '%';
+    $searchFilter = "WHERE v.name LIKE '$like' OR v.address LIKE '$like'";
+}
+$result = $conn->query("SELECT v.* FROM venues v $searchFilter ORDER BY v.id");
 $venues = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 // Pagination
-$vPage = isset($_GET['v_page']) ? max(1, (int)$_GET['v_page']) : 1;
-$vPerPage = 8;
 $vTotal = count($venues);
-$vTotalPages = ceil($vTotal / $vPerPage);
-$vOffset = ($vPage - 1) * $vPerPage;
-$paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
+if ($search !== '') {
+    $vTotalPages = 1;
+    $vOffset = 0;
+    $paginatedVenues = $venues;
+} else {
+    $vPage = isset($_GET['v_page']) ? max(1, (int)$_GET['v_page']) : 1;
+    $vPerPage = 8;
+    $vTotalPages = ceil($vTotal / $vPerPage);
+    $vOffset = ($vPage - 1) * $vPerPage;
+    $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
+}
 
 // Fallback sample data when DB is empty
 // if (empty($venues)) {
@@ -195,11 +206,18 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
             <main class="flex-1 p-6 overflow-y-auto">
 
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
-                    <div class="relative flex-1 max-w-sm">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchInput" placeholder="Search venues..."
+                    <form method="GET" class="relative flex-1 max-w-sm" id="searchForm">
+                        <button type="submit" aria-label="Search"
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <input type="text" id="searchInput" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search venues..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </div>
+                        <?php if ($filterEventId > 0): ?>
+                        <input type="hidden" name="event_id" value="<?= $filterEventId ?>">
+                        <?php endif; ?>
+                    </form>
                     <div class="flex gap-3">
                         <a href="venues.php?action=add<?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
                             class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition flex items-center gap-2 font-medium text-sm shadow-sm">
@@ -244,13 +262,13 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                                 <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
 
-                                 <a href="venues.php?action=edit&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
+                                 <a href="venues.php?action=edit&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : '' ?><?= $search !== '' ? '&search=' . urlencode($search) : '' ?>"
                                             class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                             <span>Edit</span>
                                         </a>
                                 
-                                        <a href="venues.php?action=delete&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : "" ?>"
+                                        <a href="venues.php?action=delete&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : '' ?><?= $search !== '' ? '&search=' . urlencode($search) : '' ?>"
                                             onclick="return confirm('Delete this venue?')"
                                             class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
                                             <i class="fa-solid fa-trash-can"></i>
@@ -261,7 +279,7 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                        <tr class="no-results hidden">
+                        <tr class="no-results <?= empty($venues) ? '' : 'hidden' ?>">
                             <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No venues found matching your search.</td>
                         </tr>
                     </tbody>
@@ -269,7 +287,7 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                 </div>
 
                 <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
-                    Total: <span class="font-semibold text-gray-700"><?= $vTotal ?></span> venues
+                    Total: <span class="font-semibold text-gray-700" id="totalCount"><?= $vTotal ?></span> venues
                 </div>
 
                 <?php
@@ -279,7 +297,7 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
                 $vQueryStr = $vQueryParams ? '&' . http_build_query($vQueryParams) : '';
                 ?>
                 <?php if ($vTotalPages > 1): ?>
-                <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                <div id="pagination" class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
                     <a href="?v_page=1<?= $vQueryStr ?>"
                         class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $vPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                         <i class="fa-solid fa-angles-left mr-1"></i> First
@@ -451,19 +469,51 @@ $paginatedVenues = array_slice($venues, $vOffset, $vPerPage);
     </div>
 
 </div>
-    <script>
-        document.getElementById('searchInput')?.addEventListener('input', function () {
-            const q = this.value.toLowerCase();
-            let visible = 0;
-            document.querySelectorAll('#tableBody tr').forEach(row => {
-                if (row.classList.contains('no-results')) return;
-                const match = row.textContent.toLowerCase().includes(q);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+
+<script>
+    (function () {
+        const form = document.getElementById('searchForm');
+        const input = document.getElementById('searchInput');
+        const tbody = document.getElementById('tableBody');
+        const totalEl = document.getElementById('totalCount');
+        const pagination = document.getElementById('pagination');
+        if (!form || !input || !tbody) return;
+
+        let timer;
+
+        function doSearch() {
+            const params = new URLSearchParams();
+            const q = input.value.trim();
+            if (q) params.set('search', q);
+            const ev = form.querySelector('input[name="event_id"]');
+            if (ev && ev.value) params.set('event_id', ev.value);
+
+            fetch('venues.php' + (params.toString() ? '?' + params.toString() : ''))
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const nt = doc.getElementById('tableBody');
+                    const ntc = doc.getElementById('totalCount');
+                    const np = doc.getElementById('pagination');
+                    if (nt) tbody.innerHTML = nt.innerHTML;
+                    if (ntc && totalEl) totalEl.textContent = ntc.textContent;
+                    if (np) { if (pagination) { pagination.innerHTML = np.innerHTML; pagination.style.display = ''; } }
+                    else if (pagination) pagination.style.display = 'none';
+                })
+                .catch(() => {});
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(doSearch, 400);
         });
-    </script>
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            doSearch();
+        });
+    })();
+</script>
 </body>
 
 </html>

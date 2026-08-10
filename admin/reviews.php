@@ -8,8 +8,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 require_once '../config/db.php';
 
+$search = $_GET['search'] ?? '';
+
 // Fetch all reviews
 $reviews = [];
+$searchFilter = $search !== '' ? "WHERE u.name LIKE '%" . $conn->real_escape_string($search) . "%' OR u.email LIKE '%" . $conn->real_escape_string($search) . "%' OR e.event_name LIKE '%" . $conn->real_escape_string($search) . "%' OR r.review_text LIKE '%" . $conn->real_escape_string($search) . "%'" : '';
 $query = "SELECT r.id, r.rating, r.review_text, r.created_at,
                  u.name AS user_name, u.email AS user_email, u.image AS user_image,
                  e.event_name, b.event_date
@@ -17,6 +20,7 @@ $query = "SELECT r.id, r.rating, r.review_text, r.created_at,
           JOIN users u ON r.user_id = u.id
           JOIN events e ON r.event_id = e.id
           JOIN bookings b ON r.booking_id = b.id
+          $searchFilter
           ORDER BY r.created_at DESC";
 $result = $conn->query($query);
 if ($result && $result->num_rows > 0) {
@@ -24,12 +28,18 @@ if ($result && $result->num_rows > 0) {
 }
 
 // Pagination
-$rPage = isset($_GET['r_page']) ? max(1, (int)$_GET['r_page']) : 1;
-$rPerPage = 8;
 $rTotal = count($reviews);
-$rTotalPages = ceil($rTotal / $rPerPage);
-$rOffset = ($rPage - 1) * $rPerPage;
-$paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
+if ($search !== '') {
+    $rTotalPages = 1;
+    $rOffset = 0;
+    $paginatedReviews = $reviews;
+} else {
+    $rPage = isset($_GET['r_page']) ? max(1, (int)$_GET['r_page']) : 1;
+    $rPerPage = 8;
+    $rTotalPages = ceil($rTotal / $rPerPage);
+    $rOffset = ($rPage - 1) * $rPerPage;
+    $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
+}
 
 ?>
 
@@ -65,15 +75,19 @@ $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
             <?php include 'admin_header.php'; ?>
             <main class="flex-1 p-6 overflow-y-auto custom-scroll">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <div class="relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="reviewSearch" placeholder="Search reviews..."
+                    <form method="GET" class="relative" id="searchForm">
+                        <button type="submit" aria-label="Search"
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <input type="text" id="reviewSearch" name="search" value="<?= htmlspecialchars($search) ?>"
+                            placeholder="Search reviews..."
                             class="w-72 pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-400 bg-white">
-                    </div>
-                    <span class="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-xs font-semibold"><?= count($reviews) ?> total</span>
+                    </form>
+                    <span id="totalBadge" class="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-xs font-semibold"><?= count($reviews) ?> total</span>
                 </div>
 
-                <?php if (count($reviews) === 0): ?>
+                <?php if (count($reviews) === 0 && $search === ''): ?>
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-14 text-center max-w-lg mx-auto mt-10">
                         <div class="mx-auto w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
                             <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
@@ -145,7 +159,7 @@ $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
-                                    <tr class="no-results hidden">
+                                    <tr class="no-results <?= empty($reviews) ? '' : 'hidden' ?>">
                                         <td colspan="6" class="p-6 text-center text-gray-400 text-sm">No reviews matching your search.</td>
                                     </tr>
                                 </tbody>
@@ -157,21 +171,22 @@ $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
                         </div>
 
                         <?php if ($rTotalPages > 1): ?>
-                        <div class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
-                            <a href="?r_page=1"
+                        <div id="pagination" class="flex justify-center items-center gap-2 px-6 py-4 border-t border-gray-100">
+                            <?php $rQueryStr = $search !== '' ? '&search=' . urlencode($search) : ''; ?>
+                            <a href="?r_page=1<?= $rQueryStr ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 <i class="fa-solid fa-angles-left mr-1"></i> First
                             </a>
-                            <a href="?r_page=<?= max(1, $rPage-1) ?>"
+                            <a href="?r_page=<?= max(1, $rPage-1) ?><?= $rQueryStr ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </a>
                             <span class="text-xs text-gray-500 font-medium">Page <?= $rPage ?> of <?= $rTotalPages ?></span>
-                            <a href="?r_page=<?= min($rTotalPages, $rPage+1) ?>"
+                            <a href="?r_page=<?= min($rTotalPages, $rPage+1) ?><?= $rQueryStr ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage >= $rTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </a>
-                            <a href="?r_page=<?= $rTotalPages ?>"
+                            <a href="?r_page=<?= $rTotalPages ?><?= $rQueryStr ?>"
                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg <?= $rPage >= $rTotalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' ?>">
                                 Last <i class="fa-solid fa-angles-right ml-1"></i>
                             </a>
@@ -179,6 +194,9 @@ $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
                                 <label class="text-xs text-gray-500 font-medium">Page:</label>
                                 <input type="number" name="r_page" min="1" max="<?= $rTotalPages ?>" value="<?= $rPage ?>"
                                     class="w-14 px-2 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500">
+                                <?php if ($search !== ''): ?>
+                                <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+                                <?php endif; ?>
                             </form>
                         </div>
                         <?php endif; ?>
@@ -187,19 +205,49 @@ $paginatedReviews = array_slice($reviews, $rOffset, $rPerPage);
             </main>
         </div>
     </div>
-    <script>
-        document.getElementById('reviewSearch').addEventListener('input', function () {
-            const q = this.value.toLowerCase();
-            let visible = 0;
-            document.querySelectorAll('table tbody tr').forEach(row => {
-                if (row.classList.contains('no-results')) return;
-                const match = row.textContent.toLowerCase().includes(q);
-                row.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
-            document.getElementById('totalCount').textContent = visible;
+
+<script>
+    (function () {
+        const form = document.getElementById('searchForm');
+        const input = document.getElementById('reviewSearch');
+        const totalEl = document.getElementById('totalCount');
+        const totalBadge = document.getElementById('totalBadge');
+        const pagination = document.getElementById('pagination');
+        if (!form || !input) return;
+
+        let timer;
+
+        function doSearch() {
+            const q = input.value.trim();
+            const tbody = document.querySelector('table tbody');
+
+            fetch('reviews.php' + (q ? '?search=' + encodeURIComponent(q) : ''))
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const nt = doc.querySelector('table tbody');
+                    const ntc = doc.getElementById('totalCount');
+                    const np = doc.getElementById('pagination');
+                    const tbody2 = document.querySelector('table tbody');
+                    if (nt && tbody2) tbody2.innerHTML = nt.innerHTML;
+                    if (ntc && totalEl) totalEl.textContent = ntc.textContent;
+                    if (ntc && totalBadge) totalBadge.textContent = ntc.textContent + ' total';
+                    if (np) { if (pagination) { pagination.innerHTML = np.innerHTML; pagination.style.display = ''; } }
+                    else if (pagination) pagination.style.display = 'none';
+                })
+                .catch(() => {});
+        }
+
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(doSearch, 400);
         });
-    </script>
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            doSearch();
+        });
+    })();
+</script>
 </body>
 </html>

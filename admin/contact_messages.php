@@ -331,7 +331,7 @@ $stmt->close();
                     </div>
 
                         <div class="px-6 py-3 text-sm text-gray-500 border-t border-gray-100">
-                            Total: <span class="font-semibold text-gray-700"><?= $totalMessages ?></span> messages
+                            Total: <span class="font-semibold text-gray-700" id="totalCount"><?= $totalMessages ?></span> messages
                         </div>
 
                         <?php if ($totalPages > 1): ?>
@@ -382,6 +382,7 @@ $stmt->close();
                 if (match) visible++;
             });
             document.querySelector('.no-results')?.classList.toggle('hidden', visible > 0);
+            document.getElementById('totalCount').textContent = visible;
         });
     </script>
 </body>
