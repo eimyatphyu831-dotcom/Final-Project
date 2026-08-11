@@ -8,6 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
 
 require_once '../config/db.php';
 require_once '../includes/notification_helper.php';
+require_once '../includes/mail_helper.php';
 require_once '../includes/auto_complete_bookings.php';
 $statusFilter = $_GET['status'] ?? 'all';
  $search = $_GET['search'] ?? '';
@@ -28,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             $bk = $conn->query("SELECT b.user_id, e.event_name, b.event_date FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.id = $id")->fetch_assoc();
             if ($bk) {
                 $dateStr = date('M j, Y', strtotime($bk['event_date']));
-                createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
+createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
+                sendBookingMail($conn, $bk['user_id'], 'confirmed', $bk['event_name'], $dateStr);
             }
             echo json_encode(['success' => true]);
         } else {
@@ -41,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             if ($bk) {
                 $dateStr = date('M j, Y', strtotime($bk['event_date']));
                 createNotification($conn, $bk['user_id'], 'Booking Completed', "Your booking for {$bk['event_name']} on {$dateStr} has been marked as completed.", '../users/my_bookings.php', 'user');
+                sendBookingMail($conn, $bk['user_id'], 'completed', $bk['event_name'], $dateStr);
             }
             echo json_encode(['success' => true]);
         } else {
@@ -56,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             if ($bk) {
                 $dateStr = date('M j, Y', strtotime($bk['event_date']));
                 createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled. Reason: {$reasonText}", '../users/my_bookings.php', 'user');
+                sendBookingMail($conn, $bk['user_id'], 'cancelled', $bk['event_name'], $dateStr, $reasonText);
             }
             echo json_encode(['success' => true]);
         } else {
@@ -77,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_booking'])) {
     if ($bk) {
         $dateStr = date('M j, Y', strtotime($bk['event_date']));
         createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled. Reason: {$reasonText}", '../users/my_bookings.php', 'user');
+        sendBookingMail($conn, $bk['user_id'], 'cancelled', $bk['event_name'], $dateStr, $reasonText);
     }
     $message = "Booking cancelled with reason.";
     header("Location: bookings.php?status=" . urlencode($statusFilter));
@@ -92,6 +97,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Confirmed', "Your booking for {$bk['event_name']} on {$dateStr} has been confirmed.", '../users/my_bookings.php', 'user');
+            sendBookingMail($conn, $bk['user_id'], 'confirmed', $bk['event_name'], $dateStr);
         }
         $message = "Booking confirmed!";
     } elseif ($_GET['action'] === 'complete') {
@@ -100,6 +106,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Completed', "Your booking for {$bk['event_name']} on {$dateStr} has been marked as completed.", '../users/my_bookings.php', 'user');
+            sendBookingMail($conn, $bk['user_id'], 'completed', $bk['event_name'], $dateStr);
         }
         $message = "Booking marked as completed.";
     } elseif ($_GET['action'] === 'cancel') {
@@ -108,6 +115,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk) {
             $dateStr = date('M j, Y', strtotime($bk['event_date']));
             createNotification($conn, $bk['user_id'], 'Booking Cancelled', "Your booking for {$bk['event_name']} on {$dateStr} has been cancelled.", '../users/my_bookings.php', 'user');
+            sendBookingMail($conn, $bk['user_id'], 'cancelled', $bk['event_name'], $dateStr);
         }
         $message = "Booking cancelled.";
     } elseif ($_GET['action'] === 'delete') {

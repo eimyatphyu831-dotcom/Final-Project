@@ -244,17 +244,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $venueCap = (int) $capRow['capacity'];
         }
 
-        // Recompute total as per-guest price x guest count (authoritative, ignores posted total)
+        // Recompute total same as select_venue.php: base_price + per-guest price x guest count, then apply package discount
         $perGuest = 0;
-        $priceRes = $conn->prepare("SELECT price FROM venue_packages WHERE venue_id = ? AND package_id = ? LIMIT 1");
+        $basePrice = 0;
+        $priceRes = $conn->prepare("SELECT price, base_price FROM venue_packages WHERE venue_id = ? AND package_id = ? LIMIT 1");
         $priceRes->bind_param("ii", $vid, $pid);
         $priceRes->execute();
         $priceRow = $priceRes->get_result()->fetch_assoc();
         $priceRes->close();
         if ($priceRow) {
             $perGuest = (float) $priceRow['price'];
+            $basePrice = (float) ($priceRow['base_price'] ?? 0);
         }
-        $total = $perGuest * $guestCount;
+
+        $pkgName = '';
+        $pkgRes = $conn->query("SELECT name FROM packages WHERE id=$pid");
+        if ($pkgRes && $pkgRow = $pkgRes->fetch_assoc()) {
+            $pkgName = $pkgRow['name'];
+        }
+        $discountRate = 0;
+        if (strcasecmp($pkgName, 'Silver') === 0) $discountRate = 0.02;
+        elseif (strcasecmp($pkgName, 'Gold') === 0) $discountRate = 0.05;
+        elseif (strcasecmp($pkgName, 'Diamond') === 0) $discountRate = 0.10;
+        $totalPrice = $basePrice + ($perGuest * $guestCount);
+        $total = $totalPrice - ($totalPrice * $discountRate);
 
         if ($guestCount <= 0) {
             $message = 'Please provide the number of guests.';
