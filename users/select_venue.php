@@ -167,11 +167,19 @@ include "../includes/header.php";
         <?php else: ?>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <?php foreach ($venues as $v): ?>
+                    <?php $isSelectedVenue = ($selectedVenueId == $v['id']); ?>
+                    <?php $isVenueDimmed = ($selectedVenueId > 0 && !$isSelectedVenue); ?>
                     <div
-                        class="bg-white rounded-[1.5rem] shadow-sm border <?= ($selectedVenueId == $v['id']) ? 'border-purple-500 ring-2 ring-purple-200' : 'border-slate-100' ?> flex flex-col transition hover:shadow-lg hover:border-purple-200">
+                        class="bg-white rounded-[1.5rem] shadow-sm border flex flex-col transition-all duration-300 <?= $isSelectedVenue ? 'border-purple-500 ring-4 ring-purple-300 shadow-xl scale-[1.02] z-10' : ($isVenueDimmed ? 'opacity-50 hover:opacity-85' : 'border-slate-100 hover:shadow-lg hover:border-purple-200') ?>">
                         <div class="w-full h-[200px] relative rounded-t-[1.5rem] overflow-hidden">
                             <img src="<?= htmlspecialchars($v['image_path'] ?: '../assets/images/venue1.png') ?>"
-                                alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover">
+                                alt="<?= htmlspecialchars($v['name']) ?>" class="w-full h-full object-cover transition-all duration-300 <?= $isSelectedVenue ? 'scale-105' : '' ?>">
+                            <?php if ($isSelectedVenue): ?>
+                                <div
+                                    class="absolute top-3 left-3 z-10 inline-flex items-center gap-1 bg-purple-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Selected
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <div class="p-4 flex-1 flex flex-col">
                             <h3 class="text-xl font-extrabold text-slate-800 mb-1">
@@ -190,8 +198,8 @@ include "../includes/header.php";
                                 </div>
                             </div>
                             <a href="?event_id=<?= $eventId ?>&venue_id=<?= $v['id'] ?>"
-                                class="mt-auto w-full py-2 rounded-xl text-center text-xs font-semibold transition <?= ($selectedVenueId == $v['id']) ? 'bg-brand-700 text-white' : 'border border-brand-600 bg-brand-600  hover:bg-purple-700 text-white' ?>">
-                                <?= ($selectedVenueId == $v['id']) ? 'Selected' : 'Select' ?>
+                                class="mt-auto w-full py-2 rounded-xl text-center text-xs font-semibold transition <?= $isSelectedVenue ? 'bg-brand-700 text-white' : ($isVenueDimmed ? 'border border-brand-200 bg-purple-400 text-white hover:bg-brand-700' : 'border border-purple-500 bg-purple-400  hover:bg-purple-700 text-white') ?>">
+                                <?= $isSelectedVenue ? 'Selected' : 'Select' ?>
                             </a>
                         </div>
                     </div>
@@ -366,7 +374,7 @@ include "../includes/header.php";
                             <?php if ($packages[1]['price'] > 0): ?>
                                 <button type="button"
                                     onclick="handleBooking('bookingform.php?event_id=<?= $eventId ?>&venue_id=<?= $venueId ?>&package_id=<?= $packages[1]['id'] ?>&total=<?= $packages[1]['price'] ?>&guests=<?= $guestCount ?>')"
-                                    class="mt-4 w-full py-2 rounded-xl bg-orange-400 text-white font-semibold text-xs hover:bg-orange-500 hover:shadow-md transition">
+                                    class="mt-4 w-full py-2 rounded-xl bg-orange-300/45 border border-orange-400 text-orange-500 hover:text-white font-semibold text-xs hover:bg-orange-500 hover:shadow-md transition">
                                     Select Package
                                 </button>
                             <?php else: ?>

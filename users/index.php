@@ -64,7 +64,8 @@ if (isset($_SESSION['success'])) {
 
         <!-- Video 1 -->
         <div class="video-slide absolute inset-0 opacity-100 transition-opacity duration-1000">
-            <video class="w-full h-full object-cover brightness-110 contrast-105" autoplay muted loop playsinline>
+            <video class="w-full h-full object-cover brightness-110 contrast-105" autoplay muted loop playsinline
+                controlsList="nodownload" disablepictureinpicture oncontextmenu="return false;">
                 <source src="../assets/videos/vedio1.mp4" type="video/mp4">
             </video>
 
@@ -74,7 +75,8 @@ if (isset($_SESSION['success'])) {
 
         <!-- Video 2 -->
         <div class="video-slide absolute inset-0 opacity-0 transition-opacity duration-1000">
-            <video class="w-full h-full object-cover brightness-110 contrast-105" muted loop playsinline>
+            <video class="w-full h-full object-cover brightness-110 contrast-105" muted loop playsinline
+                controlsList="nodownload" disablepictureinpicture oncontextmenu="return false;">
                 <source src="../assets/videos/video2.mp4" type="video/mp4">
             </video>
 
@@ -83,7 +85,8 @@ if (isset($_SESSION['success'])) {
 
         <!-- Video 3 -->
         <div class="video-slide absolute inset-0 opacity-0 transition-opacity duration-1000">
-            <video class="w-full h-full object-cover brightness-110 contrast-105" muted loop playsinline>
+            <video class="w-full h-full object-cover brightness-110 contrast-105" muted loop playsinline
+                controlsList="nodownload" disablepictureinpicture oncontextmenu="return false;">
                 <source src="../assets/videos/video3.mp4" type="video/mp4">
             </video>
 
@@ -129,7 +132,7 @@ if (isset($_SESSION['success'])) {
                 <span
                     class="absolute inset-0 bg-brand-600 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100"></span>
 
-                <span class="relative z-10">Book Now</span>
+                <span class="relative z-10 font-semibold">Book Now</span>
             </a>
 
         </div>
