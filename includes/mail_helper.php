@@ -106,7 +106,7 @@ function sendBookingMail($conn, $userId, $status, $eventName, $dateStr, $reason 
 
     $html = '<html><body style="font-family:Arial,sans-serif;background:#f6f7fb;padding:20px;">'
           . '<div style="max-width:520px;margin:auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e3e3e3;">'
-          . '<div style="background:#9d84c7;color:#fff;padding:20px 24px;font-size:20px;font-weight:bold;">Event Planning</div>'
+          . '<div style="background:#9d84c7;color:#fff;padding:20px 24px;font-size:20px;font-weight:bold;">Event Pro</div>'
           . '<div style="padding:24px;">'
           . '<h2 style="margin:0 0 12px;color:#333;">' . $statuses[$status]['heading'] . '</h2>'
           . '<p style="color:#555;line-height:1.6;">' . $statuses[$status]['message'] . '</p>'

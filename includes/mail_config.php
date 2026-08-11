@@ -11,6 +11,6 @@ define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 587);
 define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
 define('SMTP_USER', 'eimyatphyu831@gmail.com');
-define('SMTP_PASS', 'xeqbioenbslrwbcf');
+define('SMTP_PASS', 'bhdibdwtnrcimugy');
 define('SMTP_FROM_EMAIL', 'eimyatphyu831@gmail.com');
-define('SMTP_FROM_NAME', 'Event Planning');
+define('SMTP_FROM_NAME', 'Event Pro');
