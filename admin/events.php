@@ -366,7 +366,7 @@ if ($vResult)
                                             <span>View</span>
                                         </a>
                                 
-                                        <a href="events.php?action=edit&id=<?= $event['id'] ?>"
+                                        <a href="#" onclick="openEventEdit(<?= $event['id'] ?>); return false;"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                             <i class="fa-solid fa-pen-to-square mr-1"></i>
                                             <span>Edit</span>
@@ -629,6 +629,22 @@ if ($vResult)
                     function closeViewModal() {
                         const m = document.getElementById('viewModal');
                         if (m) m.classList.add('hidden');
+                    }
+
+                    function openEventEdit(id) {
+                        fetch('events.php?action=edit&id=' + id)
+                            .then(r => r.text())
+                            .then(html => {
+                                const doc = new DOMParser().parseFromString(html, 'text/html');
+                                const modal = doc.getElementById('eventModal');
+                                const target = document.getElementById('eventModal');
+                                if (modal && target) {
+                                    target.outerHTML = modal.outerHTML;
+                                }
+                                const fresh = document.getElementById('eventModal');
+                                if (fresh) fresh.classList.remove('hidden');
+                            })
+                            .catch(() => { });
                     }
 
                     function closeModal() {

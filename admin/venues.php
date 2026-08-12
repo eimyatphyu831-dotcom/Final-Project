@@ -262,7 +262,7 @@ if ($search !== '') {
                                 <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
 
-                                 <a href="venues.php?action=edit&id=<?= $v['id'] ?><?= $filterEventId ? "&event_id=$filterEventId" : '' ?><?= $search !== '' ? '&search=' . urlencode($search) : '' ?>"
+                                 <a href="#" onclick="openVenueEdit(<?= $v['id'] ?>); return false;"
                                             class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                             <span>Edit</span>
@@ -455,6 +455,22 @@ if ($search !== '') {
 
             <script>
                 function closeModal() { window.location.href = 'venues.php<?= $redirectQuery ?>'; }
+
+                function openVenueEdit(id) {
+                    fetch('venues.php?action=edit&id=' + id)
+                        .then(r => r.text())
+                        .then(html => {
+                            const doc = new DOMParser().parseFromString(html, 'text/html');
+                            const modal = doc.getElementById('venueModal');
+                            const target = document.getElementById('venueModal');
+                            if (modal && target) {
+                                target.outerHTML = modal.outerHTML;
+                            }
+                            const fresh = document.getElementById('venueModal');
+                            if (fresh) fresh.classList.remove('hidden');
+                        })
+                        .catch(() => { });
+                }
 
                 <?php if ($action === 'add' || $action === 'edit' || $action === 'view'): ?>
                     document.addEventListener('DOMContentLoaded', function () {

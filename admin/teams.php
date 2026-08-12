@@ -165,7 +165,7 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
                                     <td class="px-6 py-4 font-medium text-gray-800"><?= htmlspecialchars($t['name']) ?></td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="teams.php?action=edit&id=<?= $t['id'] ?>"
+                                            <a href="#" onclick="openTeamEdit(<?= $t['id'] ?>); return false;"
                                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                                 <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
                                             </a>
@@ -234,6 +234,22 @@ $teams = $conn->query("SELECT * FROM teams ORDER BY name")->fetch_all(MYSQLI_ASS
 
                 <script>
                     function closeModal() { window.location.href = 'teams.php'; }
+
+                    function openTeamEdit(id) {
+                        fetch('teams.php?action=edit&id=' + id)
+                            .then(r => r.text())
+                            .then(html => {
+                                const doc = new DOMParser().parseFromString(html, 'text/html');
+                                const modal = doc.getElementById('teamModal');
+                                const target = document.getElementById('teamModal');
+                                if (modal && target) {
+                                    target.outerHTML = modal.outerHTML;
+                                }
+                                const fresh = document.getElementById('teamModal');
+                                if (fresh) fresh.classList.remove('hidden');
+                            })
+                            .catch(() => { });
+                    }
 
                     <?php if ($action === 'add' || $action === 'edit'): ?>
                         document.addEventListener('DOMContentLoaded', function () {

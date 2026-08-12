@@ -195,7 +195,7 @@ if ($search !== '') {
                                         <?= htmlspecialchars($s['service_name']) ?></td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-center gap-2">
-                                            <a href="services.php?action=edit&id=<?= $s['id'] ?>"
+                                            <a href="#" onclick="openServiceEdit(<?= $s['id'] ?>); return false;"
                                                 class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition">
                                                 <i class="fa-solid fa-pen-to-square mr-1"></i> Edit
                                             </a>
@@ -295,6 +295,22 @@ if ($search !== '') {
 
                 <script>
                     function closeModal() { window.location.href = 'services.php<?= $redirectQuery ?>'; }
+
+                    function openServiceEdit(id) {
+                        fetch('services.php?action=edit&id=' + id)
+                            .then(r => r.text())
+                            .then(html => {
+                                const doc = new DOMParser().parseFromString(html, 'text/html');
+                                const modal = doc.getElementById('serviceModal');
+                                const target = document.getElementById('serviceModal');
+                                if (modal && target) {
+                                    target.outerHTML = modal.outerHTML;
+                                }
+                                const fresh = document.getElementById('serviceModal');
+                                if (fresh) fresh.classList.remove('hidden');
+                            })
+                            .catch(() => { });
+                    }
 
                     <?php if ($action === 'add' || $action === 'edit'): ?>
                         document.addEventListener('DOMContentLoaded', function () {
