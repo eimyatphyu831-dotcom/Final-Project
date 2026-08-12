@@ -126,10 +126,14 @@ include '../includes/header.php';
                     </div>
                 </div>
 
-                <div class="px-2 pb-2 flex gap-2">
+                <div class="px-2 pb-2 flex gap-2.5">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-brand-600 hover:bg-brand-700 text-white border border-slate-200 font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm">
-                        View Details
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 text-center border-2 border-brand-600 text-brand-600 hover:bg-brand-600 hover:text-white font-semibold text-sm py-2.5 rounded-xl transition duration-200">
+                        <i data-lucide="eye" class="w-4 h-4"></i> View
+                    </a>
+                    <a href="select_venue.php?event_id=<?= $event['id']; ?>"
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 text-center bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm py-2.5 rounded-xl transition duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                        <i data-lucide="calendar-check" class="w-4 h-4"></i> Book
                     </a>
 
                 </div>

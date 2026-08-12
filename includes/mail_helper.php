@@ -82,11 +82,19 @@ function sendUserEmail($conn, $userId, $subject, $htmlBody)
  */
 function sendBookingMail($conn, $userId, $status, $eventName, $dateStr, $reason = '')
 {
+    $stmt = $conn->prepare("SELECT name FROM users WHERE id = ?");
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $user = $res->fetch_assoc();
+    $stmt->close();
+    $userName = $user ? htmlspecialchars($user['name']) : '';
+
     $statuses = [
         'confirmed' => [
             'subject' => "Booking Confirmed: {$eventName}",
             'heading' => 'Your booking has been confirmed!',
-            'message' => "Great news! Your booking for <strong>{$eventName}</strong> on <strong>{$dateStr}</strong> has been confirmed. We look forward to seeing you there.",
+            'message' => "Great news, <strong>{$userName}</strong>! Your booking for <strong>{$eventName}</strong> on <strong>{$dateStr}</strong> has been confirmed. We look forward to seeing you there.",
         ],
         'cancelled' => [
             'subject' => "Booking Cancelled: {$eventName}",

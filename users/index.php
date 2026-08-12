@@ -196,10 +196,14 @@ if (isset($_SESSION['success'])) {
                             <?php echo $event['description'] ?></p>
                     </div>
                 </div>
-                <div class="px-2 pb-2 flex gap-2">
+                <div class="px-2 pb-2 flex gap-2.5">
                     <a href="viewdetails.php?id=<?= $event['id']; ?>"
-                        class="flex-1 block text-center bg-brand-600 dark:bg-[#1e2a45] hover:bg-brand-700  dark:text-gray-200 border border-slate-200 dark:border-[#2a3a5c] font-semibold text-sm py-3 rounded-xl transition duration-200 shadow-sm text-white">
-                        View Details
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 text-center border-2 border-brand-600 dark:border-[#b8a5d6] text-brand-600 dark:text-[#b8a5d6] hover:bg-brand-600 dark:hover:bg-[#b8a5d6] hover:text-white dark:hover:text-[#1e2a45] font-semibold text-sm py-2.5 rounded-xl transition duration-200">
+                        <i data-lucide="eye" class="w-4 h-4"></i> View
+                    </a>
+                    <a href="select_venue.php?event_id=<?= $event['id']; ?>"
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 text-center bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm py-2.5 rounded-xl transition duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                        <i data-lucide="calendar-check" class="w-4 h-4"></i> Book
                     </a>
 
                 </div>
