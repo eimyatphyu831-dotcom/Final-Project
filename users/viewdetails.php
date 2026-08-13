@@ -73,6 +73,20 @@ $avgRating = $ratResult ? (float) $ratResult->fetch_assoc()['avg_rating'] : 0;
 $svcResult = $conn->query("SELECT COUNT(DISTINCT s.id) AS svc_count FROM services s JOIN event_package_services eps ON s.id = eps.service_id WHERE eps.event_id = $id");
 $serviceCount = $svcResult ? (int) $svcResult->fetch_assoc()['svc_count'] : 0;
 
+//   Get services for this event
+$eventServices = [];
+$svcRes = $conn->query("SELECT DISTINCT s.id AS service_id, s.service_name FROM services s JOIN event_package_services eps ON s.id = eps.service_id WHERE eps.event_id = $id ORDER BY s.service_name ASC");
+if ($svcRes) {
+    $eventServices = $svcRes->fetch_all(MYSQLI_ASSOC);
+}
+
+//   Get reviews for this event
+$eventReviews = [];
+$revRes = $conn->query("SELECT r.rating, r.review_text, r.created_at, u.name AS user_name, u.image AS user_image FROM reviews r JOIN users u ON r.user_id = u.id WHERE r.event_id = $id ORDER BY r.created_at DESC");
+if ($revRes) {
+    $eventReviews = $revRes->fetch_all(MYSQLI_ASSOC);
+}
+
 
 
 ?>
@@ -215,6 +229,146 @@ $serviceCount = $svcResult ? (int) $svcResult->fetch_assoc()['svc_count'] : 0;
     </div>
 
 </section>
+
+<!-- Event Services & Reviews -->
+<?php if (!empty($eventServices) || !empty($eventReviews)): ?>
+    <section class="max-w-7xl mx-auto px-6 pb-12">
+
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-purple-400">
+                Services &amp; Reviews
+            </h2>
+
+            <span class="text-gray-500">
+                <?php echo count($eventServices); ?> Services &middot; <?php echo count($eventReviews); ?> Reviews
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+            <!-- Services -->
+            <div>
+                <h3 class="text-xl font-bold text-gray-800 mb-5">Services Included</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <?php
+                    $serviceIcons = [
+                        'decoration' => 'palette',
+                        'photography' => 'camera',
+                        'catering' => 'utensils',
+                        'entertainment' => 'clapperboard',
+                        'floral' => 'flower-2',
+                        'lighting' => 'lightbulb',
+                        'sound' => 'music',
+                        'dj' => 'disc-3',
+                        'venue' => 'building-2',
+                        'transport' => 'car',
+                        'invitation' => 'mail',
+                        'cake' => 'cake',
+                    ];
+                    foreach ($eventServices as $i => $svc):
+                        $icon = $serviceIcons[strtolower(preg_replace('/[^a-z]/', '', $svc['service_name']))] ?? 'sparkles';
+                        ?>
+                        <div
+                            class="bg-white rounded-2xl border border-purple-100 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300">
+                            <div
+                                class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center mb-3">
+                                <i data-lucide="<?= htmlspecialchars($icon) ?>" class="w-5 h-5 text-purple-500"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-800">
+                                <?= htmlspecialchars($svc['service_name']) ?>
+                            </h4>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div>
+                <h3 class="text-xl font-bold text-gray-800 mb-5">What People Say</h3>
+                <?php if (!empty($eventReviews)): ?>
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="prevReview()" aria-label="Previous review"
+                            class="w-10 h-10 rounded-full border border-purple-200 bg-white text-purple-500 hover:bg-purple-50 shadow-sm flex items-center justify-center transition cursor-pointer shrink-0">
+                            &lt;
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <div class="relative overflow-hidden">
+                                <div id="reviewCarousel" class="flex transition-transform duration-500 ease-out">
+                                    <?php foreach ($eventReviews as $rev): ?>
+                                        <div
+                                            class="w-full shrink-0 bg-white rounded-2xl shadow-lg border border-purple-100 p-6">
+                                            <div class="flex items-center gap-3 mb-3">
+                                                <div
+                                                    class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 font-bold text-sm shrink-0">
+                                                    <?= htmlspecialchars(strtoupper(substr($rev['user_name'], 0, 2))) ?>
+                                                </div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-800 text-sm">
+                                                        <?= htmlspecialchars($rev['user_name']) ?>
+                                                    </p>
+                                                    <div class="flex gap-0.5 mt-0.5">
+                                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                            <svg class="w-3.5 h-3.5 <?= $i <= $rev['rating'] ? 'text-yellow-400' : 'text-gray-200' ?>"
+                                                                fill="currentColor" viewBox="0 0 20 20">
+                                                                <path
+                                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                        <?php endfor; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm text-slate-600 leading-relaxed">
+                                                &ldquo;<?= htmlspecialchars($rev['review_text']) ?>&rdquo;
+                                            </p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <div class="flex justify-center gap-1.5 mt-4" id="reviewDots"></div>
+                        </div>
+                        <button type="button" onclick="nextReview()" aria-label="Next review"
+                            class="w-10 h-10 rounded-full border border-purple-200 bg-white text-purple-500 hover:bg-purple-50 shadow-sm flex items-center justify-center transition cursor-pointer shrink-0">
+                            &gt;
+                        </button>
+                    </div>
+                    <script>
+                        const reviewCount = <?= count($eventReviews) ?>;
+                        let reviewIndex = 0;
+                        const carousel = document.getElementById('reviewCarousel');
+                        const dotsWrap = document.getElementById('reviewDots');
+
+                        function renderDots() {
+                            dotsWrap.innerHTML = '';
+                            for (let i = 0; i < reviewCount; i++) {
+                                const dot = document.createElement('button');
+                                dot.type = 'button';
+                                dot.className = 'w-2 h-2 rounded-full transition cursor-pointer ' + (i === reviewIndex ? 'bg-purple-500' : 'bg-purple-200');
+                                dot.onclick = function () { goToReview(i); };
+                                dotsWrap.appendChild(dot);
+                            }
+                        }
+
+                        function goToReview(i) {
+                            reviewIndex = (i + reviewCount) % reviewCount;
+                            carousel.style.transform = 'translateX(-' + reviewIndex * 100 + '%)';
+                            renderDots();
+                        }
+
+                        function nextReview() { goToReview(reviewIndex + 1); }
+
+                        function prevReview() { goToReview(reviewIndex - 1); }
+
+                        renderDots();
+                    </script>
+                <?php else: ?>
+                    <p class="text-sm text-slate-500">No reviews for this event yet.</p>
+                <?php endif; ?>
+            </div>
+
+        </div>
+
+    </section>
+<?php endif; ?>
 
 <!-- Custom Alert Modal -->
 <div id="alertModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">

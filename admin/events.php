@@ -448,8 +448,7 @@ if ($vResult)
                                     <div class="col-span-2"><span class="font-semibold text-gray-600">Description</span>
                                         <p class="text-gray-800"><?= htmlspecialchars($viewEvent['description']) ?></p>
                                     </div>
-                                   
-                                </div>
+                                    </div>
                                 <?php if (!empty($viewGallery)): ?>
                                     <div>
                                         <span class="font-semibold text-gray-600 text-sm">Gallery</span>

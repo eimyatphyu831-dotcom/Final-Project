@@ -93,6 +93,8 @@ if ($statusCol && $row = $statusCol->fetch_assoc()) {
  $userEmail = $_SESSION['user_email'] ?? '';
  $userId = $_SESSION['user_id'];
  $message = '';
+ $bookingSuccessMsg = $_SESSION['booking_success'] ?? '';
+ unset($_SESSION['booking_success']);
 
 // Fetch user phone from DB
  $userPhone = '';
@@ -345,7 +347,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     createNotification($conn, $admin['id'], 'New Booking', "{$userName} booked {$eventName} on {$dateStr} ({$slotName}) for " . number_format($total) . " MMK.", '../admin/bookings.php', 'admin');
                                 }
                             }
-                            header("Location: booking_success.php?booking_id=$bookingId");
+                            $_SESSION['booking_success'] = "Your booking has been submitted successfully! Our team will review it shortly.";
+                            header("Location: bookingform.php?event_id=$eid&venue_id=$vid&package_id=$pid&total=" . number_format($total, 2, '.', '') . "&guests=$guestCount");
                             exit();
                         }
                         $stmt->close();
@@ -433,6 +436,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: #7c3aed !important;
             background: #9274c6ff;
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        }
+        .swal-beauty-popup {
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(76, 29, 149, 0.25);
+            background: #ffffff;
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            overflow: hidden;
+        }
+        .swal-beauty-progress {
+            height: 5px;
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+        }
+        .swal-custom-body {
+            text-align: center;
+            padding: 34px 28px 26px;
+        }
+        .swal-check-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .swal-check {
+            width: 78px;
+            height: 78px;
+        }
+        .swal-check-circle {
+            stroke: #a855f7;
+            stroke-width: 3;
+            stroke-dasharray: 151;
+            stroke-dashoffset: 151;
+            transform-origin: center;
+            animation: swalDrawCircle 0.7s ease-in-out forwards;
+        }
+        .swal-check-mark {
+            stroke: #7c3aed;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 40;
+            stroke-dashoffset: 40;
+            animation: swalDrawMark 0.4s ease-in-out 0.65s forwards;
+        }
+        @keyframes swalDrawCircle {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes swalDrawMark {
+            to { stroke-dashoffset: 0; }
+        }
+        .swal-custom-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: #4c1d95;
+            margin: 0 0 8px;
+            letter-spacing: -0.02em;
+        }
+        .swal-custom-text {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .flatpickr-day.date-fully-booked,
+        .flatpickr-day.date-fully-booked:hover,
+        .flatpickr-day.date-fully-booked.flatpickr-disabled,
+        .flatpickr-day.date-fully-booked.flatpickr-disabled:hover {
+            color: #dc2626 !important;
+            background: #fee2e2;
+            border-color: #fecaca;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+        .flatpickr-day.date-fully-booked .flatpickr-weekday,
+        .flatpickr-day.date-fully-booked.today {
+            color: #dc2626 !important;
         }
     </style>
 </head>
@@ -611,7 +688,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                                 <button type="button" onclick="window.history.back()"
                                     class="bg-gray-200 text-gray-700 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-400 transition hover:text-white">Cancel</button>
-                                <button type="button" onclick="openConfirmModal()"
+                                <button type="button" onclick="submitBooking()"
                                     class="bg-purple-600/60 text-white py-2 rounded-lg font-bold hover:bg-purple-800 transition shadow-md shadow-purple-200">Confirm
                                     Booking</button>
                             </div>
@@ -736,41 +813,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Confirm Booking Modal -->
-    <div id="confirmModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
-
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 mx-4 text-center">
-
-            <div class="mx-auto w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                <i data-lucide="calendar-check" class="w-8 h-8 text-purple-600"></i>
-            </div>
-
-            <h2 class="text-2xl font-bold text-gray-800 mt-5">
-                Confirm Booking?
-            </h2>
-
-            <p class="text-gray-500 mt-3">
-                You are about to finalize your event request.
-            </p>
-
-            <div class="flex justify-center gap-4 mt-8">
-
-                <button type="button" onclick="closeConfirmModal()"
-                    class="px-6 py-2 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 transition">
-                    Cancel
-                </button>
-
-
-                <button type="button" onclick="submitBooking()"
-                    class="px-6 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition">
-                    Yes, Confirm
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
     <?php include '../includes/footer.php'; ?>
 
     <script>
@@ -864,7 +906,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('summaryTimeSlot').textContent = timeText;
         }
 
-        function openConfirmModal() {
+        function submitBooking() {
 
             const form = document.getElementById('bookingForm');
 
@@ -877,35 +919,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return;
             }
 
-            document.getElementById('confirmModal').classList.remove('hidden');
-            document.getElementById('confirmModal').classList.add('flex');
-        }
-
-
-
-        function submitBooking() {
-
-            document.getElementById('bookingForm').submit();
+            form.submit();
 
         }
 
-
-
-        function closeConfirmModal() {
-
-            document.getElementById('confirmModal')
-                .classList.remove('flex');
-
-            document.getElementById('confirmModal')
-                .classList.add('hidden');
-
-        }
-
-
-
-
-
+        // Success Alert Box
         document.addEventListener('DOMContentLoaded', function () {
+            const bookingSuccessMsg = <?= json_encode($bookingSuccessMsg) ?>;
+            if (bookingSuccessMsg) {
+                Swal.fire({
+                    html:
+                        '<div class="swal-custom-body">' +
+                            '<div class="swal-check-wrap">' +
+                                '<svg class="swal-check" viewBox="0 0 52 52">' +
+                                    '<circle class="swal-check-circle" cx="26" cy="26" r="24" fill="none"/>' +
+                                    '<path class="swal-check-mark" fill="none" d="M14 27l8 8 16-16"/>' +
+                                '</svg>' +
+                            '</div>' +
+                            '<h2 class="swal-custom-title">Booking Submitted!</h2>' +
+                            '<p class="swal-custom-text">' + bookingSuccessMsg + '</p>' +
+                        '</div>',
+                    width: 420,
+                    padding: '0',
+                    position: 'center',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    background: '#ffffff',
+                    timer: 3500,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'swal-beauty-popup',
+                        timerProgressBar: 'swal-beauty-progress'
+                    }
+                }).then(() => {
+                    window.location.href = 'my_bookings.php';
+                });
+            }
+
             const kpayId = <?= $kpayId ?>;
             if (kpayId) {
                 const kpayCard = document.querySelector(`.pm-card[data-id="${kpayId}"]`);
@@ -942,18 +993,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const slotRadios = document.querySelectorAll('input[name="time_slot"]');
             const slotStatus = document.getElementById('slotStatus');
 
-            // Disable dates where all teams are fully booked
+            function toLocalDateStr(d) {
+                return d.getFullYear() + '-' +
+                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(d.getDate()).padStart(2, '0');
+            }
+
+            const todayStr = toLocalDateStr(new Date());
+
+            function isFullyBooked(dateStr) {
+                const teamsAssigned = assignedTeamsByDate[dateStr] || [];
+                return new Set(teamsAssigned).size >= totalTeams;
+            }
+
+            // Red/disabled only when ALL time slots (teams) are fully booked for a date.
+            // Past dates and today are never marked red/disabled.
             const fullyBookedDates = Object.keys(assignedTeamsByDate).filter(d => {
-                return assignedTeamsByDate[d].length >= totalTeams;
+                return isFullyBooked(d) && d > todayStr;
             });
 
             function updateSlotAvailability(selectedDate) {
-                const today = new Date().toISOString().split('T')[0];
+                const today = toLocalDateStr(new Date());
                 const isToday = selectedDate === today;
 
                 const venueTaken = bookedSlots[selectedDate] || [];
-                const teamsAssigned = assignedTeamsByDate[selectedDate] || [];
-                const isDateFull = teamsAssigned.length >= totalTeams;
+                const isDateFull = isFullyBooked(selectedDate);
                 const alreadyBooked = userBookedDates.includes(selectedDate);
 
                 const slotErrorMsg = document.getElementById('slotErrorMessage');
@@ -1018,6 +1082,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flatpickr(input, {
                 minDate: "today",
                 dateFormat: "Y-m-d",
+                disable: fullyBookedDates,
                 onChange: function (selectedDates, dateStr) {
                     const section = document.getElementById('timeScheduleSection');
                     if (dateStr) {
@@ -1032,10 +1097,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 },
                 onDayCreate: function (dObj, dStr, fp, dayElem) {
-                    const dateStr = dayElem.dateObj ? dayElem.dateObj.toISOString().split('T')[0] : '';
-                    const teams = assignedTeamsByDate[dateStr] || [];
-                    if (teams.length > 0 && teams.length < totalTeams) {
-                        dayElem.style.boxShadow = 'inset 0 -3px 0 #7c3aed';
+                    const dateStr = dayElem.dateObj ? toLocalDateStr(dayElem.dateObj) : '';
+                    if (!dateStr || dateStr <= todayStr) return;
+
+                    if (fullyBookedDates.includes(dateStr)) {
+                        dayElem.classList.add('date-fully-booked');
                     }
                 }
             });
