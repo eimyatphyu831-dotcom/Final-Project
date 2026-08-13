@@ -234,7 +234,7 @@ if ($revRes) {
 <?php if (!empty($eventServices) || !empty($eventReviews)): ?>
     <section class="max-w-7xl mx-auto px-6 pb-12">
 
-        <div class="flex justify-between items-center mb-8">
+        <!-- <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold text-purple-400">
                 Services &amp; Reviews
             </h2>
@@ -242,49 +242,91 @@ if ($revRes) {
             <span class="text-gray-500">
                 <?php echo count($eventServices); ?> Services &middot; <?php echo count($eventReviews); ?> Reviews
             </span>
-        </div>
+        </div> -->
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
             <!-- Services -->
             <div>
-                <h3 class="text-xl font-bold text-gray-800 mb-5">Services Included</h3>
+                <h3 class="text-3xl font-bold text-purple-400 mb-5">Services Included</h3>
+                <?php
+                $categoryKeywords = [
+                    'Decoration' => ['floral', 'stage', 'decoration', 'lighting', 'seating', 'podium', 'backdrop', 'vip', 'lounge', 'meeting room'],
+                    'Catering' => ['catering', 'drink', 'buffet', 'refreshment', 'snack', 'dessert'],
+                    'Media' => ['photo', 'video', 'projector', 'screen', 'led', 'display', 'av', 'sound', 'mic', 'audio'],
+                    'Entertainment' => ['host', 'mc', 'band', 'dj', 'music', 'live'],
+                ];
+                $groupedServices = [];
+                $others = [];
+                $categoryIcons = [
+                    'Decoration' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M12 22a10 10 0 1 0-10-10c0 2.2 1.8 4 4 4h2.2c1.1 0 2 .9 2 2 0 .5.2 1 .6 1.3.3.3.8.6 1.2.7z"/><circle cx="7.5" cy="11.5" r="0.5"/><circle cx="12" cy="7.5" r="0.5"/><circle cx="16.5" cy="11.5" r="0.5"/></svg>',
+                    'Catering' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M4 2v20M4 2h6c0 5-2 6-6 6M4 8c3 0 6 1 6 5s-3 5-6 5M16 21V8M16 2c3 0 5 3 5 6 0 2-2 3-2 3h-3"/></svg>',
+                    'Media' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M23 7 16 12l7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+                    'Entertainment' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/><path d="m6.2 5.3 3.1 3.9M12.4 3.4l3.1 4M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+                ];
+                foreach ($eventServices as $svc) {
+                    $name = strtolower($svc['service_name']);
+                    $matched = false;
+                    foreach ($categoryKeywords as $cat => $keywords) {
+                        foreach ($keywords as $kw) {
+                            if (strpos($name, $kw) !== false) {
+                                $groupedServices[$cat][] = $svc;
+                                $matched = true;
+                                break 2;
+                            }
+                        }
+                    }
+                    if (!$matched) {
+                        $others[] = $svc;
+                    }
+                }
+                ?>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <?php
-                    $serviceIcons = [
-                        'decoration' => 'palette',
-                        'photography' => 'camera',
-                        'catering' => 'utensils',
-                        'entertainment' => 'clapperboard',
-                        'floral' => 'flower-2',
-                        'lighting' => 'lightbulb',
-                        'sound' => 'music',
-                        'dj' => 'disc-3',
-                        'venue' => 'building-2',
-                        'transport' => 'car',
-                        'invitation' => 'mail',
-                        'cake' => 'cake',
-                    ];
-                    foreach ($eventServices as $i => $svc):
-                        $icon = $serviceIcons[strtolower(preg_replace('/[^a-z]/', '', $svc['service_name']))] ?? 'sparkles';
-                        ?>
-                        <div
-                            class="bg-white rounded-2xl border border-purple-100 p-5 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300">
+                    <?php foreach ($categoryKeywords as $cat => $keywords): ?>
+                        <?php if (!empty($groupedServices[$cat])): ?>
                             <div
-                                class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center mb-3">
-                                <i data-lucide="<?= htmlspecialchars($icon) ?>" class="w-5 h-5 text-purple-500"></i>
+                                class="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-sm">
+                                <h4 class="flex items-center gap-2 font-bold text-purple-600 mb-3">
+                                    <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-500">
+                                        <?= $categoryIcons[$cat] ?? '' ?>
+                                    </span>
+                                    <?= $cat ?>
+                                </h4>
+                                <ul class="space-y-2">
+                                    <?php foreach ($groupedServices[$cat] as $svc): ?>
+                                        <li class="flex items-center gap-2 text-sm text-gray-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0"></span>
+                                            <?= htmlspecialchars($svc['service_name']) ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
                             </div>
-                            <h4 class="font-semibold text-gray-800">
-                                <?= htmlspecialchars($svc['service_name']) ?>
-                            </h4>
-                        </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
+                    <?php if (!empty($others)): ?>
+                        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-sm">
+                            <h4 class="flex items-center gap-2 font-bold text-purple-600 mb-3">
+                                <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                                </span>
+                                Other Services
+                            </h4>
+                            <ul class="space-y-2">
+                                <?php foreach ($others as $svc): ?>
+                                    <li class="flex items-center gap-2 text-sm text-gray-700">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0"></span>
+                                        <?= htmlspecialchars($svc['service_name']) ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <!-- Reviews -->
             <div>
-                <h3 class="text-xl font-bold text-gray-800 mb-5">What People Say</h3>
+                <h3 class="text-3xl font-bold text-purple-400 mb-5 ml-14">Reviews</h3>
                 <?php if (!empty($eventReviews)): ?>
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="prevReview()" aria-label="Previous review"
@@ -296,7 +338,7 @@ if ($revRes) {
                                 <div id="reviewCarousel" class="flex transition-transform duration-500 ease-out">
                                     <?php foreach ($eventReviews as $rev): ?>
                                         <div
-                                            class="w-full shrink-0 bg-white rounded-2xl shadow-lg border border-purple-100 p-6">
+                                            class="w-full shrink-0 bg-slate-50 rounded-2xl shadow-md border border-slate-200 p-6">
                                             <div class="flex items-center gap-3 mb-3">
                                                 <div
                                                     class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 font-bold text-sm shrink-0">

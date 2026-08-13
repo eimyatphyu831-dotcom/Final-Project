@@ -112,14 +112,60 @@ function sendBookingMail($conn, $userId, $status, $eventName, $dateStr, $reason 
         return false;
     }
 
-    $html = '<html><body style="font-family:Arial,sans-serif;background:#f6f7fb;padding:20px;">'
-          . '<div style="max-width:520px;margin:auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e3e3e3;">'
-          . '<div style="background:#9d84c7;color:#fff;padding:20px 24px;font-size:20px;font-weight:bold;">Event Planning</div>'
-          . '<div style="padding:24px;">'
-          . '<h2 style="margin:0 0 12px;color:#333;">' . $statuses[$status]['heading'] . '</h2>'
-          . '<p style="color:#555;line-height:1.6;">' . $statuses[$status]['message'] . '</p>'
-          . '<p style="color:#999;font-size:12px;margin-top:20px;">You can view your bookings in your account dashboard.</p>'
-          . '</div></div></body></html>';
+    $statusColors = [
+        'confirmed' => ['#9966cc', '#f4effb'],
+        'cancelled' => ['#e11d48', '#fdeaea'],
+        'completed' => ['#16a34a', '#e7f6ee'],
+    ];
+    [$accent, $tint] = $statusColors[$status];
+
+    $statusLabel = ucfirst($status);
+
+    $html = '<!DOCTYPE html>'
+          . '<html lang="en"><head><meta charset="UTF-8"></head>'
+          . '<body style="margin:0;padding:0;background-color:#f3f1f6;font-family:Arial,\'Helvetica Neue\',Helvetica,sans-serif;">'
+          . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f1f6;padding:32px 16px;">'
+          . '<tr><td align="center">'
+          . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">'
+
+          // Header
+          . '<tr><td style="background:linear-gradient(135deg,#9966cc,#a020f0);padding:28px 32px;">'
+          . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+          . '<td style="vertical-align:middle;">'
+          . '<div style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">Event<span style="color:#ffe3ff;">Pro</span></div>'
+          . '<div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:2px;letter-spacing:1.5px;">EVENT PLANNING &amp; MANAGEMENT</div>'
+          . '</td>'
+          . '<td align="right" style="vertical-align:middle;">'
+          . '<span style="display:inline-block;background:' . $tint . ';color:' . $accent . ';font-size:11px;font-weight:bold;padding:6px 14px;border-radius:999px;text-transform:uppercase;letter-spacing:0.5px;">' . $statusLabel . '</span>'
+          . '</td></tr></table>'
+          . '</td></tr>'
+
+          // Body
+          . '<tr><td style="padding:32px;">'
+          . '<h1 style="margin:0 0 8px;font-size:22px;color:#383242;font-weight:700;">' . $statuses[$status]['heading'] . '</h1>'
+          . '<div style="width:48px;height:4px;border-radius:4px;background:' . $accent . ';margin:0 0 20px;"></div>'
+          . '<p style="margin:0;color:#555;font-size:14px;line-height:1.7;">' . $statuses[$status]['message'] . '</p>'
+          . '</td></tr>'
+
+          // Summary card
+          . '<tr><td style="padding:0 32px;">'
+          . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f1f6;border-radius:12px;padding:16px 20px;">'
+          . '<tr><td style="padding:4px 0;font-size:12px;color:#888;width:110px;">Event</td><td style="padding:4px 0;font-size:13px;color:#383242;font-weight:600;">' . $eventName . '</td></tr>'
+          . '<tr><td style="padding:4px 0;font-size:12px;color:#888;width:110px;">Date</td><td style="padding:4px 0;font-size:13px;color:#383242;font-weight:600;">' . $dateStr . '</td></tr>'
+          . '</table>'
+          . '</td></tr>'
+
+          // Footer
+          . '<tr><td style="padding:24px 32px 32px;">'
+          . '<div style="border-top:1px solid #eee;padding-top:16px;text-align:center;">'
+          . '<p style="margin:0 0 6px;color:#999;font-size:12px;">You can view your bookings in your account dashboard.</p>'
+          . '<p style="margin:0;color:#bbb;font-size:11px;">&copy; ' . date('Y') . ' Event Pro &bull; Plan Your Perfect Event With Us</p>'
+          . '</div>'
+          . '</td></tr>'
+
+          . '</table>'
+          . '</td></tr></table>'
+          . '</body></html>';
 
     return sendUserEmail($conn, $userId, $statuses[$status]['subject'], $html);
 }
