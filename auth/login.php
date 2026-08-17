@@ -190,7 +190,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <button type="submit"
                         class="w-full mt-1 py-1.5 px-4 bg-purple-200 hover:bg-purple-300 text-purple-950 font-semibold text-xs rounded-lg tracking-wide shadow-sm transition-all flex items-center justify-center gap-1 group">
-                        Sign In
+                        Login
                         <svg class="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

@@ -635,11 +635,9 @@ $username = $_SESSION['user_name'] ?? '';
                             </div>
                         </div>
                     <?php else: ?>
-                        <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition font-medium">Sign
-                            In</a>
+                        <a href="../auth/login.php" class="hover:text-brand-600 text-brand-900 transition font-medium">Login</a>
                         <a href="../auth/register.php"
-                            class="bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">Get
-                            Started</a>
+                            class="bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white px-5 py-2.5 rounded-full text-sm shadow-sm transition duration-200 font-semibold">Register</a>
                     <?php endif; ?>
                 </div>
 
@@ -743,11 +741,9 @@ $username = $_SESSION['user_name'] ?? '';
                     </a>
                 <?php else: ?>
                     <a href="../auth/login.php" data-nav-link
-                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 border border-slate-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Sign
-                        In</a>
+                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold text-brand-900 border border-slate-200 hover:bg-brand-50 dark:hover:bg-[#16213e] transition">Login</a>
                     <a href="../auth/register.php" data-nav-link
-                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white transition">Get
-                        Started</a>
+                        class="mobile-link block w-full text-center px-4 py-3 rounded-xl text-sm font-semibold bg-brand-200 hover:bg-purple-400 text-brand-900 hover:text-white transition">Register</a>
                 <?php endif; ?>
             </div>
         </div>

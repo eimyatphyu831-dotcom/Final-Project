@@ -511,36 +511,27 @@ if ($revRes) {
 
 
 function handleBooking(url) {
-    const params = new URLSearchParams(url.split('?')[1] || '');
-    const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
-
-    //  If no venue/package is selected, SHOW THE MODAL instead of redirecting instantly
-    if (!hasVenueAndPackage) {
-        showModal(
-            'Selection Required',
-            'Please select a venue and a package before booking this event.',
-            'Select Venue',
-            function () {
-                // This runs when the user clicks "Select Venue" inside the modal
-                window.location.href = 'select_venue.php?event_id=<?= $id ?>';
-            },
-            true // Show the cancel button
-        );
-        return;
-    }
-
-    // If venue/package ARE selected, but user is not logged in, show Login Modal
+    //  If not logged in, show Login Required modal first
     if (!isLoggedIn) {
-        const bookingUrl = encodeURIComponent(url);
+        const bookingUrl = encodeURIComponent('select_venue.php?event_id=<?= $id ?>');
         showModal(
             'Login Required',
-            'Please register or login to book this event.',
+            'Please login or register to book this event.',
             'Login Now',
             function () {
                 window.location.href = '../auth/login.php?redirect=' + bookingUrl;
             },
             true
         );
+        return;
+    }
+
+    const params = new URLSearchParams(url.split('?')[1] || '');
+    const hasVenueAndPackage = params.get('venue_id') && params.get('package_id');
+
+    //  If no venue/package is selected, go straight to venue selection
+    if (!hasVenueAndPackage) {
+        window.location.href = 'select_venue.php?event_id=<?= $id ?>';
         return;
     }
 

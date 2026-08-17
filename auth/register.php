@@ -97,7 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                 </svg>
             </div>
-            <h1 class="text-lg font-bold text-slate-900 tracking-tight mt-0.5">Get Started Now</h1>
+            <h1 class="text-lg font-bold text-slate-900 tracking-tight mt-0.5">Get Started
             <p class="text-[11px] text-slate-500 mt-0.5">Create your account</p>
         </div>
 
@@ -249,8 +249,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <p class="mt-3 text-center text-[11px] text-slate-500">
             Already have an account? <a href="../auth/login.php"
-                class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all" required>Sign in
-                instead</a>
+class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all" required>Login
+                    instead</a>
         </p>
     </div>
 </div>
