@@ -26,7 +26,7 @@ if ($venueId > 0) {
     $eventId = $eventId > 0 ? $eventId : (int) ($selectedVenue['event_id'] ?? 0);
 
     if ($selectedVenue && $eventId > 0) {
-        $allPkgs = $conn->query("SELECT p.id, p.name, p.description FROM packages p ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond')");
+        $allPkgs = $conn->query("SELECT p.id, p.name, p.description, p.discount FROM packages p ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond')");
         $allPackages = $allPkgs ? $allPkgs->fetch_all(MYSQLI_ASSOC) : [];
 
         $pkgServices = [];
@@ -59,14 +59,20 @@ if ($venueId > 0) {
             $pid = $pkg['id'];
             $perGuest = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
             $basePrice = isset($vpBasePrices[$pid]) ? (float) $vpBasePrices[$pid] : 0;
+            $discountRate = (float) ($pkg['discount'] ?? 0) / 100;
             $totalPrice = $basePrice + ($perGuest * $guestCount);
+            $finalPrice = $totalPrice - ($totalPrice * $discountRate);
             $packages[] = [
                 'id' => $pid,
                 'name' => $pkg['name'],
-                'price' => $totalPrice,
+                'price' => $finalPrice,
+                'original_price' => $totalPrice,
                 'base_price' => $basePrice,
                 'per_guest_price' => $perGuest,
-                'price_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
+                'discount_rate' => $discountRate,
+                'price_formatted' => $perGuest > 0 ? number_format($finalPrice) . ' MMK' : '---',
+                'original_formatted' => $perGuest > 0 ? number_format($totalPrice) . ' MMK' : '---',
+                'discount_rate_formatted' => $discountRate > 0 ? '-' . ($discountRate * 100) . '% OFF' : '',
                 'services' => $pkgServices[$pid] ?? []
             ];
         }

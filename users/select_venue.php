@@ -45,7 +45,7 @@ if ($venueId > 0) {
     $stmt->close();
 
     if ($selectedVenue) {
-        $allPkgs = $conn->query("SELECT p.id, p.name, p.description FROM packages p ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond')");
+        $allPkgs = $conn->query("SELECT p.id, p.name, p.description, p.discount FROM packages p ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond')");
         $allPackages = $allPkgs ? $allPkgs->fetch_all(MYSQLI_ASSOC) : [];
 
         $pkgServices = [];
@@ -80,10 +80,7 @@ if ($venueId > 0) {
             $pid = $pkg['id'];
             $perGuest = isset($vpPrices[$pid]) ? (float) $vpPrices[$pid] : 0;
             $basePrice = isset($vpBasePrices[$pid]) ? (float) $vpBasePrices[$pid] : 0;
-            $discountRate = 0;
-            if (strcasecmp($pkg['name'], 'Silver') === 0) $discountRate = 0.02;
-            elseif (strcasecmp($pkg['name'], 'Gold') === 0) $discountRate = 0.05;
-            elseif (strcasecmp($pkg['name'], 'Diamond') === 0) $discountRate = 0.10;
+            $discountRate = (float) ($pkg['discount'] ?? 0) / 100;
             $totalPrice = $basePrice + ($perGuest * $guestCount);
             $discount = $totalPrice * $discountRate;
             $finalPrice = $totalPrice - $discount;

@@ -260,14 +260,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pkgName = '';
-        $pkgRes = $conn->query("SELECT name FROM packages WHERE id=$pid");
+        $pkgRes = $conn->query("SELECT name, discount FROM packages WHERE id=$pid");
         if ($pkgRes && $pkgRow = $pkgRes->fetch_assoc()) {
             $pkgName = $pkgRow['name'];
         }
-        $discountRate = 0;
-        if (strcasecmp($pkgName, 'Silver') === 0) $discountRate = 0.02;
-        elseif (strcasecmp($pkgName, 'Gold') === 0) $discountRate = 0.05;
-        elseif (strcasecmp($pkgName, 'Diamond') === 0) $discountRate = 0.10;
+        $discountRate = isset($pkgRow['discount']) ? (float) $pkgRow['discount'] / 100 : 0;
         $totalPrice = $basePrice + ($perGuest * $guestCount);
         $total = $totalPrice - ($totalPrice * $discountRate);
 

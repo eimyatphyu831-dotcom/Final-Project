@@ -22,11 +22,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $description = $_POST['description'];
+    $discount = isset($_POST['discount']) ? (float) $_POST['discount'] : 0;
     $editId = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
     if ($editId > 0) {
-        $stmt = $conn->prepare("UPDATE packages SET name=?, description=? WHERE id=?");
-        $stmt->bind_param("ssi", $name, $description, $editId);
+        $stmt = $conn->prepare("UPDATE packages SET name=?, description=?, discount=? WHERE id=?");
+        $stmt->bind_param("ssdi", $name, $description, $discount, $editId);
         $stmt->execute();
         $stmt->close();
 
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
         }
     } else {
-        $stmt = $conn->prepare("INSERT INTO packages (name, description) VALUES (?, ?)");
-        $stmt->bind_param("ss", $name, $description);
+        $stmt = $conn->prepare("INSERT INTO packages (name, description, discount) VALUES (?, ?, ?)");
+        $stmt->bind_param("ssd", $name, $description, $discount);
         $stmt->execute();
         $newId = $stmt->insert_id;
         $stmt->close();
@@ -245,6 +246,14 @@ if ($epsRes) {
                                 </div>
                             </div>
 
+                            <!-- Discount badge -->
+                            <?php if ((float) $p['discount'] > 0): ?>
+                                <div class="inline-flex items-center gap-1.5 bg-white/70 rounded-full px-3 py-1 border border-white/80 mb-4">
+                                    <span class="text-sm font-bold <?= $c['accent'] ?>">-<?= (float) $p['discount'] ?>%</span>
+                                    <span class="text-[10px] text-gray-500 uppercase tracking-wide">Discount</span>
+                                </div>
+                            <?php endif; ?>
+
                             <!-- Actions (show on hover) -->
                             <div class="flex gap-2">
                                 <button type="button" onclick="openEditModal(<?= $p['id'] ?>)"
@@ -306,6 +315,13 @@ if ($epsRes) {
                                     class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 resize-none text-sm"
                                     style="height: 52px; overflow: hidden;"></textarea>
                             </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Discount (%)</label>
+                            <input type="number" name="discount" id="packageDiscount" min="0" max="100" step="0.01"
+                                value="0" placeholder="e.g. 5"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-400 bg-gray-50/50 text-sm">
+                            <p class="text-xs text-gray-400 mt-1">Discount percentage applied to the total price (e.g. 5 = 5% off).</p>
                         </div>
                             <!-- Venue Pricing -->
                             <div>
@@ -388,6 +404,7 @@ if ($epsRes) {
                         document.getElementById('packageId').value = '0';
                         document.getElementById('packageName').value = '';
                         document.getElementById('packageDescription').value = '';
+                        document.getElementById('packageDiscount').value = '0';
                         document.getElementById('modalTitle').textContent = 'Add New Package';
                         document.getElementById('modalSubtitle').textContent = 'Create a new package tier';
                         document.getElementById('modalSubmitText').textContent = 'Create Package';
@@ -411,6 +428,7 @@ if ($epsRes) {
                         document.getElementById('packageId').value = pkg.id;
                         document.getElementById('packageName').value = pkg.name;
                         document.getElementById('packageDescription').value = pkg.description || '';
+                        document.getElementById('packageDiscount').value = pkg.discount || '0';
                         document.getElementById('modalTitle').textContent = 'Edit Package';
                         document.getElementById('modalSubtitle').textContent = 'Update ' + pkg.name + ' package details';
                         document.getElementById('modalSubmitText').textContent = 'Update Package';

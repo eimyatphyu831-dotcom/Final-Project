@@ -53,8 +53,12 @@ CREATE TABLE IF NOT EXISTS packages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
+    discount DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT 'Discount percentage (e.g. 5.00 = 5%)',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add discount column for existing database
+ALTER TABLE packages ADD COLUMN IF NOT EXISTS discount DECIMAL(5,2) NOT NULL DEFAULT 0 COMMENT 'Discount percentage (e.g. 5.00 = 5%)';
 
 -- Venue Packages Table
 CREATE TABLE IF NOT EXISTS venue_packages (
