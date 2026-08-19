@@ -87,6 +87,20 @@ if ($revRes) {
     $eventReviews = $revRes->fetch_all(MYSQLI_ASSOC);
 }
 
+//   Get packages for this event
+$eventPackages = [];
+$pkgRes = $conn->query("SELECT DISTINCT p.id, p.name, p.description, p.discount FROM packages p JOIN event_package_services eps ON p.id = eps.package_id WHERE eps.event_id = $id ORDER BY FIELD(p.name, 'Silver', 'Gold', 'Diamond'), p.name ASC");
+if ($pkgRes) {
+    $eventPackages = $pkgRes->fetch_all(MYSQLI_ASSOC);
+}
+
+$packageStyles = [
+    'Silver' => ['icon' => 'medal', 'ring' => 'bg-gray-100 text-gray-500', 'badge' => 'bg-gray-100 text-gray-600', 'border' => 'border-gray-300', 'gradient' => 'bg-gradient-to-r from-gray-300 to-gray-400'],
+    'Gold' => ['icon' => 'crown', 'ring' => 'bg-orange-100 text-orange-400', 'badge' => 'bg-orange-100 text-orange-600', 'border' => 'border-orange-300', 'gradient' => 'bg-gradient-to-r from-yellow-400 to-orange-500'],
+    'Diamond' => ['icon' => 'gem', 'ring' => 'bg-blue-100 text-blue-400', 'badge' => 'bg-blue-100 text-blue-600', 'border' => 'border-blue-300', 'gradient' => 'bg-gradient-to-r from-sky-400 to-blue-500'],
+];
+$defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-500', 'badge' => 'bg-purple-100 text-purple-600', 'border' => 'border-purple-300', 'gradient' => 'bg-gradient-to-r from-purple-400 to-fuchsia-500'];
+
 
 
 ?>
@@ -231,7 +245,7 @@ if ($revRes) {
 </section>
 
 <!-- Event Services & Reviews -->
-<?php if (!empty($eventServices) || !empty($eventReviews)): ?>
+<?php if (!empty($eventServices) || !empty($eventReviews) || !empty($eventPackages)): ?>
     <section class="max-w-7xl mx-auto px-6 pb-12">
 
         <!-- <div class="flex justify-between items-center mb-8">
@@ -324,9 +338,51 @@ if ($revRes) {
                 </div>
             </div>
 
+            <div class="space-y-10">
+            <!-- Packages -->
+            <div>
+                <h3 class="text-3xl font-bold text-purple-400 mb-5 ">Packages</h3>
+                <?php if (!empty($eventPackages)): ?>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <?php foreach ($eventPackages as $pkg): ?>
+                            <?php
+                            $style = $packageStyles[$pkg['name']] ?? $defaultPackageStyle;
+                            $discount = (float) ($pkg['discount'] ?? 0);
+                            ?>
+                            <div
+                                class="group relative overflow-hidden rounded-2xl border-2 <?= $style['border'] ?> bg-white shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-4 flex flex-col">
+                                <div class="absolute inset-x-0 top-0 h-1 <?= $style['gradient'] ?>"></div>
+                                <div class="w-10 h-10 rounded-lg <?= $style['ring'] ?> flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-110">
+                                    <i data-lucide="<?= $style['icon'] ?>" class="w-5 h-5"></i>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                                    <h4 class="text-base font-bold text-slate-800">
+                                        <?= htmlspecialchars($pkg['name']) ?>
+                                    </h4>
+                                    <?php if ($discount > 0): ?>
+                                        <span
+                                            class="inline-flex items-center gap-1 <?= $style['badge'] ?> px-2 py-0.5 rounded-full text-[11px] font-bold">
+                                            <i data-lucide="tag" class="w-3 h-3"></i>
+                                            <?= rtrim(rtrim(number_format($discount, 2), '0'), '.') ?>% OFF
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (!empty($pkg['description'])): ?>
+                                    <p class="text-xs text-slate-500 leading-relaxed">
+                                        <?= htmlspecialchars($pkg['description']) ?>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="text-sm text-slate-500 ml-14">No packages available for this event yet.</p>
+                <?php endif; ?>
+            </div>
+
             <!-- Reviews -->
             <div>
-                <h3 class="text-3xl font-bold text-purple-400 mb-5 ml-14">Reviews</h3>
+                <h3 class="text-3xl font-bold text-purple-400 mb-5 ">Reviews</h3>
                 <?php if (!empty($eventReviews)): ?>
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="prevReview()" aria-label="Previous review"
@@ -406,6 +462,8 @@ if ($revRes) {
                     <p class="text-sm text-slate-500">No reviews for this event yet.</p>
                 <?php endif; ?>
             </div>
+
+        </div>
 
         </div>
 

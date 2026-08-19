@@ -178,6 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </svg>
                             </button>
                         </div>
+                        <p id="password-error" class="text-red-500 text-[10px] mt-1 hidden"></p>
                     </div>
 
                     <div class="flex items-center pt-0.5">
@@ -265,11 +266,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         });
 
-        // Prevent form submission if email is invalid
+        // Password validation
+        const passwordInput = document.getElementById('password');
+        const passwordError = document.getElementById('password-error');
+
+        function validatePassword() {
+            const value = passwordInput.value;
+            if (value === '') {
+                passwordError.textContent = 'Password is required.';
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-500', 'focus:border-red-500');
+                passwordInput.classList.remove('border-slate-200', 'focus:border-purple-600');
+                return false;
+            }
+            if (value.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters.';
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-500', 'focus:border-red-500');
+                passwordInput.classList.remove('border-slate-200', 'focus:border-purple-600');
+                return false;
+            }
+            passwordError.textContent = '';
+            passwordError.classList.add('hidden');
+            passwordInput.classList.remove('border-red-500', 'focus:border-red-500');
+            passwordInput.classList.add('border-slate-200', 'focus:border-purple-600');
+            return true;
+        }
+
+        passwordInput.addEventListener('blur', validatePassword);
+        passwordInput.addEventListener('input', function () {
+            if (!passwordError.classList.contains('hidden')) {
+                validatePassword();
+            }
+        });
+
+        // Prevent form submission if email or password is invalid
         form.addEventListener('submit', function (e) {
-            if (!validateEmail()) {
+            const emailOk = validateEmail();
+            const passwordOk = validatePassword();
+            if (!emailOk || !passwordOk) {
                 e.preventDefault(); // Stop the form from submitting
-                emailInput.focus();
+                if (!emailOk) {
+                    emailInput.focus();
+                } else {
+                    passwordInput.focus();
+                }
             }
         });
     });

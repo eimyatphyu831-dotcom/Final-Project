@@ -107,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <form action="#" method="POST" class="space-y-3" novalidate>
+        <form id="registerForm" action="#" method="POST" class="space-y-3" novalidate>
             <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>" required>
 
             <!-- FULL NAME FIELD -->
@@ -130,6 +130,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['name'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['name'] ?></span>
                 <?php endif; ?>
+                <p id="name-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- EMAIL FIELD -->
@@ -150,6 +151,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['email'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['email'] ?></span>
                 <?php endif; ?>
+                <p id="email-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- PHONE NUMBER FIELD -->
@@ -172,6 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['phone'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['phone'] ?></span>
                 <?php endif; ?>
+                <p id="phone-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- PASSWORD FIELD -->
@@ -197,9 +200,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </button>
                 </div>
+                <div class="flex gap-1 mt-1.5" id="password-strength-bar">
+                    <span class="h-1 flex-1 rounded-full bg-slate-200 transition-all duration-300"></span>
+                    <span class="h-1 flex-1 rounded-full bg-slate-200 transition-all duration-300"></span>
+                    <span class="h-1 flex-1 rounded-full bg-slate-200 transition-all duration-300"></span>
+                    <span class="h-1 flex-1 rounded-full bg-slate-200 transition-all duration-300"></span>
+                </div>
                 <?php if (!empty($errors['password'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['password'] ?></span>
                 <?php endif; ?>
+                <p id="password-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <div id="confirm-password-container">
@@ -224,14 +234,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </button>
                 </div>
+                <p id="confirm-password-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
-            <div class="flex items-start pt-0.5">
+            <div id="terms-container" class="flex items-start pt-0.5">
                 <input type="checkbox" id="terms" name="terms" required
                     class="mt-0.5 h-3 w-3 rounded border-slate-300 text-purple-600 focus:ring-purple-500/20 accent-purple-600 cursor-pointer">
                 <label for="terms" class="ml-1.5 text-[10px] text-slate-500 select-none cursor-pointer leading-tight">I
                     agree to the <a href="#" class="text-purple-600 hover:underline">Terms</a> and <a href="#"
                         class="text-purple-600 hover:underline">Privacy</a></label>
+                <p id="terms-error" class="text-red-500 text-[10px] ml-1.5 hidden"></p>
             </div>
            
 
@@ -281,19 +293,65 @@ class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition
     matchBox.style.marginTop = "2px";
     document.getElementById("confirm-password-container").appendChild(matchBox);
 
+    const strengthBar = document.getElementById("password-strength-bar");
+    const strengthSegments = strengthBar ? strengthBar.children : [];
+
+    function isSequential(value) {
+        const lower = value.toLowerCase();
+        for (let i = 0; i < lower.length - 2; i++) {
+            const a = lower.charCodeAt(i);
+            const b = lower.charCodeAt(i + 1);
+            const c = lower.charCodeAt(i + 2);
+            if ((b === a + 1 && c === b + 1) || (b === a - 1 && c === b - 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function getStrength(value) {
         let len = value.length;
         if (len === 0) return "";
+
+        // Same character repeated (e.g. 111111, aaaaaa) => Weak
+        if (len >= 3 && /^(.)\1{2,}$/.test(value)) return "Weak";
+
+        // Sequential digits/letters (e.g. 12345, abcdef, 9876) => Fair
+        if (len >= 3 && isSequential(value)) return "Fair";
+
         if (len < 3) return "Weak";
         if (len <= 5) return "Fair";
         if (len <= 7) return "Good";
-        return "Excellent";
+
+        // Long but only one character type => not Excellent
+        const hasNumber = /\d/.test(value);
+        const hasLetter = /[a-zA-Z]/.test(value);
+        const hasSymbol = /[^a-zA-Z0-9]/.test(value);
+        const variety = [hasNumber, hasLetter, hasSymbol].filter(Boolean).length;
+
+        if (len >= 8 && variety >= 2) return "Excellent";
+        return "Good";
     }
+
+    const strengthConfig = {
+        "Weak": { color: "#ef4444", segments: 1 },
+        "Fair": { color: "#f97316", segments: 2 },
+        "Good": { color: "#3b82f6", segments: 3 },
+        "Excellent": { color: "#22c55e", segments: 4 }
+    };
 
     password.addEventListener("input", function () {
         let result = getStrength(password.value);
         strengthBox.textContent = result;
         strengthBox.style.color = result === "Weak" ? "red" : result === "Fair" ? "orange" : result === "Good" ? "blue" : result === "Excellent" ? "green" : "";
+        let cfg = strengthConfig[result];
+        for (let i = 0; i < strengthSegments.length; i++) {
+            if (cfg && i < cfg.segments) {
+                strengthSegments[i].style.backgroundColor = cfg.color;
+            } else {
+                strengthSegments[i].style.backgroundColor = "";
+            }
+        }
         checkMatch();
     });
 
@@ -312,6 +370,124 @@ class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition
             matchBox.style.color = "red";
         }
     }
+
+    // ---- Front-end field validation ----
+    const registerForm = document.getElementById('registerForm');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const termsCheckbox = document.getElementById('terms');
+
+    const nameError = document.getElementById('name-error');
+    const emailError = document.getElementById('email-error');
+    const phoneError = document.getElementById('phone-error');
+    const passwordError = document.getElementById('password-error');
+    const confirmPasswordError = document.getElementById('confirm-password-error');
+    const termsError = document.getElementById('terms-error');
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    function setFieldError(input, errorEl, message) {
+        if (message) {
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+            input.classList.add('border-red-500', 'focus:border-red-500');
+            input.classList.remove('border-slate-200', 'focus:border-purple-600');
+        } else {
+            errorEl.textContent = '';
+            errorEl.classList.add('hidden');
+            input.classList.remove('border-red-500', 'focus:border-red-500');
+            input.classList.add('border-slate-200', 'focus:border-purple-600');
+        }
+    }
+
+    function validateName() {
+        const value = nameInput.value.trim();
+        if (value === '') return setFieldError(nameInput, nameError, 'Full Name is required.');
+        if (!/^[a-zA-Z\s'-]+$/.test(value)) return setFieldError(nameInput, nameError, 'Only letters and white space allowed.');
+        setFieldError(nameInput, nameError, '');
+        return true;
+    }
+
+    function validateEmail() {
+        const value = emailInput.value.trim();
+        if (value === '') return setFieldError(emailInput, emailError, 'Email is required.');
+        if (!emailRegex.test(value)) return setFieldError(emailInput, emailError, 'Enter a valid email (e.g., alex@gmail.com).');
+        setFieldError(emailInput, emailError, '');
+        return true;
+    }
+
+    function validatePhone() {
+        const value = phoneInput.value.trim();
+        if (value === '') return setFieldError(phoneInput, phoneError, 'Phone Number is required.');
+        if (!/^09\d{7,9}$/.test(value.replace(/\D/g, ''))) return setFieldError(phoneInput, phoneError, "Enter a valid phone number starting with '09...'.");
+        setFieldError(phoneInput, phoneError, '');
+        return true;
+    }
+
+    function validatePassword() {
+        if (password.value === '') return setFieldError(password, passwordError, 'Password is required.');
+        if (password.value.length < 6) return setFieldError(password, passwordError, 'Password must be at least 6 characters.');
+        setFieldError(password, passwordError, '');
+        return true;
+    }
+
+    function validateConfirmPassword() {
+        if (confirmPassword.value === '') return setFieldError(confirmPassword, confirmPasswordError, 'Please confirm your password.');
+        if (password.value !== confirmPassword.value) return setFieldError(confirmPassword, confirmPasswordError, 'Passwords do not match!');
+        setFieldError(confirmPassword, confirmPasswordError, '');
+        return true;
+    }
+
+    function validateTerms() {
+        if (!termsCheckbox.checked) {
+            termsError.textContent = 'You must agree to the Terms and Privacy Policy.';
+            termsError.classList.remove('hidden');
+            return false;
+        }
+        termsError.textContent = '';
+        termsError.classList.add('hidden');
+        return true;
+    }
+
+    [nameInput, emailInput, phoneInput].forEach(input => {
+        input.addEventListener('blur', function () {
+            if (input === nameInput) validateName();
+            if (input === emailInput) validateEmail();
+            if (input === phoneInput) validatePhone();
+        });
+        input.addEventListener('input', function () {
+            if (input === nameInput && !nameError.classList.contains('hidden')) validateName();
+            if (input === emailInput && !emailError.classList.contains('hidden')) validateEmail();
+            if (input === phoneInput && !phoneError.classList.contains('hidden')) validatePhone();
+        });
+    });
+
+    password.addEventListener('blur', validatePassword);
+    password.addEventListener('input', function () {
+        if (!passwordError.classList.contains('hidden')) validatePassword();
+    });
+
+    confirmPassword.addEventListener('blur', validateConfirmPassword);
+    confirmPassword.addEventListener('input', function () {
+        if (!confirmPasswordError.classList.contains('hidden')) validateConfirmPassword();
+        checkMatch();
+    });
+
+    termsCheckbox.addEventListener('change', function () {
+        if (!termsError.classList.contains('hidden')) validateTerms();
+    });
+
+    registerForm.addEventListener('submit', function (e) {
+        let valid = true;
+        if (validateName() === false) valid = false;
+        if (validateEmail() === false) valid = false;
+        if (validatePhone() === false) valid = false;
+        if (validatePassword() === false) valid = false;
+        if (validateConfirmPassword() === false) valid = false;
+        if (validateTerms() === false) valid = false;
+        if (!valid) e.preventDefault();
+    });
 </script>
 
 <?php include '../includes/footer.php'; ?>
