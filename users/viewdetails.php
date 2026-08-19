@@ -394,14 +394,30 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
                         <div class="flex-1 min-w-0">
                             <div class="relative overflow-hidden">
                                 <div id="reviewCarousel" class="flex transition-transform duration-500 ease-out">
-                                    <?php foreach ($eventReviews as $rev): ?>
+                                    <?php foreach ($eventReviews as $rev):
+                                        $userImage = $rev['user_image'] ? '../uploads/profiles/' . $rev['user_image'] : null;
+                                        $initials = '';
+                                        $parts = explode(' ', $rev['user_name']);
+                                        foreach ($parts as $p) $initials .= strtoupper($p[0] ?? '');
+                                        $initials = substr($initials, 0, 2);
+                                        $colors = ['from-purple-500 to-indigo-500', 'from-pink-500 to-rose-500', 'from-blue-500 to-cyan-500', 'from-emerald-500 to-teal-500', 'from-orange-500 to-amber-500', 'from-violet-500 to-purple-500'];
+                                        $gradient = $colors[array_rand($colors)];
+                                    ?>
                                         <div
                                             class="w-full shrink-0 bg-white rounded-2xl shadow-md border border-purple-200 p-6">
                                             <div class="flex items-center gap-3 mb-3">
-                                                <div
-                                                    class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 font-bold text-sm shrink-0">
-                                                    <?= htmlspecialchars(strtoupper(substr($rev['user_name'], 0, 2))) ?>
-                                                </div>
+                                                <?php if ($userImage): ?>
+                                                    <img src="<?= htmlspecialchars($userImage) ?>" alt="<?= htmlspecialchars($rev['user_name']) ?>"
+                                                        class="w-12 h-12 rounded-full object-cover border-2 border-purple-200 shadow-sm shrink-0"
+                                                        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br <?= $gradient ?> items-center justify-center text-white text-sm font-bold shrink-0" style="display:none">
+                                                        <?= htmlspecialchars($initials) ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br <?= $gradient ?> flex items-center justify-center text-white text-sm font-bold shrink-0">
+                                                        <?= htmlspecialchars($initials) ?>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <div>
                                                     <p class="font-semibold text-gray-800 text-sm">
                                                         <?= htmlspecialchars($rev['user_name']) ?>
