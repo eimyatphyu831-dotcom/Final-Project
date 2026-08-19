@@ -57,19 +57,19 @@ include '../includes/header.php';
             <form method="POST" action="" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
-                        <input type="text" name="name" placeholder="Alex Morgan" required
+                        <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactName">Full Name</label>
+                        <input type="text" name="name" id="contactName" placeholder="Alex Morgan" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
-                        <input type="email" name="email" placeholder="alex@gmail.com" required
+                        <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactEmail">Email Address</label>
+                        <input type="email" name="email" id="contactEmail" placeholder="alex@gmail.com" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Event Type</label>
-                    <select name="event_type"
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactEventType">Event Type</label>
+                    <select name="event_type" id="contactEventType" required
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-600 focus:outline-none focus:border-brand-200">
                         <option value="">Select Option...</option>
                         <?php foreach ($events as $e): ?>
@@ -78,8 +78,9 @@ include '../includes/header.php';
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Special Requirements</label>
-                    <textarea name="message" rows="3" placeholder="Tell us more about your ideas..." required
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactMessage">Special Requirements</label>
+                    <textarea name="message" id="contactMessage" rows="3" placeholder="Tell us more about your ideas..." required
+                        minlength="10" maxlength="1000"
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200"></textarea>
                 </div>
                 <button type="submit"

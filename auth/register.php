@@ -107,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php endif; ?>
 
-        <form id="registerForm" action="#" method="POST" class="space-y-3" novalidate>
+        <form id="registerForm" action="#" method="POST" class="space-y-3">
             <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>" required>
 
             <!-- FULL NAME FIELD -->
@@ -130,7 +130,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['name'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['name'] ?></span>
                 <?php endif; ?>
-                <p id="name-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- EMAIL FIELD -->
@@ -151,7 +150,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['email'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['email'] ?></span>
                 <?php endif; ?>
-                <p id="email-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- PHONE NUMBER FIELD -->
@@ -167,14 +165,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <!-- Added inputmode and pattern to force numeric keyboard on mobile -->
                     <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="09..."
-                        maxlength="11" inputmode="numeric" pattern="[0-9]*" value="<?= htmlspecialchars($phone) ?>"
+                        maxlength="11" inputmode="numeric" pattern="09[0-9]{7,9}" value="<?= htmlspecialchars($phone) ?>"
                         class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all"
                         oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <?php if (!empty($errors['phone'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['phone'] ?></span>
                 <?php endif; ?>
-                <p id="phone-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <!-- PASSWORD FIELD -->
@@ -188,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
                     </div>
-                    <input type="password" id="password" name="password" required placeholder="••••••••"
+                    <input type="password" id="password" name="password" required minlength="6" placeholder="••••••••"
                         class="w-full pl-8 pr-9 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                     <button type="button" id="toggle-mask-btn" tabindex="-1"
                         class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
@@ -209,7 +206,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if (!empty($errors['password'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['password'] ?></span>
                 <?php endif; ?>
-                <p id="password-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <div id="confirm-password-container">
@@ -222,7 +218,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                     </div>
-                    <input type="password" id="confirm-password" name="confirm-password" required placeholder="••••••••"
+                    <input type="password" id="confirm-password" name="confirm-password" required minlength="6" placeholder="••••••••"
                         class="w-full pl-8 pr-9 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                     <button type="button" id="toggle-confirm-mask-btn" tabindex="-1"
                         class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors">
@@ -234,7 +230,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </button>
                 </div>
-                <p id="confirm-password-error" class="text-red-500 text-[10px] mt-1 ml-1 hidden"></p>
             </div>
 
             <div id="terms-container" class="flex items-start pt-0.5">
@@ -243,7 +238,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="terms" class="ml-1.5 text-[10px] text-slate-500 select-none cursor-pointer leading-tight">I
                     agree to the <a href="#" class="text-purple-600 hover:underline">Terms</a> and <a href="#"
                         class="text-purple-600 hover:underline">Privacy</a></label>
-                <p id="terms-error" class="text-red-500 text-[10px] ml-1.5 hidden"></p>
             </div>
            
 
@@ -261,7 +255,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         <p class="mt-3 text-center text-[11px] text-slate-500">
             Already have an account? <a href="../auth/login.php"
-class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all" required>Login
+class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition-all">Login
                     instead</a>
         </p>
     </div>
@@ -370,124 +364,6 @@ class="font-bold text-slate-900 hover:text-purple-700 hover:underline transition
             matchBox.style.color = "red";
         }
     }
-
-    // ---- Front-end field validation ----
-    const registerForm = document.getElementById('registerForm');
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const phoneInput = document.getElementById('phone');
-    const termsCheckbox = document.getElementById('terms');
-
-    const nameError = document.getElementById('name-error');
-    const emailError = document.getElementById('email-error');
-    const phoneError = document.getElementById('phone-error');
-    const passwordError = document.getElementById('password-error');
-    const confirmPasswordError = document.getElementById('confirm-password-error');
-    const termsError = document.getElementById('terms-error');
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-    function setFieldError(input, errorEl, message) {
-        if (message) {
-            errorEl.textContent = message;
-            errorEl.classList.remove('hidden');
-            input.classList.add('border-red-500', 'focus:border-red-500');
-            input.classList.remove('border-slate-200', 'focus:border-purple-600');
-        } else {
-            errorEl.textContent = '';
-            errorEl.classList.add('hidden');
-            input.classList.remove('border-red-500', 'focus:border-red-500');
-            input.classList.add('border-slate-200', 'focus:border-purple-600');
-        }
-    }
-
-    function validateName() {
-        const value = nameInput.value.trim();
-        if (value === '') return setFieldError(nameInput, nameError, 'Full Name is required.');
-        if (!/^[a-zA-Z\s'-]+$/.test(value)) return setFieldError(nameInput, nameError, 'Only letters and white space allowed.');
-        setFieldError(nameInput, nameError, '');
-        return true;
-    }
-
-    function validateEmail() {
-        const value = emailInput.value.trim();
-        if (value === '') return setFieldError(emailInput, emailError, 'Email is required.');
-        if (!emailRegex.test(value)) return setFieldError(emailInput, emailError, 'Enter a valid email (e.g., alex@gmail.com).');
-        setFieldError(emailInput, emailError, '');
-        return true;
-    }
-
-    function validatePhone() {
-        const value = phoneInput.value.trim();
-        if (value === '') return setFieldError(phoneInput, phoneError, 'Phone Number is required.');
-        if (!/^09\d{7,9}$/.test(value.replace(/\D/g, ''))) return setFieldError(phoneInput, phoneError, "Enter a valid phone number starting with '09...'.");
-        setFieldError(phoneInput, phoneError, '');
-        return true;
-    }
-
-    function validatePassword() {
-        if (password.value === '') return setFieldError(password, passwordError, 'Password is required.');
-        if (password.value.length < 6) return setFieldError(password, passwordError, 'Password must be at least 6 characters.');
-        setFieldError(password, passwordError, '');
-        return true;
-    }
-
-    function validateConfirmPassword() {
-        if (confirmPassword.value === '') return setFieldError(confirmPassword, confirmPasswordError, 'Please confirm your password.');
-        if (password.value !== confirmPassword.value) return setFieldError(confirmPassword, confirmPasswordError, 'Passwords do not match!');
-        setFieldError(confirmPassword, confirmPasswordError, '');
-        return true;
-    }
-
-    function validateTerms() {
-        if (!termsCheckbox.checked) {
-            termsError.textContent = 'You must agree to the Terms and Privacy Policy.';
-            termsError.classList.remove('hidden');
-            return false;
-        }
-        termsError.textContent = '';
-        termsError.classList.add('hidden');
-        return true;
-    }
-
-    [nameInput, emailInput, phoneInput].forEach(input => {
-        input.addEventListener('blur', function () {
-            if (input === nameInput) validateName();
-            if (input === emailInput) validateEmail();
-            if (input === phoneInput) validatePhone();
-        });
-        input.addEventListener('input', function () {
-            if (input === nameInput && !nameError.classList.contains('hidden')) validateName();
-            if (input === emailInput && !emailError.classList.contains('hidden')) validateEmail();
-            if (input === phoneInput && !phoneError.classList.contains('hidden')) validatePhone();
-        });
-    });
-
-    password.addEventListener('blur', validatePassword);
-    password.addEventListener('input', function () {
-        if (!passwordError.classList.contains('hidden')) validatePassword();
-    });
-
-    confirmPassword.addEventListener('blur', validateConfirmPassword);
-    confirmPassword.addEventListener('input', function () {
-        if (!confirmPasswordError.classList.contains('hidden')) validateConfirmPassword();
-        checkMatch();
-    });
-
-    termsCheckbox.addEventListener('change', function () {
-        if (!termsError.classList.contains('hidden')) validateTerms();
-    });
-
-    registerForm.addEventListener('submit', function (e) {
-        let valid = true;
-        if (validateName() === false) valid = false;
-        if (validateEmail() === false) valid = false;
-        if (validatePhone() === false) valid = false;
-        if (validatePassword() === false) valid = false;
-        if (validateConfirmPassword() === false) valid = false;
-        if (validateTerms() === false) valid = false;
-        if (!valid) e.preventDefault();
-    });
 </script>
 
 <?php include '../includes/footer.php'; ?>

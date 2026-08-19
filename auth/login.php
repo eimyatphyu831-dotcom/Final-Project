@@ -145,8 +145,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 placeholder="alex@gmail.com"
                                 class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                         </div>
-                        <!-- Custom Error Message Container -->
-                        <p id="email-error" class="text-red-500 text-[10px] mt-1 hidden"></p>
                     </div>
 
                     <div>
@@ -178,7 +176,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </svg>
                             </button>
                         </div>
-                        <p id="password-error" class="text-red-500 text-[10px] mt-1 hidden"></p>
                     </div>
 
                     <div class="flex items-center pt-0.5">
@@ -221,97 +218,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             field.type = field.type === 'password' ? 'text' : 'password';
             field.focus();
         }
-    });
-
-    // Email Validation Script
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const emailError = document.getElementById('email-error');
-
-        // Standard email regex pattern
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        function validateEmail() {
-            const emailValue = emailInput.value.trim();
-
-            if (emailValue === '') {
-                emailError.textContent = 'Email address is required.';
-                emailError.classList.remove('hidden');
-                emailInput.classList.add('border-red-500', 'focus:border-red-500');
-                emailInput.classList.remove('border-slate-200', 'focus:border-purple-600');
-                return false;
-            } else if (!emailRegex.test(emailValue)) {
-                emailError.textContent = 'Please enter a valid email format (e.g., alex@gmail.com).';
-                emailError.classList.remove('hidden');
-                emailInput.classList.add('border-red-500', 'focus:border-red-500');
-                emailInput.classList.remove('border-slate-200', 'focus:border-purple-600');
-                return false;
-            } else {
-                emailError.textContent = '';
-                emailError.classList.add('hidden');
-                emailInput.classList.remove('border-red-500', 'focus:border-red-500');
-                emailInput.classList.add('border-slate-200', 'focus:border-purple-600');
-                return true;
-            }
-        }
-
-        // Validate on blur (when user clicks out of the input)
-        emailInput.addEventListener('blur', validateEmail);
-
-        // Live validate as they type IF they already made a mistake
-        emailInput.addEventListener('input', function () {
-            if (!emailError.classList.contains('hidden')) {
-                validateEmail();
-            }
-        });
-
-        // Password validation
-        const passwordInput = document.getElementById('password');
-        const passwordError = document.getElementById('password-error');
-
-        function validatePassword() {
-            const value = passwordInput.value;
-            if (value === '') {
-                passwordError.textContent = 'Password is required.';
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500', 'focus:border-red-500');
-                passwordInput.classList.remove('border-slate-200', 'focus:border-purple-600');
-                return false;
-            }
-            if (value.length < 6) {
-                passwordError.textContent = 'Password must be at least 6 characters.';
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500', 'focus:border-red-500');
-                passwordInput.classList.remove('border-slate-200', 'focus:border-purple-600');
-                return false;
-            }
-            passwordError.textContent = '';
-            passwordError.classList.add('hidden');
-            passwordInput.classList.remove('border-red-500', 'focus:border-red-500');
-            passwordInput.classList.add('border-slate-200', 'focus:border-purple-600');
-            return true;
-        }
-
-        passwordInput.addEventListener('blur', validatePassword);
-        passwordInput.addEventListener('input', function () {
-            if (!passwordError.classList.contains('hidden')) {
-                validatePassword();
-            }
-        });
-
-        // Prevent form submission if email or password is invalid
-        form.addEventListener('submit', function (e) {
-            const emailOk = validateEmail();
-            const passwordOk = validatePassword();
-            if (!emailOk || !passwordOk) {
-                e.preventDefault(); // Stop the form from submitting
-                if (!emailOk) {
-                    emailInput.focus();
-                } else {
-                    passwordInput.focus();
-                }
-            }
-        });
     });
 </script>

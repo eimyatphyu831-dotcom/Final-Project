@@ -382,7 +382,7 @@ if (isset($_SESSION['success'])) {
         <!-- Left Side Data Content Column -->
         <div class="max-w-md w-full">
             <h2 class="text-3xl font-serif font-bold text-brand-600 leading-tight">
-                Creating Unforgettable Moments Since 2020
+                Creating Unforgettable Moments 
             </h2>
             <p class="text-sm text-slate-500 mt-4 leading-relaxed">
                 Our dedicated design team focuses on every minor detailed element to craft custom environments that
@@ -399,10 +399,10 @@ if (isset($_SESSION['success'])) {
                     <span class="text-3xl font-serif font-bold text-brand-900"><?= number_format($completedEvents) ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Completed Events</p>
                 </div>
-                <div>
+                <!-- <div>
                     <span class="text-3xl font-serif font-bold text-brand-900"><?= $yearsExp ?>+</span>
                     <p class="text-xs font-medium text-slate-400 mt-1">Years Experience</p>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -512,22 +512,22 @@ if (isset($_SESSION['success'])) {
             <p class="text-xs text-slate-400 mb-8">Submit details below and a personal concierge planner will reach out.
             </p>
 
-            <form class="space-y-4">
+            <form method="POST" action="contact.php" class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
-                        <input type="text" placeholder="Alex Morgan"
+                        <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactName">Full Name</label>
+                        <input type="text" name="name" id="contactName" placeholder="Alex Morgan" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Email Address</label>
-                        <input type="email" placeholder="alex@gmail.com"
+                        <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactEmail">Email Address</label>
+                        <input type="email" name="email" id="contactEmail" placeholder="alex@gmail.com" required
                             class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Event Type</label>
-                    <select name="event_type"
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactEventType">Event Type</label>
+                    <select name="event_type" id="contactEventType" required
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-slate-400 focus:outline-none focus:border-brand-200">
                         <option value="">Select Option...</option>
                         <?php foreach ($events as $e): ?>
@@ -536,8 +536,9 @@ if (isset($_SESSION['success'])) {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Special Requirements</label>
-                    <textarea rows="3" placeholder="Tell us more about your ideas..."
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="contactMessage">Special Requirements</label>
+                    <textarea name="message" id="contactMessage" rows="3" placeholder="Tell us more about your ideas..."
+                        minlength="10" maxlength="1000"
                         class="w-full text-sm bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-200"></textarea>
                 </div>
                 <button type="submit"
