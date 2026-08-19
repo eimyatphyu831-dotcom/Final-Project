@@ -103,6 +103,8 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
 
 
 
+
+
 ?>
 
 
@@ -262,7 +264,7 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
 
             <!-- Services -->
             <div>
-                <h3 class="text-3xl font-bold text-purple-400 mb-5">Services Included</h3>
+                <h3 class="text-3xl font-bold text-purple-400 mb-5">Services</h3>
                 <?php
                 $categoryKeywords = [
                     'Decoration' => ['floral', 'stage', 'decoration', 'lighting', 'seating', 'podium', 'backdrop', 'vip', 'lounge', 'meeting room'],
@@ -299,7 +301,7 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
                     <?php foreach ($categoryKeywords as $cat => $keywords): ?>
                         <?php if (!empty($groupedServices[$cat])): ?>
                             <div
-                                class="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-sm">
+                                class="bg-white rounded-2xl border border-purple-200 p-5 shadow-sm">
                                 <h4 class="flex items-center gap-2 font-bold text-purple-600 mb-3">
                                     <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-500">
                                         <?= $categoryIcons[$cat] ?? '' ?>
@@ -318,7 +320,7 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
                         <?php endif; ?>
                     <?php endforeach; ?>
                     <?php if (!empty($others)): ?>
-                        <div class="bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div class="bg-white rounded-2xl border border-purple-200 p-5 shadow-sm">
                             <h4 class="flex items-center gap-2 font-bold text-purple-600 mb-3">
                                 <span class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -394,7 +396,7 @@ $defaultPackageStyle = ['icon' => 'gift', 'ring' => 'bg-purple-100 text-purple-5
                                 <div id="reviewCarousel" class="flex transition-transform duration-500 ease-out">
                                     <?php foreach ($eventReviews as $rev): ?>
                                         <div
-                                            class="w-full shrink-0 bg-slate-50 rounded-2xl shadow-md border border-slate-200 p-6">
+                                            class="w-full shrink-0 bg-white rounded-2xl shadow-md border border-purple-200 p-6">
                                             <div class="flex items-center gap-3 mb-3">
                                                 <div
                                                     class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-500 font-bold text-sm shrink-0">

@@ -237,7 +237,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 1: Decoration -->
             <div
-                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-purple-200 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -253,7 +253,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 2: Photography -->
             <div
-                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-purple-200 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -269,7 +269,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 3: Catering -->
             <div
-                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-purple-200 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -285,7 +285,7 @@ if (isset($_SESSION['success'])) {
 
             <!-- Card 4: Entertainment -->
             <div
-                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-slate-100 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
+                class="stagger-child bg-white dark:bg-[#1e2a45] p-8 rounded-[1.75rem] border border-purple-200 dark:border-[#2a3a5c] shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -471,7 +471,7 @@ if (isset($_SESSION['success'])) {
                 $colors = ['from-purple-500 to-indigo-500', 'from-pink-500 to-rose-500', 'from-blue-500 to-cyan-500', 'from-emerald-500 to-teal-500', 'from-orange-500 to-amber-500', 'from-violet-500 to-purple-500'];
                 $gradient = $colors[array_rand($colors)];
             ?>
-                <div class="w-80 shrink-0 group relative bg-white rounded-3xl p-7 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+                <div class="w-80 shrink-0 group relative bg-white rounded-3xl p-7 border border-purple-200 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
                     <div class="flex items-start gap-4">
                         <?php if ($userImage): ?>
                             <img src="<?= htmlspecialchars($userImage) ?>" alt="<?= htmlspecialchars($rev['user_name']) ?>"

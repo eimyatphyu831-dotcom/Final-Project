@@ -38,12 +38,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors['email'] = "Email must include '@gmail.com'";
     }
 
-    // 3. Validate Phone (Myanmar phone number - must start with 09 and be 9-11 digits)
+    // 3. Validate Phone (Myanmar phone number - must start with 09 or +959 and be 7-9 digits after the prefix)
     $digits_only = preg_replace('/\D/', '', $phone);
     if (empty($phone)) {
         $errors['phone'] = "Phone Number is required.";
-    } elseif (!preg_match('/^09\d{7,9}$/', $digits_only)) {
-        $errors['phone'] = "Enter a valid  phone number starting with '09...'.";
+    } elseif (!preg_match('/^(09\d{7,9}|959\d{7,9})$/', $digits_only)) {
+        $errors['phone'] = "Enter a valid phone number starting with '09...' or '+959...'.";
     }
 
     // 4. Validate Passwords (minimum 6 characters)
@@ -164,10 +164,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </svg>
                     </div>
                     <!-- Added inputmode and pattern to force numeric keyboard on mobile -->
-                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="09..."
-                        maxlength="11" inputmode="numeric" pattern="09[0-9]{7,9}" value="<?= htmlspecialchars($phone) ?>"
-                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all"
-                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="tel" id="phone" name="phone" required autocomplete="tel" placeholder="09... / +959..."
+                        maxlength="13" inputmode="tel" pattern="^(09[0-9]{7,9}|\+959[0-9]{7,9})$"
+                        title="Phone must start with 09 or +959 followed by 7-9 digits (up to 13 characters)."
+                        value="<?= htmlspecialchars($phone) ?>"
+                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all">
                 </div>
                 <?php if (!empty($errors['phone'])): ?>
                     <span class="block text-red-500 text-[10px] mt-1 ml-1"><?= $errors['phone'] ?></span>

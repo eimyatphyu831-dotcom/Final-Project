@@ -19,7 +19,7 @@ include '../includes/header.php';
 
             <!-- Card 1: Decoration -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-1">
+                class="bg-white p-8 rounded-[1.75rem] border border-purple-200 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-1">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -35,7 +35,7 @@ include '../includes/header.php';
 
             <!-- Card 2: Photography -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-2">
+                class="bg-white p-8 rounded-[1.75rem] border border-purple-200 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-2">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -51,7 +51,7 @@ include '../includes/header.php';
 
             <!-- Card 3: Catering -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-3">
+                class="bg-white p-8 rounded-[1.75rem] border border-purple-200 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-3">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div
@@ -67,7 +67,7 @@ include '../includes/header.php';
 
             <!-- Card 4: Entertainment -->
             <div
-                class="bg-white p-8 rounded-[1.75rem] border border-slate-100 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-4">
+                class="bg-white p-8 rounded-[1.75rem] border border-purple-200 shadow-md flex flex-col items-start justify-between min-h-[250px] hover:scale-105 transition duration-300 page-animate fade-up delay-4">
                 <div class="w-full">
                     <!-- Icon Box Wrapper -->
                     <div

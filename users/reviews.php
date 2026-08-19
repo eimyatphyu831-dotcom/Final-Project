@@ -50,7 +50,7 @@ $allReviews = array_merge($reviews, $reviews);
                     $gradient = $colors[array_rand($colors)];
                     ?>
                     <div
-                        class="w-80 shrink-0 group relative bg-white rounded-3xl p-7 border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+                        class="w-80 shrink-0 group relative bg-white rounded-3xl p-7 border border-purple-200 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
                         <div class="flex items-start gap-4">
                             <?php if ($userImage): ?>
                                 <img src="<?= htmlspecialchars($userImage) ?>" alt="<?= htmlspecialchars($rev['user_name']) ?>"
