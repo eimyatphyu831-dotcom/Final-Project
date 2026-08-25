@@ -508,6 +508,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .flatpickr-day.date-fully-booked.today {
             color: #dc2626 !important;
         }
+        .flatpickr-day.date-today-disabled,
+        .flatpickr-day.date-today-disabled:hover {
+            color: #dc2626 !important;
+            background: #fee2e2;
+            border-color: #fecaca;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+        .field-error {
+            border-color: #dc2626 !important;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2) !important;
+        }
+        .field-error-msg {
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
     </style>
 </head>
 
@@ -906,6 +924,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function submitBooking() {
 
             const form = document.getElementById('bookingForm');
+            const dateInput = document.getElementById('eventDatePicker');
+            const dateWrapper = dateInput.closest('.relative');
+            const dateGroup = dateWrapper.parentElement;
+
+            // Remove any previous error state
+            dateInput.classList.remove('field-error');
+            const oldMsg = dateGroup.querySelector('.field-error-msg');
+            if (oldMsg) oldMsg.remove();
+
+            // Check event date
+            if (!dateInput.value.trim()) {
+                dateInput.classList.add('field-error');
+                const msg = document.createElement('p');
+                msg.className = 'field-error-msg';
+                msg.textContent = 'Event Date is required';
+                dateGroup.appendChild(msg);
+                dateInput.focus();
+                return;
+            }
+
+            // Remove any previous receipt error state
+            const receiptInput = document.getElementById('receiptInput');
+            const receiptBox = document.getElementById('receiptUploadBox');
+            const receiptGroup = receiptBox.parentElement;
+            receiptBox.classList.remove('field-error');
+            const oldReceiptMsg = receiptGroup.querySelector('.field-error-msg');
+            if (oldReceiptMsg) oldReceiptMsg.remove();
+
+            // Check receipt image
+            if (!receiptInput.files || receiptInput.files.length === 0) {
+                receiptBox.classList.add('field-error');
+                const msg = document.createElement('p');
+                msg.className = 'field-error-msg';
+                msg.textContent = 'Receipt Image is required';
+                receiptGroup.appendChild(msg);
+                return;
+            }
 
             if (!form.reportValidity()) return;
 
@@ -919,6 +974,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             form.submit();
 
         }
+
+        // Clear date error on input
+        document.getElementById('eventDatePicker').addEventListener('change', function () {
+            this.classList.remove('field-error');
+            const dateGroup = this.closest('.relative').parentElement;
+            const msg = dateGroup ? dateGroup.querySelector('.field-error-msg') : null;
+            if (msg) msg.remove();
+        });
+
+        // Clear receipt error on file select
+        document.getElementById('receiptInput').addEventListener('change', function () {
+            const receiptBox = document.getElementById('receiptUploadBox');
+            receiptBox.classList.remove('field-error');
+            const receiptGroup = receiptBox.parentElement;
+            const msg = receiptGroup ? receiptGroup.querySelector('.field-error-msg') : null;
+            if (msg) msg.remove();
+        });
 
         // Success Alert Box
         document.addEventListener('DOMContentLoaded', function () {
@@ -1095,7 +1167,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 },
                 onDayCreate: function (dObj, dStr, fp, dayElem) {
                     const dateStr = dayElem.dateObj ? toLocalDateStr(dayElem.dateObj) : '';
-                    if (!dateStr || dateStr <= todayStr) return;
+                    if (!dateStr) return;
+
+                    if (dateStr === todayStr) {
+                        dayElem.classList.add('date-today-disabled');
+                    }
+
+                    if (dateStr <= todayStr) return;
 
                     if (fullyBookedDates.includes(dateStr)) {
                         dayElem.classList.add('date-fully-booked');
